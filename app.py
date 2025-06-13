@@ -1,677 +1,545 @@
 import streamlit as st
-import asyncio
+import time
+from client import client_tab
 
-# Initialize session state for focus control
-if 'focus_website' not in st.session_state:
-    st.session_state.focus_website = False
+def get_sample_extracted_text():
+            return """Key Requirements Extracted:
 
-# Initialize session state for async data
-if 'website_data' not in st.session_state:
-    st.session_state.website_data = {}
+• Project Type: Enterprise Software Development
+• Timeline: 6-8 months
+• Budget Range: $150,000 - $200,000
+• Team Size: 5-7 developers
+• Technologies: React, Node.js, PostgreSQL
+• Deployment: AWS Cloud Infrastructure
+• Security: SOC 2 compliance required
+• Integration: Salesforce, HubSpot APIs
+• Support: 24/7 monitoring and maintenance
 
-# Initialize validation state
-if 'validation_errors' not in st.session_state:
-    st.session_state.validation_errors = {}
-if 'show_validation' not in st.session_state:
-    st.session_state.show_validation = False
+Additional Notes:
+- Client prefers agile methodology
+- Weekly progress reports required
+- UAT phase: 4 weeks
+- Go-live date: Q3 2024"""
 
-# Initialize previous values for change detection
-if 'prev_seller_name' not in st.session_state:
-    st.session_state.prev_seller_name = ""
-if 'prev_website' not in st.session_state:
-    st.session_state.prev_website = ""
-if 'prev_uploaded_file' not in st.session_state:
-    st.session_state.prev_uploaded_file = None
-
-# Initialize file uploader key for forcing re-render
-if 'file_uploader_key' not in st.session_state:
-    st.session_state.file_uploader_key = 0
-
-def reset_downstream_fields(changed_field):
-    """Reset fields that come after the changed field in the form hierarchy"""
-    field_hierarchy = ['seller_name', 'website', 'file_upload', 'document_details']
+def refresh_all_data():
+    """Clear all session state and form data"""
+    # Clear all session state variables
+    keys_to_clear = [
+        'client_name_input', 'url_selector', 'pain_points', 'pain_points_extracted',
+        'pain_points_placeholder', 'editable_content_area', 'pain_points_summary',
+        'selected_roles', 'selected_priorities', 'problem_statement'
+    ]
     
-    try:
-        changed_index = field_hierarchy.index(changed_field)
+    for key in keys_to_clear:
+        if key in st.session_state:
+            del st.session_state[key]
+    
+    # Clear any other dynamic keys (role and priority related)
+    keys_to_remove = []
+    for key in st.session_state.keys():
+        if (key.startswith('role_edit_input_') or 
+            key.startswith('remove_role_btn_') or 
+            key.startswith('priority_checkbox_')):
+            keys_to_remove.append(key)
+    
+    for key in keys_to_remove:
+        del st.session_state[key]
+    
+    st.success("All data has been cleared!")
+    st.rerun()
+
+def validate_mandatory_fields():
+    """Validate mandatory fields and return validation results"""
+    errors = []
+    
+    # Check client name
+    client_name = st.session_state.get('client_name_input', '').strip()
+    if not client_name:
+        errors.append("Client Name")
+    
+    # Check problem statement
+    problem_statement = st.session_state.get('problem_statement', '').strip()
+    if not problem_statement:
+        errors.append("Problem Statement")
+    
+    return errors
+
+def generate_presentation():
+    """Generate presentation after validating mandatory fields"""
+    validation_errors = validate_mandatory_fields()
+    
+    if validation_errors:
+        # Trigger validation display in client tab
+        st.session_state.trigger_validation = True
+        st.session_state.show_validation = True
         
-        # Reset all fields that come after the changed field
-        for i in range(changed_index + 1, len(field_hierarchy)):
-            field = field_hierarchy[i]
-            
-            if field == 'website':
-                st.session_state.website_select = ""
-                st.session_state.prev_website = ""
-                # Clear website data cache
-                st.session_state.website_data = {}
-                # Clear info popup state
-                if 'show_info' in st.session_state:
-                    st.session_state.show_info = False
-            
-            elif field == 'file_upload':
-                # For file uploader, we'll use a key increment to force re-render
-                if 'file_uploader_key' not in st.session_state:
-                    st.session_state.file_uploader_key = 0
-                st.session_state.file_uploader_key += 1
-                st.session_state.prev_uploaded_file = None
-                # Clear any stored file reference
-                if 'current_uploaded_file' in st.session_state:
-                    del st.session_state.current_uploaded_file
-            
-            elif field == 'document_details':
-                st.session_state.document_details = ""
+        # Show error message
+        st.error("⚠️ Please fill in all mandatory fields before generating presentation!")
         
-        # Clear validation errors for reset fields
-        fields_to_clear = field_hierarchy[changed_index + 1:]
-        for field in fields_to_clear:
-            if field in st.session_state.validation_errors:
-                del st.session_state.validation_errors[field]
+        # Show specific missing fields
+        missing_fields = ", ".join(validation_errors)
+        st.error(f"Missing required fields: {missing_fields}")
         
-        # Reset validation display
-        st.session_state.show_validation = False
+        # Force rerun to show validation warnings
+        st.rerun()
+        return False
+    else:
+        st.success("✅ All mandatory fields are filled! Generating presentation...")
+        with st.spinner("Generating presentation..."):
+            import time
+            time.sleep(2)  # Simulate processing time
+        st.success("🎉 Presentation generated successfully!")
         
-    except ValueError:
-        pass  # Field not in hierarchy
-
-def check_for_changes():
-    """Check if any field has changed and trigger cascading reset if needed"""
-    current_seller = st.session_state.get('seller_name_input', '')
-    current_website = st.session_state.get('website_select', '')
-    
-    # Get current file using the dynamic key
-    file_key = f"uploaded_file_{st.session_state.file_uploader_key}"
-    current_file = st.session_state.get(file_key)
-    
-    # Check seller name change
-    if current_seller != st.session_state.prev_seller_name:
-        if st.session_state.prev_seller_name != "":  # Only reset if there was a previous value
-            reset_downstream_fields('seller_name')
-            st.success("🔄 Seller name changed - subsequent fields have been reset")
-        st.session_state.prev_seller_name = current_seller
-    
-    # Check website change
-    if current_website != st.session_state.prev_website:
-        if st.session_state.prev_website != "":  # Only reset if there was a previous value
-            reset_downstream_fields('website')
-            st.success("🔄 Website changed - subsequent fields have been reset")
-        st.session_state.prev_website = current_website
-    
-    # Check file upload change (comparing file names to detect changes)
-    current_file_name = current_file.name if current_file else None
-    prev_file_name = st.session_state.prev_uploaded_file.name if st.session_state.prev_uploaded_file else None
-    
-    if current_file_name != prev_file_name:
-        if st.session_state.prev_uploaded_file is not None:  # Only reset if there was a previous file
-            reset_downstream_fields('file_upload')
-            st.success("🔄 File changed - document details have been reset")
-        st.session_state.prev_uploaded_file = current_file
-
-def validate_required_fields():
-    """Validate all required fields and return validation status"""
-    errors = {}
-    
-    # Check seller name
-    if not st.session_state.get('seller_name_input', '').strip():
-        errors['seller_name'] = "Seller name is required"
-    
-    # Check website selection
-    if not st.session_state.get('website_select'):
-        errors['website'] = "Please select a website/platform"
-    
-    # Check file upload using dynamic key
-    file_key = f"uploaded_file_{st.session_state.file_uploader_key}"
-    if not st.session_state.get(file_key):
-        errors['file_upload'] = "RFI document upload is required"
-    
-    # Check document details
-    if not st.session_state.get('document_details', '').strip():
-        errors['document_details'] = "Document details are required"
-    
-    st.session_state.validation_errors = errors
-    return len(errors) == 0
-
-def show_validation_error(field_name):
-    """Display validation error for a specific field"""
-    if field_name in st.session_state.validation_errors:
-        st.error(f"⚠️ {st.session_state.validation_errors[field_name]}")
-
-def add_validation_css():
-    """Add custom CSS for form validation styling"""
-    st.markdown("""
-    <style>
-    /* Red border for invalid fields */
-    .stTextInput > div > div > input.invalid {
-        border: 2px solid #ff4444 !important;
-        border-radius: 4px !important;
-        background-color: #fff5f5 !important;
-    }
-    
-    .stSelectbox > div > div > div.invalid {
-        border: 2px solid #ff4444 !important;
-        border-radius: 4px !important;
-        background-color: #fff5f5 !important;
-    }
-    
-    .stTextArea > div > div > textarea.invalid {
-        border: 2px solid #ff4444 !important;
-        border-radius: 4px !important;
-        background-color: #fff5f5 !important;
-    }
-    
-    /* File uploader styling */
-    .stFileUploader > div > div.invalid {
-        border: 2px solid #ff4444 !important;
-        border-radius: 4px !important;
-        background-color: #fff5f5 !important;
-        padding: 10px !important;
-    }
-    
-    /* Green border for valid fields */
-    .stTextInput > div > div > input.valid {
-        border: 2px solid #28a745 !important;
-        border-radius: 4px !important;
-        background-color: #f8fff8 !important;
-    }
-    
-    .stSelectbox > div > div > div.valid {
-        border: 2px solid #28a745 !important;
-        border-radius: 4px !important;
-        background-color: #f8fff8 !important;
-    }
-    
-    .stTextArea > div > div > textarea.valid {
-        border: 2px solid #28a745 !important;
-        border-radius: 4px !important;
-        background-color: #f8fff8 !important;
-    }
-    
-    .stFileUploader > div > div.valid {
-        border: 2px solid #28a745 !important;
-        border-radius: 4px !important;
-        background-color: #f8fff8 !important;
-        padding: 10px !important;
-    }
-    
-    /* Required field asterisk styling */
-    .required-asterisk {
-        color: #ff4444;
-        font-weight: bold;
-    }
-    
-    /* Error message styling */
-    .validation-error {
-        color: #ff4444;
-        font-size: 14px;
-        margin-top: 5px;
-        display: flex;
-        align-items: center;
-        gap: 5px;
-    }
-    
-    /* Success message styling */
-    .validation-success {
-        color: #28a745;
-        font-size: 14px;
-        margin-top: 5px;
-        display: flex;
-        align-items: center;
-        gap: 5px;
-    }
-    
-    /* Reset notification styling */
-    .reset-notification {
-        background-color: #e3f2fd;
-        border-left: 4px solid #2196f3;
-        padding: 10px;
-        margin: 10px 0;
-        border-radius: 4px;
-    }
-    </style>
-    """, unsafe_allow_html=True)
-
-def get_field_validation_class(field_name, value):
-    """Get CSS class based on field validation status"""
-    if not st.session_state.show_validation:
-        return ""
-    
-    if field_name in st.session_state.validation_errors:
-        return "invalid"
-    elif value and str(value).strip():
-        return "valid"
-    return ""
-
-def show_field_validation_message(field_name, value):
-    """Show validation message for a field"""
-    if not st.session_state.show_validation:
-        return
+        # You can add your actual presentation generation logic here
+        # For example:
+        # - Create PowerPoint slides
+        # - Generate PDF report
+        # - Send to external API
+        # - Save to database
         
-    if field_name in st.session_state.validation_errors:
-        st.markdown(f"""
-        <div class="validation-error">
-            <span>⚠️</span>
-            <span>{st.session_state.validation_errors[field_name]}</span>
-        </div>
-        """, unsafe_allow_html=True)
-    elif value and str(value).strip():
-        st.markdown(f"""
-        <div class="validation-success">
-            <span>✅</span>
-            <span>Field completed</span>
-        </div>
-        """, unsafe_allow_html=True)
-
-def move_to_website():
-    st.session_state.focus_website = True
-
-async def get_website_image_async(website_url):
-    """Async function to get website image"""
-    await asyncio.sleep(0.1)
-    
-    website_images = {
-        "https://www.amazon.com": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a9/Amazon_logo.svg/1024px-Amazon_logo.svg.png",
-        "https://www.ebay.com": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/EBay_logo.svg/1024px-EBay_logo.svg.png",
-        "https://www.shopify.com": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Shopify_logo_2018.svg/1024px-Shopify_logo_2018.svg.png",
-        "https://www.etsy.com": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/89/Etsy_logo.svg/1024px-Etsy_logo.svg.png",
-        "https://www.facebook.com/marketplace": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Facebook_Logo_%282019%29.png/1024px-Facebook_Logo_%282019%29.png",
-    }
-    return website_images.get(website_url)
-
-async def get_website_colors_async(website_url):
-    """Async function to get website colors"""
-    await asyncio.sleep(0.1)
-    
-    website_colors = {
-        "https://www.amazon.com": ["#FF9900", "#232F3E", "#FFFFFF"],
-        "https://www.ebay.com": ["#E53238", "#0064D2", "#F7C41F"],
-        "https://www.shopify.com": ["#95BF47", "#5E8E3E", "#004C3F"],
-        "https://www.etsy.com": ["#F16521", "#F56500", "#D15600"],
-        "https://www.facebook.com/marketplace": ["#1877F2", "#42B883", "#E7F3FF"],
-    }
-    return website_colors.get(website_url, ["#000000", "#666666", "#CCCCCC"])
-
-async def load_website_data(website_url):
-    """Load both image and colors data asynchronously"""
-    image_task = get_website_image_async(website_url)
-    colors_task = get_website_colors_async(website_url)
-    
-    image_url, colors = await asyncio.gather(image_task, colors_task)
-    return image_url, colors
-
-def get_or_load_website_data(website_url):
-    """Get cached data or trigger loading for website"""
-    if website_url not in st.session_state.website_data:
-        st.session_state.website_data[website_url] = {'loading': True, 'image': None, 'colors': None}
+        return True
         
-        try:
-            image_url, colors = asyncio.run(load_website_data(website_url))
-            st.session_state.website_data[website_url] = {
-                'loading': False, 
-                'image': image_url, 
-                'colors': colors
-            }
-            st.rerun()
-        except:
-            st.session_state.website_data[website_url]['loading'] = False
+st.markdown("""
+<style>/* Import Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* Global styles */
+.stApp {
+    background: #1a1a1a;
+    font-family: 'Inter', sans-serif;
+}
+
+/* Remove default padding */
+.block-container {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+    max-width: 1200px;
+}
+
+/* Header styling */
+.main-header {
+    text-align: center;
+    padding: 2rem 0;
+    margin-bottom: 3rem;
+    background: #2d3748 ;
+    border-radius: 15px;
+    border: 1px solid #3a3a3a;
+}
+
+.main-header h1 {
+    color: #f8f9fa;
+    font-size: 3rem;
+    font-weight: 700;
+    margin: 0;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    letter-spacing: -0.02em;
+}
+
+/* Tab styling */
+.tab-container {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 3rem;
+    flex-wrap: wrap;
+}
+
+.tab-button {
+    background: #1a1a1a;
+    color: #ecf0f1;
+    border: 1px solid #3a3a3a;
+    padding: 1rem 2rem;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    min-width: 180px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.tab-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    background: #2a2a2a;
+    border-color: #4a5568;
+}
+
+.tab-button.active {
+    background: #2d3748;
+    transform: translateY(-1px);
+    box-shadow: 0 5px 18px rgba(45, 55, 72, 0.4);
+    border-color: #4a5568;
+}
+
+/* Content area */
+.content-area {
+    background: #2a2a2a;
+    padding: 2rem;
+    border-radius: 15px;
+    margin-bottom: 2rem;
+    border: 1px solid #3a3a3a;
+    min-height: 600px;
+}
+
+.content-area h2 {
+    color: #f8f9fa;
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    font-weight: 600;
+}
+
+.content-area h3 {
+    color: #f8f9fa;
+    font-size: 1.3rem;
+    margin-bottom: 1rem;
+    font-weight: 600;
+}
+
+.content-area p {
+    color: #ecf0f1;
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin-bottom: 1rem;
+}
+
+/* Footer styling */
+.footer {
+    background: #2a2a2a;
+    padding: 2rem;
+    border-radius: 15px;
+    text-align: center;
+    margin-top: 3rem;
+    border: 1px solid #3a3a3a;
+}
+
+.footer-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.footer-button {
+    background: linear-gradient(145deg, #27ae60, #2ecc71);
+    color: #2c3e50;
+    border: none;
+    padding: 0.8rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 3px 10px rgba(39, 174, 96, 0.3);
+    min-width: 120px;
+}
+
+.footer-button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(39, 174, 96, 0.4);
+    background: linear-gradient(145deg, #2ecc71, #27ae60);
+}
+
+.refresh-button {
+    background: linear-gradient(145deg, #f39c12, #e67e22);
+    color: #2c3e50;
+    border: none;
+    padding: 0.8rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 3px 10px rgba(243, 156, 18, 0.3);
+    min-width: 120px;
+}
+
+.refresh-button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(243, 156, 18, 0.4);
+    background: linear-gradient(145deg, #e67e22, #f39c12);
+}
+
+.generate-button {
+    background: linear-gradient(145deg, #e74c3c, #c0392b);
+    color: #f8f9fa;
+    border: none;
+    padding: 0.8rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 3px 10px rgba(231, 76, 60, 0.3);
+    min-width: 120px;
+}
+
+.generate-button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
+    background: linear-gradient(145deg, #c0392b, #e74c3c);
+}
+
+/* Hide Streamlit elements */
+#MainMenu {visibility: hidden;}
+footer {visibility: hidden;}
+header {visibility: hidden;}
+
+/* Custom input styling */
+.stSelectbox > div > div > div {
+    background-color: #2c3e50;
+    color: #f8f9fa;
+    border: 1px solid #4a5568;
+}
+
+.stTextInput > div > div > input, .stTextArea > div > div > textarea {
+    background-color: #2c3e50;
+    color: #f8f9fa;
+    border: 1px solid #4a5568;
+}
+
+/* File uploader styling */
+.stFileUploader > div {
+    background-color: #2c3e50;
+    border: 2px dashed #4a5568;
+    border-radius: 10px;
+    padding: 1rem;
+}
+
+.stFileUploader label, .stFileUploader p, .stFileUploader svg {
+    color: #f8f9fa !important;
+    fill: #f8f9fa !important;
+}
+
+/* Custom divider */
+hr {
+    border: none;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    margin: 2rem 0;
+}
+
+/* Mandatory field styling */
+.mandatory-field {
+    border: 2px solid #e74c3c !important;
+    background-color: #2c1810 !important;
+}
+
+.field-warning {
+    color: #e74c3c;
+    font-size: 0.9rem;
+    margin-top: 0.25rem;
+    font-weight: 500;
+}
+
+/* Fixed Tab Button Styling - All tabs dark, active tab blue */
+.stButton > button {
+    background: #2a2a2a !important;
+    color: #ecf0f1 !important;
+    border: 1px solid #3a3a3a !important;
+    font-weight: 600 !important;
+    font-size: 1rem !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    transition: all 0.3s ease !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2) !important;
+    height: 3rem !important;
+    border-radius: 10px !important;
+}
+
+.stButton > button:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3) !important;
+    background: #3a3a3a !important;
+    border-color: #4a5568 !important;
+}
+
+/* Active tab styling - Blue color */
+.stButton > button:focus,
+.stButton > button:active {
+    background: linear-gradient(145deg, #3b82f6, #2563eb) !important;
+    color: #ffffff !important;
+    border-color: #1d4ed8 !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 5px 18px rgba(59, 130, 246, 0.4) !important;
+}
+</style>
+""", unsafe_allow_html=True)
+
+# Initialize session state for active tab
+if 'active_tab' not in st.session_state:
+    st.session_state.active_tab = 0
+
+# Header
+st.markdown("""
+<div class="main-header">
+    <h1>Sales Proposal Generator</h1>
+</div>
+""", unsafe_allow_html=True)
+
+# Tab buttons
+tab_names = ["Client Information", "Template Library", "Client Database", "Analytics Dashboard"]
+
+# Create tab buttons
+cols = st.columns(4)
+for i, tab_name in enumerate(tab_names):
+    with cols[i]:
+        if st.button(tab_name, key=f"tab_{i}", use_container_width=True):
+            st.session_state.active_tab = i
+
+# Dynamic styling for active tab - Blue color when active
+st.markdown(f"""
+<style>
+    div[data-testid="column"]:nth-child({st.session_state.active_tab + 1}) button {{
+        background: linear-gradient(145deg, #3b82f6, #2563eb) !important;
+        color: #ffffff !important;
+        border-color: #1d4ed8 !important;
+        font-weight: 700 !important;
+        transform: translateY(-1px) !important;
+        box-shadow: 0 5px 18px rgba(59, 130, 246, 0.4) !important;
+    }}
+</style>
+""", unsafe_allow_html=True)
+
+
+if st.session_state.active_tab == 0:
+    client_tab()
+
+elif st.session_state.active_tab == 1:
+    st.markdown("## 📄 Template Library")
+    # st.markdown("Browse and customize our collection of proven proposal templates.")
     
-    return st.session_state.website_data[website_url]
+    # col1, col2, col3 = st.columns(3)
+    
+    # with col1:
+    #     st.markdown("### Software Development")
+    #     st.markdown("- Web Application Template")
+    #     st.markdown("- Mobile App Template")
+    #     st.markdown("- API Development Template")
+    
+    # with col2:
+    #     st.markdown("### Consulting Services")
+    #     st.markdown("- Business Strategy Template")
+    #     st.markdown("- Process Optimization Template")
+    #     st.markdown("- Digital Transformation Template")
+    
+    # with col3:
+    #     st.markdown("### Marketing & Design")
+    #     st.markdown("- Brand Identity Template")
+    #     st.markdown("- Digital Marketing Template")
+    #     st.markdown("- Website Design Template")
 
-# Check for changes before rendering the form
-check_for_changes()
+elif st.session_state.active_tab == 2:
+    st.markdown("## 👥 Client Database")
+    # st.markdown("Manage your client relationships and proposal history.")
+    
+    # col1, col2 = st.columns(2)
+    
+    # with col1:
+    #     st.markdown("### Recent Clients")
+    #     clients = ["Acme Corp", "TechStart Inc", "Global Solutions", "Innovation Labs"]
+    #     for client in clients:
+    #         st.markdown(f"• {client}")
+    
+    # with col2:
+    #     st.markdown("### Proposal Statistics")
+    #     st.metric("Total Proposals", "47", "+12%")
+    #     st.metric("Success Rate", "73%", "+5%")
+    #     st.metric("Average Value", "$18,500", "+8%")
 
-# Add custom CSS for validation styling
-add_validation_css()
+else:  # Analytics Dashboard
+    st.markdown("## 📊 Analytics ")
+    # st.markdown("Track your proposal performance and business metrics.")
+    
+    # col1, col2, col3 = st.columns(3)
+    
+    # with col1:
+    #     st.metric("This Month", "$125,000", "+15%")
+    
+    # with col2:
+    #     st.metric("Proposals Sent", "23", "+3")
+    
+    # with col3:
+    #     st.metric("Conversion Rate", "68%", "+12%")
+    
+    # st.markdown("### 📈 Performance Trends")
+    # st.markdown("Your proposal success rate has improved by 12% this quarter, with the highest performance in software development projects.")
 
-# First section - Seller info
-st.title("Seller Information")
+# Footer with updated buttons
+st.markdown("""
+<div class="footer">
+    <div class="footer-buttons">
+    </div>
+</div>
+""", unsafe_allow_html=True)
 
-# Create two columns for left and right boxes
+# Footer buttons styling - keeping original colors for footer buttons
+st.markdown("""
+<style>
+    /* Footer button styling - separate from tab buttons */
+    .footer .stButton > button {
+        height: 3rem !important;
+        font-weight: 600 !important;
+        border-radius: 8px !important;
+        border: none !important;
+        transition: all 0.3s ease !important;
+        font-size: 0.9rem !important;
+        text-transform: none !important;
+        letter-spacing: 0 !important;
+    }
+    
+    /* Refresh Button */
+    .footer div[data-testid="column"]:nth-child(1) .stButton > button {
+        background: linear-gradient(145deg, #f39c12, #e67e22) !important;
+        color: #2c3e50 !important;
+        box-shadow: 0 3px 10px rgba(243, 156, 18, 0.3) !important;
+    }
+    
+    .footer div[data-testid="column"]:nth-child(1) .stButton > button:hover {
+        transform: translateY(-1px) !important;
+        box-shadow: 0 4px 15px rgba(243, 156, 18, 0.4) !important;
+        background: linear-gradient(145deg, #e67e22, #f39c12) !important;
+    }
+    
+    /* Generate Presentation Button */
+    .footer div[data-testid="column"]:nth-child(2) .stButton > button {
+        background: linear-gradient(145deg, #e74c3c, #c0392b) !important;
+        color: #f8f9fa !important;
+        box-shadow: 0 3px 10px rgba(231, 76, 60, 0.3) !important;
+    }
+    
+    .footer div[data-testid="column"]:nth-child(2) .stButton > button:hover {
+        transform: translateY(-1px) !important;
+        box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4) !important;
+        background: linear-gradient(145deg, #c0392b, #e74c3c) !important;
+    }
+    
+    /* Settings and About Buttons */
+    .footer div[data-testid="column"]:nth-child(3) .stButton > button,
+    .footer div[data-testid="column"]:nth-child(4) .stButton > button {
+        background: linear-gradient(145deg, #27ae60, #2ecc71) !important;
+        color: #2c3e50 !important;
+        box-shadow: 0 3px 10px rgba(39, 174, 96, 0.3) !important;
+    }
+    
+    .footer div[data-testid="column"]:nth-child(3) .stButton > button:hover,
+    .footer div[data-testid="column"]:nth-child(4) .stButton > button:hover {
+        transform: translateY(-1px) !important;
+        box-shadow: 0 4px 15px rgba(39, 174, 96, 0.4) !important;
+        background: linear-gradient(145deg, #2ecc71, #27ae60) !important;
+    }
+</style>
+""", unsafe_allow_html=True)
+
 col1, col2 = st.columns(2)
 
 with col1:
-    st.markdown("**Seller Name** <span class='required-asterisk'>*</span>", unsafe_allow_html=True)
-    seller_name = st.text_input(
-        "Seller Name", 
-        placeholder="Enter seller name",
-        on_change=move_to_website,
-        key="seller_name_input",
-        help="This field is required",
-        label_visibility="collapsed"
-    )
-    
-    # Add validation styling via JavaScript
-    seller_validation_class = get_field_validation_class('seller_name', seller_name)
-    if seller_validation_class:
-        st.markdown(f"""
-        <script>
-        setTimeout(function() {{
-            const inputs = document.querySelectorAll('input[aria-label="Seller Name"]');
-            inputs.forEach(input => {{
-                input.classList.add('{seller_validation_class}');
-            }});
-        }}, 100);
-        </script>
-        """, unsafe_allow_html=True)
-    
-    # Show validation message
-    show_field_validation_message('seller_name', seller_name)
+    if st.button("🔄 Refresh", key="refresh_btn", use_container_width=True):
+        refresh_all_data()
 
 with col2:
-    # Website dropdown with just URLs
-    website_options = [
-        "https://www.amazon.com",
-        "https://www.ebay.com", 
-        "https://www.shopify.com",
-        "https://www.etsy.com",
-        "https://www.facebook.com/marketplace",
-    ]
-    
-    # Company information for the info popup
-    company_info = {
-        "https://www.amazon.com": {
-            "name": "Amazon",
-            "description": "World's largest online marketplace and cloud computing platform",
-            "founded": "1994",
-            "founder": "Jeff Bezos",
-            "headquarters": "Seattle, Washington, USA",
-            "services": "E-commerce, Cloud Computing (AWS), Digital Streaming, AI"
-        },
-        "https://www.ebay.com": {
-            "name": "eBay",
-            "description": "Global online marketplace for buying and selling goods",
-            "founded": "1995", 
-            "founder": "Pierre Omidyar",
-            "headquarters": "San Jose, California, USA",
-            "services": "Online Auctions, E-commerce, Payment Processing"
-        },
-        "https://www.shopify.com": {
-            "name": "Shopify",
-            "description": "E-commerce platform for online stores and retail point-of-sale systems",
-            "founded": "2006",
-            "founder": "Tobias Lütke, Daniel Weinand, Scott Lake",
-            "headquarters": "Ottawa, Ontario, Canada", 
-            "services": "E-commerce Platform, Payment Processing, Inventory Management"
-        },
-        "https://www.etsy.com": {
-            "name": "Etsy",
-            "description": "Global marketplace for unique and creative goods",
-            "founded": "2005",
-            "founder": "Rob Kalin, Chris Maguire, Haim Schoppik",
-            "headquarters": "Brooklyn, New York, USA",
-            "services": "Handmade Goods, Vintage Items, Craft Supplies"
-        },
-        "https://www.facebook.com/marketplace": {
-            "name": "Facebook Marketplace",
-            "description": "Local buying and selling platform within Facebook",
-            "founded": "2016",
-            "parent_company": "Meta (formerly Facebook)",
-            "headquarters": "Menlo Park, California, USA",
-            "services": "Local Commerce, Community Marketplace, Social Shopping"
-        }
-    }
+    if st.button("📊 Generate Presentation", key="generate_btn", use_container_width=True):
+        generate_presentation()
 
-    # Create sub-columns for dropdown and buttons
-    subcol1, subcol2, subcol3, subcol4 = st.columns([3, 1, 1, 1])
-    
-    with subcol1:
-        st.markdown("**Website/Platform** <span class='required-asterisk'>*</span>", unsafe_allow_html=True)
-        website = st.selectbox(
-            "Website/Platform",
-            options=[""] + website_options,  # Add empty option for validation
-            key="website_select",
-            help="This field is required",
-            label_visibility="collapsed"
-        )
-        
-        # Add validation styling
-        website_validation_class = get_field_validation_class('website', website)
-        if website_validation_class:
-            st.markdown(f"""
-            <script>
-            setTimeout(function() {{
-                const selects = document.querySelectorAll('div[data-testid="stSelectbox"] > div > div > div');
-                selects.forEach(select => {{
-                    if (select.textContent.includes('Website') || select.closest('div[data-testid="stSelectbox"]')) {{
-                        select.classList.add('{website_validation_class}');
-                    }}
-                }});
-            }}, 100);
-            </script>
-            """, unsafe_allow_html=True)
-        
-        # Show validation message
-        show_field_validation_message('website', website)
-    
-    with subcol2:
-        st.write("\n")
-        if website:
-            st.link_button("↗️", website)
-    
-    with subcol3:
-        st.write("\n")
-        if website and st.button("💡", help="Get Suggestion", key="suggestion_btn"):
-            suggestions = {
-                "https://www.amazon.com": "🛒 Try browsing Amazon's daily deals for great discounts!",
-                "https://www.ebay.com": "🔍 Use eBay's advanced search filters to find exactly what you need!",
-                "https://www.shopify.com": "🏪 Consider Shopify's free trial to start your online store!",
-                "https://www.etsy.com": "🎨 Explore Etsy's handmade categories for unique finds!",
-                "https://www.facebook.com/marketplace": "📍 Check local pickup options to save on shipping!"
-            }
-            st.success(suggestions.get(website, "💡 Great choice! Explore what this platform has to offer."))
-    
-    with subcol4:
-        st.write("\n")
-        if website and st.button("ℹ️", help="Company Info", key="info_btn"):
-            st.session_state.show_info = True
-            st.session_state.selected_website = website
-
-    # Show popup if triggered
-    if st.session_state.get('show_info', False):
-        info = company_info.get(st.session_state.get('selected_website', ''), {})
-        if info:
-            with st.container():
-                st.markdown("---")
-                col1, col2, col3 = st.columns([1, 2, 1])
-                with col2:
-                    st.markdown(f"### 📋 About {info.get('name', 'Company')}")
-                    st.markdown(f"**Description:** {info.get('description', 'N/A')}")
-                    st.markdown(f"**Founded:** {info.get('founded', 'N/A')}")
-                    if 'founder' in info:
-                        st.markdown(f"**Founder:** {info['founder']}")
-                    if 'parent_company' in info:
-                        st.markdown(f"**Parent Company:** {info['parent_company']}")
-                    st.markdown(f"**Headquarters:** {info.get('headquarters', 'N/A')}")
-                    st.markdown(f"**Services:** {info.get('services', 'N/A')}")
-                    
-                    if st.button("✖️ Close", key="close_info_popup"):
-                        st.session_state.show_info = False
-                        st.rerun()
-                st.markdown("---")
-
-# Image and colors section
-if website:
-    website_data = get_or_load_website_data(website)
-    
-    if website_data['loading']:
-        with st.spinner("Loading website data..."):
-            st.info("🔄 Fetching website logo and Org colors...")
-    elif website_data['image'] and website_data['colors']:
-        st.write("---")
-        
-        logo_colors_html = f"""
-<div style="display: flex; align-items: center; gap: 20px; margin: 10px 0;">
-    <img src="{website_data['image']}" style="height: 60px; width: auto; object-fit: contain;">
-    <div style="display: flex; align-items: center; gap: 15px;">
-        <span style="font-weight: bold; margin-right: 10px;">Org Colors:</span>"""
-        
-        for i, color in enumerate(website_data['colors'][:3]):
-            logo_colors_html += f"""
-        <div style="text-align: center;">
-            <div style="width: 40px; height: 40px; background-color: {color}; border: 2px solid #ddd; border-radius: 6px; margin-bottom: 3px;"></div>
-            <p style="font-size: 10px; margin: 0;">{color}</p>
-        </div>"""
-        
-        logo_colors_html += """
-    </div>
-</div>"""
-        
-        st.markdown(logo_colors_html, unsafe_allow_html=True)
-
-st.divider()
-
-# Create two columns for the layout
-col1, col2 = st.columns([1, 1])
-
-# Left column - File upload section
-with col1:
-    st.markdown("### 📄 Upload RFI Document <span class='required-asterisk'>*</span>", unsafe_allow_html=True)
-    
-    # File uploader with dynamic key
-    file_key = f"uploaded_file_{st.session_state.file_uploader_key}"
-    uploaded_file = st.file_uploader(
-        "Choose your RFI document",
-        type=['pdf', 'docx', 'doc', 'txt'],
-        help="Required: Supported formats: PDF, DOCX, DOC, TXT",
-        key=file_key,
-        label_visibility="collapsed"
-    )
-    
-    # Add validation styling for file uploader
-    file_validation_class = get_field_validation_class('file_upload', uploaded_file)
-    if file_validation_class:
-        st.markdown(f"""
-        <script>
-        setTimeout(function() {{
-            const fileUploaders = document.querySelectorAll('div[data-testid="stFileUploader"] > div');
-            fileUploaders.forEach(uploader => {{
-                uploader.classList.add('{file_validation_class}');
-            }});
-        }}, 100);
-        </script>
-        """, unsafe_allow_html=True)
-    
-    # Show validation message
-    show_field_validation_message('file_upload', uploaded_file)
-    
-    # Display file information if uploaded
-    if uploaded_file is not None:
-        st.success("✅ Document uploaded successfully!")
-        
-        file_details = {
-            "Filename": uploaded_file.name,
-            "File Type": uploaded_file.type,
-            "File Size": f"{uploaded_file.size} bytes"
-        }
-        
-        with st.expander("📋 File Details"):
-            for key, value in file_details.items():
-                st.write(f"**{key}:** {value}")
-    
-    else:
-        st.info("👆 Please upload your RFI document to get started")
-
-# Right column - Text details section
-with col2:
-    st.markdown("### ✏️ Document Details <span class='required-asterisk'>*</span>", unsafe_allow_html=True)
-    
-    # Text area for writing details
-    document_details = st.text_area(
-        "Write details about the RFI document:",
-        placeholder="Enter document summary, key points, requirements, or any other relevant details...",
-        height=300,
-        help="Required: Provide detailed information about the RFI document",
-        key="document_details",
-        label_visibility="collapsed"
-    )
-    
-    # Add validation styling for text area
-    details_validation_class = get_field_validation_class('document_details', document_details)
-    if details_validation_class:
-        st.markdown(f"""
-        <script>
-        setTimeout(function() {{
-            const textareas = document.querySelectorAll('textarea');
-            textareas.forEach(textarea => {{
-                textarea.classList.add('{details_validation_class}');
-            }});
-        }}, 100);
-        </script>
-        """, unsafe_allow_html=True)
-    
-    # Show validation message
-    show_field_validation_message('document_details', document_details)
-
-# Add validation button and status
-st.divider()
-
-col1, col2, col3 = st.columns([1, 1, 1])
-
-with col2:
-    if st.button("🔍 Validate Form", type="primary", use_container_width=True):
-        st.session_state.show_validation = True
-        if validate_required_fields():
-            st.success("✅ All required fields are completed!")
-            st.balloons()
-        else:
-            st.error("❌ Please complete all required fields marked with *")
-            st.rerun()  # Rerun to show validation styling
-
-# Manual reset button (optional)
-col1, col2, col3 = st.columns([1, 1, 1])
-with col1:
-    if st.button("🔄 Reset All Fields", type="secondary", use_container_width=True):
-        # Reset all fields
-        st.session_state.seller_name_input = ""
-        st.session_state.website_select = ""
-        st.session_state.document_details = ""
-        
-        # Reset file uploader by incrementing key
-        st.session_state.file_uploader_key += 1
-        
-        # Reset previous values
-        st.session_state.prev_seller_name = ""
-        st.session_state.prev_website = ""
-        st.session_state.prev_uploaded_file = None
-        
-        # Clear validation
-        st.session_state.validation_errors = {}
-        st.session_state.show_validation = False
-        
-        # Clear website data
-        st.session_state.website_data = {}
-        
-        st.success("🔄 All fields have been reset!")
-        st.rerun()
-
-# Optional: Real-time validation indicator
-if st.session_state.validation_errors:
-    with st.sidebar:
-        st.markdown("### ⚠️ Required Fields Missing:")
-        for field, error in st.session_state.validation_errors.items():
-            st.markdown(f"- {error}")
-else:
-    # Show completion status in sidebar
-    seller_filled = bool(st.session_state.get('seller_name_input', '').strip())
-    website_filled = bool(st.session_state.get('website_select'))
-    file_key = f"uploaded_file_{st.session_state.file_uploader_key}"
-    file_filled = st.session_state.get(file_key) is not None
-    details_filled = bool(st.session_state.get('document_details', '').strip())
-    
-    if any([seller_filled, website_filled, file_filled, details_filled]):
-        with st.sidebar:
-            st.markdown("### 📋 Form Progress:")
-            st.markdown(f"{'✅' if seller_filled else '❌'} Seller Name")
-            st.markdown(f"{'✅' if website_filled else '❌'} Website/Platform")
-            st.markdown(f"{'✅' if file_filled else '❌'} RFI Document")
-            st.markdown(f"{'✅' if details_filled else '❌'} Document Details")
-            
-            progress = sum([seller_filled, website_filled, file_filled, details_filled]) / 4
-            st.progress(progress, text=f"Completed: {int(progress * 100)}%")
-
-# Show cascade reset info in sidebar
-with st.sidebar:
-    st.markdown("---")
-    st.markdown("### 🔄 Cascade Reset Info")
-    st.markdown("**How it works:**")
-    st.markdown("- Changing **Seller Name** resets everything below")
-    st.markdown("- Changing **Website** resets file upload & details")
-    st.markdown("- Changing **File Upload** resets document details")
-    st.markdown("- This ensures data consistency in your form")
