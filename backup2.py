@@ -1,6 +1,6 @@
 import streamlit as st
 import asyncio
-from GS_Sales_Proposal.utils import add_professional_css
+from utils import add_professional_css
 
 # Initialize session state for focus control
 if 'focus_website' not in st.session_state:
