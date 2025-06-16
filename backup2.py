@@ -1,619 +1,873 @@
 import streamlit as st
-import asyncio
-from utils import add_professional_css
+import pandas as pd
+import os
+from typing import List
+from client_utils import *
 
-# Initialize session state for focus control
-if 'focus_website' not in st.session_state:
-    st.session_state.focus_website = False
+from client_css import client_css
 
-# Initialize session state for async data
-if 'website_data' not in st.session_state:
-    st.session_state.website_data = {}
-
-# Initialize validation state
-if 'validation_errors' not in st.session_state:
-    st.session_state.validation_errors = {}
-if 'show_validation' not in st.session_state:
-    st.session_state.show_validation = False
-
-# Initialize previous values for change detection - FIXED
-if 'prev_seller_name' not in st.session_state:
-    st.session_state.prev_seller_name = ""
-if 'prev_website' not in st.session_state:
-    st.session_state.prev_website = ""
-if 'prev_uploaded_file' not in st.session_state:
-    st.session_state.prev_uploaded_file = None
-
-# Initialize file uploader key for forcing re-render
-if 'file_uploader_key' not in st.session_state:
-    st.session_state.file_uploader_key = 0
-
-# Initialize form data in session state with default values
-if 'form_data' not in st.session_state:
-    st.session_state.form_data = {
-        'seller_name': '',
-        'website_select': 'Select a platform...',
-        'document_details': '',
-        'client_requirement': ''
-    }
-
-def reset_downstream_fields(changed_field):
-    """Reset fields that come after the changed field in the form hierarchy"""
-    field_hierarchy = ['seller_name', 'website', 'file_upload', 'document_details']
-    
-    try:
-        changed_index = field_hierarchy.index(changed_field)
-        
-        # Reset all fields that come after the changed field
-        for i in range(changed_index + 1, len(field_hierarchy)):
-            field = field_hierarchy[i]
-            
-            if field == 'website':
-                # Reset website selection
-                st.session_state.form_data['website_select'] = "Select a platform..."
-                st.session_state.prev_website = ""
-                # Clear info popup state
-                if 'show_info' in st.session_state:
-                    st.session_state.show_info = False
-            
-            elif field == 'file_upload':
-                # For file uploader, increment key to force re-render
-                st.session_state.file_uploader_key += 1
-                st.session_state.prev_uploaded_file = None
-                # Clear any stored file reference
-                if 'current_uploaded_file' in st.session_state:
-                    del st.session_state.current_uploaded_file
-            
-            elif field == 'document_details':
-                # Reset document details
-                st.session_state.form_data['document_details'] = ""
-        
-        # Clear validation errors for reset fields
-        fields_to_clear = field_hierarchy[changed_index + 1:]
-        for field in fields_to_clear:
-            if field in st.session_state.validation_errors:
-                del st.session_state.validation_errors[field]
-        
-        # Reset validation display
-        st.session_state.show_validation = False
-        
-    except ValueError:
-        pass  # Field not in hierarchy
-
-def check_for_changes():
-    """Check if any field has changed and trigger cascading reset if needed"""
-    # Get current values from form_data
-    current_seller = st.session_state.form_data.get('seller_name', '')
-    current_website = st.session_state.form_data.get('website_select', '')
-    current_file = st.session_state.get(f'uploaded_file_{st.session_state.file_uploader_key}')
-    
-    # Check seller name change
-    if current_seller != st.session_state.prev_seller_name:
-        if st.session_state.prev_seller_name != "":  # Only reset if there was a previous value
-            reset_downstream_fields('seller_name')
-            st.info("🔄 Seller name changed - subsequent fields have been reset")
-        st.session_state.prev_seller_name = current_seller
-    
-    # Check website change
-    if current_website != st.session_state.prev_website:
-        if st.session_state.prev_website != "" and st.session_state.prev_website != "Select a platform...":  # Only reset if there was a previous value
-            reset_downstream_fields('website')
-            st.info("🔄 Website changed - subsequent fields have been reset")
-        st.session_state.prev_website = current_website
-    
-    # Check file upload change (comparing file names to detect changes)
-    current_file_name = current_file.name if current_file else None
-    prev_file_name = st.session_state.prev_uploaded_file.name if st.session_state.prev_uploaded_file else None
-    
-    if current_file_name != prev_file_name:
-        if st.session_state.prev_uploaded_file is not None:  # Only reset if there was a previous file
-            reset_downstream_fields('file_upload')
-            st.info("🔄 File changed - document details have been reset")
-        st.session_state.prev_uploaded_file = current_file
-
-def validate_required_fields():
-    """Validate all required fields and return validation status"""
-    errors = {}
-    
-    # Check seller name
-    if not st.session_state.form_data.get('seller_name', '').strip():
-        errors['seller_name'] = "Seller name is required"
-    
-    # Check website selection
-    website_val = st.session_state.form_data.get('website_select', '')
-    if not website_val or website_val == "Select a platform...":
-        errors['website'] = "Please select a website/platform"
-    
-    # Check file upload using dynamic key
-    file_key = f"uploaded_file_{st.session_state.file_uploader_key}"
-    if not st.session_state.get(file_key):
-        errors['file_upload'] = "RFI document upload is required"
-    
-    # Check document details
-    if not st.session_state.form_data.get('document_details', '').strip():
-        errors['document_details'] = "Document details are required"
-    
-    st.session_state.validation_errors = errors
-    return len(errors) == 0
-
-def show_field_validation_message(field_name, value):
-    """Show validation message for a field"""
-    if not st.session_state.show_validation:
-        return
-        
-    if field_name in st.session_state.validation_errors:
-        st.markdown(f"""
-        <div class="validation-error">
-            <span>⚠️</span>
-            <span>{st.session_state.validation_errors[field_name]}</span>
-        </div>
-        """, unsafe_allow_html=True)
-    elif value and str(value).strip():
-        st.markdown(f"""
-        <div class="validation-success">
-            <span>✅</span>
-            <span>Field completed</span>
-        </div>
-        """, unsafe_allow_html=True)
-
-def move_to_website():
-    st.session_state.focus_website = True
-
-# Callback functions for form fields
-def update_seller_name():
-    st.session_state.form_data['seller_name'] = st.session_state.seller_name_input
-
-def update_website():
-    st.session_state.form_data['website_select'] = st.session_state.website_select_input
-
-def update_document_details():
-    st.session_state.form_data['document_details'] = st.session_state.document_details_input
-
-def update_client_requirement():
-    st.session_state.form_data['client_requirement'] = st.session_state.client_req_input
-
-# Check for changes before rendering the form
-check_for_changes()
-
-# Add professional CSS styling
-add_professional_css()
-
-# Header section
-st.markdown("""
-<div class="main-header">
-    <h1>Seller Info Collection</h1>
-    <p>Request for Information - Seller & Document Management System</p>
-</div>
-""", unsafe_allow_html=True)
-
-# Seller Information Section
-st.markdown("""
-<div class="form-section">
-    <div class="section-title">👤 Seller Information</div>
-</div>
-""", unsafe_allow_html=True)
-
-# Create columns for seller info
-col1, col2 = st.columns([1, 1])
-
-with col1:
-    st.markdown('<div class="field-label">Seller Name <span class="required-asterisk">*</span></div>', unsafe_allow_html=True)
-
-    seller_name = st.text_input(
-        "Seller Name", 
-        value=st.session_state.form_data['seller_name'],
-        placeholder="Enter the seller's full name or company name",
-        on_change=update_seller_name,
-        key="seller_name_input",
-        help="This field is required",
-        label_visibility="collapsed"
-    )
-
-    show_field_validation_message('seller_name', seller_name)
-
-with col2:
-    # Website dropdown with professional options
-    website_options = [
-        "Amazon Marketplace",
-        "eBay",
-        "Shopify Store", 
-        "Etsy",
-        "Facebook Marketplace",
-        "WooCommerce",
-        "BigCommerce",
-        "Other Platform"
-    ]
-    
-    website_urls = {
-        "Amazon Marketplace": "https://www.amazon.com",
-        "eBay": "https://www.ebay.com",
-        "Shopify Store": "https://www.shopify.com",
-        "Etsy": "https://www.etsy.com",
-        "Facebook Marketplace": "https://www.facebook.com/marketplace",
-        "WooCommerce": "https://woocommerce.com",
-        "BigCommerce": "https://www.bigcommerce.com",
-        "Other Platform": "#"
-    }
-    
-    # Create sub-columns for dropdown and link
-    subcol1, subcol2 = st.columns([4, 1])
-    
-    with subcol1:
-        st.markdown('<div class="field-label">Website/Platform <span class="required-asterisk">*</span></div>', unsafe_allow_html=True)
-        
-        # Get current index for selectbox
-        current_website = st.session_state.form_data['website_select']
-        options = ["Select a platform..."] + website_options
-        try:
-            index = options.index(current_website)
-        except ValueError:
-            index = 0
-            
-        website = st.selectbox(
-            "Website/Platform",
-            options=options,
-            index=index,
-            on_change=update_website,
-            key="website_select_input",
-            help="This field is required",
-            label_visibility="collapsed"
-        )
-        show_field_validation_message('website', website if website != "Select a platform..." else "")
-    
-    with subcol2:
-        st.write("&nbsp;")  # Add some space
-        if website and website != "Select a platform...":
-            url = website_urls.get(website, "#")
-            if url != "#":
-                st.markdown(f'<a href="{url}" target="_blank" class="external-link-btn">Visit Site</a>', unsafe_allow_html=True)
-
-# Document Upload Section
-st.markdown("""
-<div class="form-section">
-    <div class="section-title">📄 Document Upload & Details</div>
-</div>
-""", unsafe_allow_html=True)
-
-# Create columns for file upload and details
-col1, col2 = st.columns([1, 1])
-
-# Left column - File upload section
-with col1:
-    st.markdown('<div class="field-label">Upload RFI Document <span class="required-asterisk">*</span></div>', unsafe_allow_html=True)
-    
-    # File uploader with dynamic key
-    file_key = f"uploaded_file_{st.session_state.file_uploader_key}"
-    uploaded_file = st.file_uploader(
-        "Choose your RFI document",
-        type=['pdf', 'docx', 'doc', 'txt'],
-        help="Supported formats: PDF, DOCX, DOC, TXT (Max size: 200MB)",
-        key=file_key,
-        label_visibility="collapsed"
-    )
-    
-    show_field_validation_message('file_upload', uploaded_file)
-    
-    # Display file information if uploaded
-    if uploaded_file is not None:
-        st.markdown("""
-        <div class="info-container">
-            <strong>✅ Document uploaded successfully!</strong>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        # File details
-        file_size_mb = uploaded_file.size / (1024 * 1024)
-        st.markdown(f"""
-        **📋 File Details:**
-        - **Name:** {uploaded_file.name}
-        - **Type:** {uploaded_file.type}
-        - **Size:** {file_size_mb:.2f} MB
-        """)
-    else:
-        st.markdown("""
-        <div class="info-container">
-            <strong>📤 Please upload your RFI document</strong><br>
-            Drag and drop your file here or click to browse
-        </div>
-        """, unsafe_allow_html=True)
-
-# Right column - Document details section
-with col2:
-    st.markdown('<div class="field-label">Document Details <span class="required-asterisk">*</span></div>', unsafe_allow_html=True)
-    
-    # Text area for writing details
-    document_details = st.text_area(
-        "Document Details",
-        value=st.session_state.form_data['document_details'],
-        placeholder="Please provide:\n• Document summary\n• Key requirements\n• Specific details or constraints\n• Timeline information\n• Any other relevant information...",
-        height=150,
-        help="Provide detailed information about the RFI document",
-        on_change=update_document_details,
-        key="document_details_input",
-        label_visibility="collapsed"
-    )
-    
-    show_field_validation_message('document_details', document_details)
-
-# Initialize session state for suggestions
-if "suggestions" not in st.session_state:
-    st.session_state.suggestions = []
-if "suggestion_details" not in st.session_state:
-    st.session_state.suggestion_details = {}
-if "temp_suggestion" not in st.session_state:
-    st.session_state.temp_suggestion = ""
-if "suggestions_generated" not in st.session_state:
-    st.session_state.suggestions_generated = False
-if "added_suggestions" not in st.session_state:
-    st.session_state.added_suggestions = set()  # Track added suggestions
-
-# Create two equal columns with custom HTML container
-st.markdown('<div class="column-container">', unsafe_allow_html=True)
-
-# Create the columns using Streamlit
-left_col, right_col = st.columns([1, 1], gap="medium")
-
-# LEFT COLUMN: Text area for client requirements
-with left_col:
-    st.markdown("""
-    <div class="left-column">
-        <div class="column-header">📋 Project Description or Client Requirements <span class="required-asterisk">*</span></div>
-        <div class="column-content">
-    """, unsafe_allow_html=True)
-    
-    client_requirement = st.text_area(
-        "Project Description or Client Requirements",
-        value=st.session_state.form_data['client_requirement'],
-        height=280,
-        on_change=update_client_requirement,
-        key="client_req_input",
-        placeholder="Enter the client's project requirements, objectives, and specifications here...",
-        label_visibility="collapsed"
-    )
-    
-    st.markdown("""
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-# RIGHT COLUMN: Suggestions and Autocomplete
-with right_col:
-    st.markdown("""
-    <div class="right-column">
-        <div class="column-header">🤖 AI-Powered Suggestions</div>
-        <div class="column-content">
-    """, unsafe_allow_html=True)
-    
-    # Generate button at the top
-    if st.button("🔮 Generate Suggestions", type="primary", use_container_width=True, key="generate_btn"):
-        try:
-            with st.spinner("Generating AI-powered suggestions..."):
-                # Store the dictionary in session state
-                st.session_state.suggestion_details = {
-                    'Enhanced User Experience': 'Implement intuitive UI/UX design with responsive layouts, accessibility features, and user-friendly navigation to improve overall user satisfaction and engagement.',
-                    'Performance Optimization': 'Optimize application performance through code refactoring, database optimization, caching strategies, and efficient resource management.',
-                    'Security Implementation': 'Integrate comprehensive security measures including data encryption, user authentication, authorization protocols, and vulnerability assessments.'
-                }
-                st.session_state.suggestions = list(st.session_state.suggestion_details.keys())
-                st.session_state.temp_suggestion = ""  # Reset selection
-                st.session_state.suggestions_generated = True
-                st.session_state.added_suggestions = set()  # Reset added suggestions
-        except Exception as e:
-            st.error(f"Error generating suggestions: {str(e)}")
-    
-    # Suggestions content area
-    if st.session_state.suggestions_generated and st.session_state.suggestions:
-        # Display suggestions using streamlit components in a scrollable container
-        for i, suggestion in enumerate(st.session_state.suggestions):
-            is_added = suggestion in st.session_state.added_suggestions
-            
-            col1, col2 = st.columns([1, 9])
-            
-            with col1:
-                # Change button appearance based on whether it's already added
-                if is_added:
-                    st.button("✅", key=f"added_{i}", disabled=True, help="Already added", use_container_width=True)
-                else:
-                    if st.button("➕", key=f"add_{i}", help="Add to requirements", use_container_width=True):
-                        # Get detailed description from session state dictionary
-                        detailed_description = st.session_state.suggestion_details.get(
-                            suggestion, f"• {suggestion}"
-                        )
-                        
-                        if st.session_state.form_data['client_requirement'].strip():
-                            st.session_state.form_data['client_requirement'] += f"\n\n• {detailed_description}"
-                        else:
-                            st.session_state.form_data['client_requirement'] = f"• {detailed_description}"
-                        
-                        # Mark this suggestion as added
-                        st.session_state.added_suggestions.add(suggestion)
-                        st.session_state.temp_suggestion = suggestion
-                        st.rerun()
-            
-            with col2:
-                # Use different styling for added suggestions
-                if is_added:
-                    st.markdown(f"""
-                    <div class="suggestion-container suggestion-added">
-                        <div class="suggestion-title">✅ {suggestion} (Added)</div>
-                    </div>
-                    """, unsafe_allow_html=True)
-                else:
-                    st.markdown(f"""
-                    <div class="suggestion-container">
-                        <div class="suggestion-title">💡 {suggestion}</div>
-                    </div>
-                    """, unsafe_allow_html=True)
-
-    elif st.session_state.suggestions_generated and not st.session_state.suggestions:
-        st.markdown("""
-        <div class="warning-container">
-            <div>
-                <strong>⚠️ No suggestions found</strong><br>
-                Try modifying your requirements or check if data is available.
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    else:
-        st.markdown("""
-        <div class="info-container">
-            <div>
-                <strong>🚀 Get AI-Powered Recommendations</strong><br>
-                Click 'Generate Suggestions' to get intelligent recommendations for your project requirements based on industry best practices and common client needs.
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    # Action buttons at the bottom (only show if suggestions are generated)
-    if st.session_state.suggestions_generated:
-        st.markdown('<div class="action-buttons">', unsafe_allow_html=True)
-        col1, col2 = st.columns([1, 1])
-        with col1:
-            if st.button("🗑️ Clear", type="secondary", use_container_width=True, key="clear_btn"):
-                st.session_state.suggestions = []
-                st.session_state.suggestion_details = {}
-                st.session_state.temp_suggestion = ""
-                st.session_state.suggestions_generated = False
-                st.session_state.added_suggestions = set()  # Clear added suggestions
-                st.rerun()
-        with col2:
-            if st.button("🔄 Refresh", type="secondary", use_container_width=True, key="refresh_btn"):
-                try:
-                    with st.spinner("Refreshing suggestions..."):
-                        # Generate new suggestions using the same function
-                        st.session_state.suggestion_details = {
-                            'Advanced Analytics': 'Implement comprehensive analytics dashboard with real-time data visualization, custom reporting features, and predictive analytics capabilities.',
-                            'Mobile Compatibility': 'Ensure full mobile responsiveness with native app features, offline functionality, and optimized mobile user interface.',
-                            'Integration Capabilities': 'Develop robust API integration with third-party services, seamless data synchronization, and automated workflow connections.'
-                        }
-                        st.session_state.suggestions = list(st.session_state.suggestion_details.keys())
-                        st.session_state.temp_suggestion = ""
-                        st.session_state.added_suggestions = set()  # Reset added suggestions
-                        st.rerun()
-                except Exception as e:
-                    st.error(f"Error refreshing suggestions: {str(e)}")
-        st.markdown('</div>', unsafe_allow_html=True)
-    
-    st.markdown("""
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-st.markdown('</div>', unsafe_allow_html=True)
-
-# Action Buttons Section
-st.markdown("""
-<div class="form-section">
-    <div class="section-title">🔧 Form Actions</div>
-</div>
-""", unsafe_allow_html=True)
-
-col1, col2, col3 = st.columns([1, 1, 1])
-
-with col1:
-    if st.button("🔍 Validate Form", type="primary", use_container_width=True):
-        st.session_state.show_validation = True
-        website_value = st.session_state.form_data['website_select'] if st.session_state.form_data['website_select'] != "Select a platform..." else ""
-        # Update validation for website
-        if not website_value:
-            st.session_state.validation_errors['website'] = "Please select a website/platform"
-        elif 'website' in st.session_state.validation_errors:
-            del st.session_state.validation_errors['website']
-            
-        if validate_required_fields():
-            st.success("✅ All required fields are completed!")
-            st.balloons()
-        else:
-            st.error("❌ Please complete all required fields marked with *")
-            st.rerun()
-
-with col2:
-    if st.button("💾 Save Draft", type="secondary", use_container_width=True):
-        st.info("💾 Form progress saved as draft")
-
-with col3:
-    def reset_all_fields():
-        """Reset all form fields to their initial state"""
-        # Reset form data to default values
-        st.session_state.form_data = {
-            'seller_name': '',
-            'website_select': 'Select a platform...',
-            'document_details': '',
-            'client_requirement': ''
+# Theme CSS definitions
+def get_theme_css(is_dark=True):
+    if is_dark:
+        return """
+        <style>
+        /* Dark Mode Styles */
+        .stApp {
+            background-color: #0e1117 !important;
+            color: #fafafa !important;
         }
         
-        # Reset file uploader by incrementing key
-        st.session_state.file_uploader_key += 1
+        .main .block-container {
+            background-color: #0e1117 !important;
+            color: #fafafa !important;
+        }
         
-        # Clear file references
-        if 'current_uploaded_file' in st.session_state:
-            del st.session_state.current_uploaded_file
+        /* Text inputs and text areas - Dark Mode */
+        .stTextInput > div > div > input,
+        .stTextArea > div > div > textarea,
+        .stSelectbox > div > div > select {
+            background-color: #262730 !important;
+            color: #fafafa !important;
+            border: 1px solid #464851 !important;
+        }
         
-        # Reset previous values for change detection
-        st.session_state.prev_seller_name = ""
-        st.session_state.prev_website = ""
-        st.session_state.prev_uploaded_file = None
+        .stTextInput > div > div > input:focus,
+        .stTextArea > div > div > textarea:focus,
+        .stSelectbox > div > div > select:focus {
+            border-color: #667eea !important;
+            box-shadow: 0 0 0 1px #667eea !important;
+        }
         
-        # Clear validation states
-        st.session_state.validation_errors = {}
-        st.session_state.show_validation = False
+        /* File uploader - Dark Mode */
+        .stFileUploader > div {
+            background-color: #262730 !important;
+            border: 2px dashed #464851 !important;
+            color: #fafafa !important;
+        }
         
-        # Reset suggestion-related states
-        st.session_state.suggestions = []
-        st.session_state.suggestion_details = {}
-        st.session_state.temp_suggestion = ""
-        st.session_state.suggestions_generated = False
-        st.session_state.added_suggestions = set()
+        /* Buttons - Dark Mode */
+        .stButton > button {
+            background-color: #667eea !important;
+            color: white !important;
+            border: none !important;
+        }
         
-        # Clear any info popup states
-        if 'show_info' in st.session_state:
-            st.session_state.show_info = False
+        .stButton > button:hover {
+            background-color: #5a67d8 !important;
+            border: none !important;
+            box-shadow: 0 2px 4px rgba(102, 126, 234, 0.3) !important;
+        }
+        
+        /* Containers and boxes - Dark Mode */
+        .tooltip-container {
+            background-color: #262730 !important;
+            border: 1px solid #464851 !important;
+            color: #fafafa !important;
+        }
+        
+        /* Info boxes - Dark Mode */
+        .stAlert {
+            background-color: #262730 !important;
+            color: #fafafa !important;
+            border-left: 4px solid #667eea !important;
+        }
+        
+        /* Checkboxes - Dark Mode */
+        .stCheckbox > label {
+            color: #fafafa !important;
+        }
+        
+        /* Custom styled boxes - Dark Mode */
+        div[style*="background: #3a3a3a"] {
+            background: #2d3748 !important;
+            color: #f8f9fa !important;
+        }
+        
+        /* Selectbox dropdown - Dark Mode */
+        .stSelectbox [data-baseweb="select"] {
+            background-color: #262730 !important;
+        }
+        
+        .stSelectbox [data-baseweb="select"] > div {
+            background-color: #262730 !important;
+            color: #fafafa !important;
+        }
+        
+        /* Theme toggle button specific styling */
+        .theme-toggle-btn {
+            position: fixed !important;
+            top: 10px !important;
+            right: 10px !important;
+            z-index: 999999 !important;
+            background: #667eea !important;
+            color: white !important;
+            border: none !important;
+            border-radius: 50% !important;
+            width: 50px !important;
+            height: 50px !important;
+            font-size: 20px !important;
+            cursor: pointer !important;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3) !important;
+            transition: all 0.3s ease !important;
+        }
+        
+        .theme-toggle-btn:hover {
+            background: #5a67d8 !important;
+            transform: scale(1.1) !important;
+        }
+        </style>
+        """
+    else:
+        return """
+        <style>
+        /* Light Mode Styles */
+        .stApp {
+            background-color: #ffffff !important;
+            color: #000000 !important;
+        }
+        
+        .main .block-container {
+            background-color: #ffffff !important;
+            color: #000000 !important;
+        }
+        
+        /* Text inputs and text areas - Light Mode */
+        .stTextInput > div > div > input,
+        .stTextArea > div > div > textarea,
+        .stSelectbox > div > div > select {
+            background-color: #ffffff !important;
+            color: #000000 !important;
+            border: 1px solid #d1d5db !important;
+        }
+        
+        .stTextInput > div > div > input:focus,
+        .stTextArea > div > div > textarea:focus,
+        .stSelectbox > div > div > select:focus {
+            border-color: #667eea !important;
+            box-shadow: 0 0 0 1px #667eea !important;
+        }
+        
+        /* File uploader - Light Mode */
+        .stFileUploader > div {
+            background-color: #f9fafb !important;
+            border: 2px dashed #d1d5db !important;
+            color: #000000 !important;
+        }
+        
+        /* Buttons - Light Mode */
+        .stButton > button {
+            background-color: #667eea !important;
+            color: white !important;
+            border: none !important;
+        }
+        
+        .stButton > button:hover {
+            background-color: #5a67d8 !important;
+            border: none !important;
+            box-shadow: 0 2px 4px rgba(102, 126, 234, 0.3) !important;
+        }
+        
+        /* Containers and boxes - Light Mode */
+        .tooltip-container {
+            background-color: #f9fafb !important;
+            border: 1px solid #d1d5db !important;
+            color: #000000 !important;
+        }
+        
+        /* Info boxes - Light Mode */
+        .stAlert {
+            background-color: #f9fafb !important;
+            color: #000000 !important;
+            border-left: 4px solid #667eea !important;
+        }
+        
+        /* Checkboxes - Light Mode */
+        .stCheckbox > label {
+            color: #000000 !important;
+        }
+        
+        /* Custom styled boxes - Light Mode */
+        div[style*="background: #3a3a3a"],
+        div[style*="background: #2d3748"] {
+            background: #f3f4f6 !important;
+            color: #000000 !important;
+            border: 1px solid #d1d5db !important;
+        }
+        
+        /* Selectbox dropdown - Light Mode */
+        .stSelectbox [data-baseweb="select"] {
+            background-color: #ffffff !important;
+        }
+        
+        .stSelectbox [data-baseweb="select"] > div {
+            background-color: #ffffff !important;
+            color: #000000 !important;
+        }
+        
+        /* Custom content boxes - Light Mode */
+        div[style*="background-color: #3a3a3a"],
+        div[style*="background-color: #2d3748"] {
+            background-color: #e5e7eb !important;
+            color: #000000 !important;
+            border: 1px solid #d1d5db !important;
+        }
+        
+        /* Theme toggle button specific styling */
+        .theme-toggle-btn {
+            position: fixed !important;
+            top: 10px !important;
+            right: 10px !important;
+            z-index: 999999 !important;
+            background: #667eea !important;
+            color: white !important;
+            border: none !important;
+            border-radius: 50% !important;
+            width: 50px !important;
+            height: 50px !important;
+            font-size: 20px !important;
+            cursor: pointer !important;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2) !important;
+            transition: all 0.3s ease !important;
+        }
+        
+        .theme-toggle-btn:hover {
+            background: #5a67d8 !important;
+            transform: scale(1.1) !important;
+        }
+        
+        /* Tooltip styles for light mode */
+        .tooltip-label {
+            color: #000000 !important;
+        }
+        
+        .tooltip-icon {
+            color: #667eea !important;
+        }
+        
+        /* Markdown content - Light Mode */
+        .stMarkdown {
+            color: #000000 !important;
+        }
+        
+        /* Success/Error messages - Light Mode */
+        .stSuccess {
+            background-color: #d4edda !important;
+            color: #155724 !important;
+            border: 1px solid #c3e6cb !important;
+        }
+        
+        .stError {
+            background-color: #f8d7da !important;
+            color: #721c24 !important;
+            border: 1px solid #f5c6cb !important;
+        }
+        
+        .stWarning {
+            background-color: #fff3cd !important;
+            color: #856404 !important;
+            border: 1px solid #ffeaa7 !important;
+        }
+        
+        .stInfo {
+            background-color: #d1ecf1 !important;
+            color: #0c5460 !important;
+            border: 1px solid #bee5eb !important;
+        }
+        </style>
+        """
 
-    if st.button("🔄 Reset All Fields", type="secondary", use_container_width=True, help="Clear all form data and start over"):
-        reset_all_fields()
-        st.success("✅ All fields have been reset!")
-        st.rerun()
+# Apply CSS based on theme
+def apply_theme_css():
+    is_dark = st.session_state.get('dark_theme', True)  # Default to dark mode
+    theme_css = get_theme_css(is_dark)
+    st.markdown(theme_css, unsafe_allow_html=True)
+    
+    # Also apply the original client CSS
+    st.markdown(client_css, unsafe_allow_html=True)
 
-# Sidebar Progress and Information
-with st.sidebar:
-    st.markdown("""
-    <div class="progress-container">
-        <h3>📊 Form Progress</h3>
+# Function to save uploaded file and return the file path
+def save_uploaded_file_and_get_path(uploaded_file):
+    """Save uploaded file to a temporary directory and return the file path"""
+    if uploaded_file is not None:
+        # Create uploads directory if it doesn't exist
+        upload_dir = "uploads"
+        if not os.path.exists(upload_dir):
+            os.makedirs(upload_dir)
+        
+        # Create file path
+        file_path = os.path.join(upload_dir, uploaded_file.name)
+        
+        # Save the file
+        with open(file_path, "wb") as f:
+            f.write(uploaded_file.getbuffer())
+        
+        return file_path
+    return None
+
+# Theme toggle function
+def toggle_theme():
+    """Toggle between dark and light theme"""
+    st.session_state.dark_theme = not st.session_state.get('dark_theme', True)
+
+# Main App
+def client_tab():
+    # Initialize theme state if not exists
+    if 'dark_theme' not in st.session_state:
+        st.session_state.dark_theme = True  # Default to dark mode
+    
+    # Apply theme CSS
+    apply_theme_css()
+    
+    # Theme toggle button
+    theme_icon = "🌙" if st.session_state.dark_theme else "☀️"
+    theme_tooltip = "Switch to Light Mode" if st.session_state.dark_theme else "Switch to Dark Mode"
+    
+    # Create a container for the theme toggle button
+    st.markdown(f"""
+    <div style="position: fixed; top: 10px; right: 10px; z-index: 999999;">
+        <button class="theme-toggle-btn" onclick="document.getElementById('theme-toggle-btn').click();" 
+                title="{theme_tooltip}">
+            {theme_icon}
+        </button>
     </div>
     """, unsafe_allow_html=True)
     
-    # Calculate progress
-    seller_filled = bool(st.session_state.form_data.get('seller_name', '').strip())
-    website_filled = bool(st.session_state.form_data.get('website_select')) and st.session_state.form_data.get('website_select') != "Select a platform..."
-    file_key = f"uploaded_file_{st.session_state.file_uploader_key}"
-    file_filled = st.session_state.get(file_key) is not None
-    details_filled = bool(st.session_state.form_data.get('document_details', '').strip())
+    # Hidden button for theme toggle functionality
+    if st.button(theme_icon, key="theme-toggle-btn", help=theme_tooltip):
+        toggle_theme()
+        st.rerun()
     
-    # Progress indicators
-    st.markdown(f"{'✅' if seller_filled else '❌'} **Seller Name**")
-    st.markdown(f"{'✅' if website_filled else '❌'} **Website/Platform**")
-    st.markdown(f"{'✅' if file_filled else '❌'} **RFI Document**")
-    st.markdown(f"{'✅' if details_filled else '❌'} **Document Details**")
+    # Initialize validation trigger
+    if 'show_validation' not in st.session_state:
+        st.session_state.show_validation = False
     
-    progress = sum([seller_filled, website_filled, file_filled, details_filled]) / 4
-    st.progress(progress, text=f"**{int(progress * 100)}% Complete**")
+    # Initialize enterprise details content in session state
+    if 'enterprise_details_content' not in st.session_state:
+        st.session_state.enterprise_details_content = ""
     
-    # Show validation errors if any
-    if st.session_state.validation_errors:
-        st.markdown("---")
-        st.markdown("### ⚠️ Issues to Fix:")
-        for field, error in st.session_state.validation_errors.items():
-            st.markdown(f"• {error}")
+    # Initialize client requirements content in session state
+    if 'client_requirements_content' not in st.session_state:
+        st.session_state.client_requirements_content = get_editable_content()
     
-    # Cascade reset information
+    # Initialize URLs list in session state
+    if 'client_website_urls_list' not in st.session_state:
+        st.session_state['client_website_urls_list'] = []
+    
+    # Initialize last company name to track changes
+    if 'last_company_name' not in st.session_state:
+        st.session_state['last_company_name'] = ""
+    
+    # Initialize uploaded file path in session state
+    if 'uploaded_file_path' not in st.session_state:
+        st.session_state['uploaded_file_path'] = None
+    
+    # Top section with client name and URLs
+    col1, col2 = st.columns([1, 1])
+    
+    with col1:
+        st.markdown('''
+        <div class="tooltip-label">
+            Client Enterprise Name <span style="color:red;">*</span>
+            <div class="tooltip-icon" data-tooltip="Enter the full legal name of the client organization. This is the primary identifier for the client in all documentation and communications. This field is mandatory for creating the client profile.">ℹ️</div>
+        </div>
+        ''', unsafe_allow_html=True)
+        client_enterprise_name = st.text_input(
+            label="", 
+            placeholder="Enter client enterprise name...", 
+            key="client_enterprise_name_input",
+            label_visibility="collapsed"
+        )
+        
+        # Auto-fetch URLs when company name changes
+        if client_enterprise_name and client_enterprise_name != st.session_state['last_company_name']:
+            if len(client_enterprise_name.strip()) > 2:  # Only fetch if name has more than 2 characters
+                with st.spinner(f"🔍 Fetching URLs for {client_enterprise_name}..."):
+                    try:
+                        st.session_state['client_website_urls_list'] = get_urls_list(client_enterprise_name.strip())
+                        st.session_state['last_company_name'] = client_enterprise_name
+                        # Show success message
+                        if st.session_state['client_website_urls_list']:
+                            st.success(f"✅ Found {len(st.session_state['client_website_urls_list'])} URL(s) for {client_enterprise_name}")
+                        else:
+                            st.info(f"ℹ️ No URLs found for {client_enterprise_name}")
+                    except Exception as e:
+                        st.error(f"❌ Error fetching URLs: {str(e)}")
+                        st.session_state['client_website_urls_list'] = []
+        
+        # Clear URLs if company name is cleared
+        elif not client_enterprise_name and st.session_state['last_company_name']:
+            st.session_state['client_website_urls_list'] = []
+            st.session_state['last_company_name'] = ""
+        
+        # Show validation warning if triggered and field is empty
+        if st.session_state.show_validation and check_field_validation("Client Enterprise Name", client_enterprise_name, True):
+            show_field_warning("Client Enterprise Name")
+    
+    with col2:
+        # Embed compact button CSS directly in the component to ensure it persists
+        st.markdown("""
+        <style>
+        div[data-testid="stApp"] .compact-button {
+            padding: 0.15rem 0.25rem !important;
+            font-size: 1.2em !important;
+            min-height: 2.5rem !important;
+            border-radius: 0.275rem !important;
+        }
+        
+        /* Ensure button styling persists after reruns */
+        .stButton > button {
+            transition: all 0.3s ease !important;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+        
+        # Create columns for selectbox and buttons with desired ratios
+        select_col, btn_col1, btn_col2, btn_col3 = st.columns([0.7, 0.1, 0.1, 0.1])
+        
+        with select_col:
+            st.markdown('''
+            <div class="tooltip-label">
+                Client Website URL
+                <div class="tooltip-icon" data-tooltip="Select or enter the primary website URL of the client. URLs are automatically fetched when you enter the company name above. This helps in understanding their digital presence, business model, and organizational structure for better proposal customization.">ℹ️</div>
+            </div>
+            ''', unsafe_allow_html=True)
+            
+            # Show different states based on URLs availability
+            if not client_enterprise_name:
+                st.info("💡 Enter company name above to auto-fetch URLs")
+                client_website_url = st.selectbox(
+                    label="", 
+                    options=["Enter company name first..."], 
+                    key="client_website_url_selector",
+                    label_visibility="collapsed",
+                    disabled=True
+                )
+            elif not st.session_state['client_website_urls_list']:
+                client_website_url = st.selectbox(
+                    label="", 
+                    options=["No URLs found - try manual entry"], 
+                    key="client_website_url_selector",
+                    label_visibility="collapsed"
+                )
+            else:
+                # Selectbox for URL selection with fetched URLs
+                url_options = ["Select a URL..."] + st.session_state['client_website_urls_list']
+                client_website_url = st.selectbox(
+                    label="", 
+                    options=url_options, 
+                    key="client_website_url_selector",
+                    label_visibility="collapsed"
+                )
+                if client_website_url == "Select a URL...":
+                    client_website_url = ""
+        
+        # URL action buttons with compact styling
+        if client_website_url and client_website_url not in ["Enter company name first...", "No URLs found - try manual entry", "Select a URL..."]:
+            with btn_col1:
+                if st.button("🔄", key="refresh_client_website_urls_btn", help="Refresh suggested website links"):
+                    if client_enterprise_name:
+                        with st.spinner(f"🔍 Refreshing URLs for {client_enterprise_name}..."):
+                            try:
+                                st.session_state['client_website_urls_list'] = get_urls_list(client_enterprise_name.strip())
+                                st.success("✅ URLs refreshed!")
+                            except Exception as e:
+                                st.error(f"❌ Error refreshing URLs: {str(e)}")
+                    st.rerun()
+            
+            with btn_col2:
+                if st.button("🌐", key="open_client_website_btn", help="Open selected client website in new tab"):
+                    st.markdown(f'<a href="{client_website_url}" target="_blank">Opening {client_website_url}</a>', unsafe_allow_html=True)
+            
+            with btn_col3:
+                if st.button("ℹ️", key="client_website_details_btn", help="Extract and analyze details from selected client website"):
+                    # Get URL details and set it as enterprise details content
+                    with st.spinner(f"🔍 Analyzing website: {client_website_url}..."):
+                        try:
+                            website_details = get_url_details(client_website_url)
+                            st.session_state.enterprise_details_content = website_details
+                            st.success("✅ Website details extracted!")
+                        except Exception as e:
+                            st.error(f"❌ Error extracting website details: {str(e)}")
+                    st.rerun()
+        else:
+            # Show disabled buttons when no valid URL is selected
+            with btn_col1:
+                st.button("🔄", key="refresh_client_website_urls_btn_disabled", help="Select a valid URL first", disabled=True)
+            with btn_col2:
+                st.button("🌐", key="open_client_website_btn_disabled", help="Select a valid URL first", disabled=True)
+            with btn_col3:
+                st.button("ℹ️", key="client_website_details_btn_disabled", help="Select a valid URL first", disabled=True)
+
     st.markdown("---")
-    st.markdown("### 🔄 Smart Reset Feature")
-    st.markdown("""
-    **Automatic field reset:**
-    • Changing seller → resets all below
-    • Changing platform → resets file & details  
-    • Changing file → resets details
     
-    This ensures data consistency.
-    """)
+    # Document upload and pain points section
+    col3, col4 = st.columns([1, 1])
+    
+    with col3:
+        st.markdown('''
+        <div class="tooltip-label">
+            Upload RFI Document
+            <div class="tooltip-icon" data-tooltip="Upload the Request for Information (RFI) document in PDF, DOCX, TXT, or CSV format. The system will automatically analyze and extract key pain points, requirements, and business objectives to help tailor your proposal.">ℹ️</div>
+        </div>
+        ''', unsafe_allow_html=True)
+        rfi_document_upload = st.file_uploader(
+            label="", 
+            type=['pdf', 'docx', 'txt', 'csv'], 
+            key="rfi_document_uploader",
+            label_visibility="collapsed"
+        )
+        
+        if rfi_document_upload is not None and st.button("Analyze RFI Document", key="analyze_rfi_document_btn", help="Process and extract key information from uploaded RFI document"):
+            # Save the uploaded file and get the file path
+            with st.spinner("Saving and analyzing RFI document..."):
+                try:
+                    # Save the file and get the path
+                    file_path = save_uploaded_file_and_get_path(rfi_document_upload)
+                    st.session_state['uploaded_file_path'] = file_path
+                    
+                    if file_path and client_enterprise_name:
+                        # Extract pain points using the file path and company name
+                        st.session_state.enterprise_details_content = extract_pain_points(file_path, client_enterprise_name)
+                        
+                        # Also update the RFI pain points items with the new data
+                        st.session_state['rfi_pain_points_items'] = get_summary_items(file_path, client_enterprise_name)
+                        
+                        st.success("✅ RFI document analyzed successfully!")
+                    else:
+                        if not client_enterprise_name:
+                            st.error("❌ Please enter the Client Enterprise Name first")
+                        else:
+                            st.error("❌ Error saving the uploaded file")
+                except Exception as e:
+                    st.error(f"❌ Error analyzing RFI document: {str(e)}")
+            st.rerun()
+    
+    with col4:
+        st.markdown('''
+        <div class="tooltip-label">
+            Enterprise Details
+            <div class="tooltip-icon" data-tooltip="This area displays extracted pain points from RFI documents or website analysis. You can also manually enter client's business challenges, current pain points, and organizational details that will help customize your proposal.">ℹ️</div>
+        </div>
+        ''', unsafe_allow_html=True)
+        
+        # Use the enterprise details content from session state
+        enterprise_details = st.text_area(
+            label="", 
+            value=st.session_state.enterprise_details_content,
+            placeholder="Upload RFI document and analyze to extract pain points or click ℹ️ button to view website details...", 
+            height=200, 
+            key="enterprise_details_textarea",
+            label_visibility="collapsed"
+        )
+        
+        # Update session state when text area changes
+        st.session_state.enterprise_details_content = enterprise_details
+
+    st.markdown("---")
+    
+    # Additional row with editable content and summary with + buttons
+    col5, col6 = st.columns([1, 1])
+    
+    with col5:
+        st.markdown('''
+        <div class="tooltip-label">
+            Client Requirement <span style="color:red;">*</span>
+            <div class="tooltip-icon" data-tooltip="Define the core client requirements, technical specifications, project scope, deliverables, and expected outcomes. This forms the foundation of your proposal and helps ensure all client needs are addressed.">ℹ️</div>
+        </div>
+        ''', unsafe_allow_html=True)
+        
+        # Use the separate session state variable for content
+        client_requirements = st.text_area(
+            label="", 
+            value=st.session_state.client_requirements_content, 
+            height=250, 
+            key="client_requirements_textarea",
+            label_visibility="collapsed"
+        )
+        
+        # Update the session state when the text area changes
+        st.session_state.client_requirements_content = client_requirements
+          
+    with col6:
+        st.markdown('''
+        <div class="tooltip-label">
+            RFI Pain Points
+            <div class="tooltip-icon" data-tooltip="Generated pain points analysis based on RFI document analysis and client information. Click generate to create new analysis or refresh to update existing data.">ℹ️</div>
+        </div>
+        ''', unsafe_allow_html=True)
+        
+        # Action buttons for summary
+        col_generate, col_refresh = st.columns([1, 1])
+        with col_generate:
+            if st.button("🎯 Generate", key="generate_rfi_pain_points_btn", help="Generate new RFI pain points analysis based on current information"):
+                if st.session_state.get('uploaded_file_path') and client_enterprise_name:
+                    with st.spinner("Generating RFI pain points..."):
+                        try:
+                            st.session_state['rfi_pain_points_items'] = get_summary_items(st.session_state['uploaded_file_path'], client_enterprise_name)
+                            st.success("✅ RFI pain points generated!")
+                        except Exception as e:
+                            st.error(f"❌ Error generating pain points: {str(e)}")
+                            # Fallback to hardcoded values
+                            st.session_state['rfi_pain_points_items'] = get_summary_items(st.session_state['uploaded_file_path'], client_enterprise_name)
+                else:
+                    st.warning("⚠️ Please upload and analyze an RFI document first, and ensure Client Enterprise Name is entered")
+                    # Fallback to hardcoded values
+                    st.session_state['rfi_pain_points_items'] = get_summary_items(st.session_state['uploaded_file_path'], client_enterprise_name)
+                st.rerun()
+                
+        with col_refresh:
+            if st.button("🔄 Refresh", key="refresh_rfi_pain_points_btn", help="Refresh and update RFI pain points data"):
+                if st.session_state.get('uploaded_file_path') and client_enterprise_name:
+                    with st.spinner("Refreshing RFI pain points..."):
+                        try:
+                            st.session_state['rfi_pain_points_items'] = get_summary_items(st.session_state['uploaded_file_path'], client_enterprise_name)
+                            st.success("✅ RFI pain points refreshed!")
+                        except Exception as e:
+                            st.error(f"❌ Error refreshing pain points: {str(e)}")
+                            # Fallback to hardcoded values
+                            st.session_state['rfi_pain_points_items'] = get_summary_items(st.session_state['uploaded_file_path'], client_enterprise_name)
+                else:
+                    st.warning("⚠️ Please upload and analyze an RFI document first, and ensure Client Enterprise Name is entered")
+                    # Fallback to hardcoded values
+                    st.session_state['rfi_pain_points_items'] = get_summary_items(st.session_state['uploaded_file_path'], client_enterprise_name)
+                st.rerun()
+        
+        # Initialize RFI pain points items in session state
+        if 'rfi_pain_points_items' not in st.session_state:
+            st.session_state['rfi_pain_points_items'] = get_summary_items(st.session_state['uploaded_file_path'], client_enterprise_name)
+        
+        # Get RFI pain points items from session state
+        rfi_pain_points_items = st.session_state['rfi_pain_points_items']
+        
+        # Dynamic styling for boxes based on theme
+        theme_dependent_style = """
+        background: #f3f4f6; 
+        color: #000000;
+        border: 1px solid #d1d5db;
+        """ if not st.session_state.dark_theme else """
+        background: #2d3748; 
+        color: #f8f9fa;
+        border-left: 3px solid #667eea;
+        """
+        
+        # Display RFI pain points items with add buttons
+        for i, (key, value) in enumerate(rfi_pain_points_items.items()):
+            with st.container():
+                # Create a box container for the key with + button
+                col_content, col_add = st.columns([4, 1])
+                
+                with col_content:
+                    # Display key in a styled container box with theme-dependent styling
+                    st.markdown(f"""
+                    <div style="
+                        {theme_dependent_style}
+                        padding: 8px 12px; 
+                        border-radius: 6px; 
+                        margin-bottom: 4px;
+                        font-weight: 600;
+                    ">
+                        📋 {key}
+                    </div>
+                    """, unsafe_allow_html=True)
+                
+                with col_add:
+                    if st.button("➕", key=f"add_rfi_pain_point_item_{i}", help=f"Add '{key}' to client requirements section"):
+                        # Get current content from the session state (not the widget key)
+                        current_content = st.session_state.client_requirements_content
+                        
+                        # Append the value to the content
+                        new_content = current_content + f"\n\n{value}"
+                        
+                        # Update the session state content variable
+                        st.session_state.client_requirements_content = new_content
+                        
+                        # Show success message
+                        st.success(f"✅ '{key}' added to Client Requirements!")
+                        st.rerun()
+    st.markdown("---")
+    
+    # SPOC Row
+    col_spoc1, col_spoc2 = st.columns([1, 1])
+    
+    with col_spoc1:
+        st.markdown('''
+        <div class="tooltip-label">
+            SPOC Name
+            <div class="tooltip-icon" data-tooltip="Enter the Single Point of Contact (SPOC) name - the primary person responsible for communication and decision-making on the client side. This person will be your main contact throughout the project lifecycle.">ℹ️</div>
+        </div>
+        ''', unsafe_allow_html=True)
+        spoc_name = st.text_input(
+            label="", 
+            placeholder="Enter SPOC full name...", 
+            key="spoc_name_input",
+            label_visibility="collapsed"
+        )
+    
+    with col_spoc2:
+        st.markdown('''
+        <div class="tooltip-label">
+            SPOC LinkedIn Profile
+            <div class="tooltip-icon" data-tooltip="Enter or select the LinkedIn profile URL of the SPOC. This helps in understanding their professional background, expertise, and communication style for better relationship building.">ℹ️</div>
+        </div>
+        ''', unsafe_allow_html=True)
+        
+        # Initialize LinkedIn profiles in session state if not exists
+        if 'spoc_linkedin_profiles_list' not in st.session_state:
+            st.session_state['spoc_linkedin_profiles_list'] = get_linkedin_profiles_list()
+        
+        # Create a single editable selectbox
+        spoc_linkedin_profile = st.selectbox(
+            label="",
+            options=[""] + st.session_state['spoc_linkedin_profiles_list'],
+            key="spoc_linkedin_profile_selector",
+            label_visibility="collapsed"
+        )
+        
+        st.markdown("---")
+    
+    # Existing row with roles and priorities
+    col7, col8 = st.columns([1, 1])
+    
+    with col7:
+        st.markdown('''
+        <div class="tooltip-label">
+            Target Roles 
+            <div class="tooltip-icon" data-tooltip="Select specific roles or positions within the client organization that your proposal should target. These are key stakeholders who will be involved in the decision-making process.">ℹ️</div>
+        </div>
+        ''', unsafe_allow_html=True)
+        
+        # Get roles from function
+        target_roles_list = get_roles_list()
+        
+        # Initialize session state for roles if not exists
+        if 'selected_target_roles' not in st.session_state:
+            st.session_state['selected_target_roles'] = []
+        
+        # Dropdown for adding roles
+        new_target_role = st.selectbox(
+            label="", 
+            options=["Select a target role..."] + target_roles_list, 
+            key="target_role_selector_dropdown",
+            label_visibility="collapsed"
+        )
+        
+        # Add role button
+        if st.button("Add Target Role", key="add_target_role_btn", help="Add selected role to target roles list") and new_target_role != "Select a target role...":
+            if new_target_role not in st.session_state['selected_target_roles']:
+                st.session_state['selected_target_roles'].append(new_target_role)
+                # Force rerun to update the display
+                st.rerun()
+        
+        # Display and manage selected target roles
+        if st.session_state['selected_target_roles']:
+            st.write("**Selected Target Roles:**")
+            target_roles_to_remove = []
+            for i, role in enumerate(st.session_state['selected_target_roles']):
+                col_role, col_remove = st.columns([4, 1])
+                with col_role:
+                    # Make role editable with unique key
+                    edited_target_role = st.text_input(
+                        label=f"Target Role {i+1}", 
+                        value=role, 
+                        key=f"target_role_edit_input_{i}",
+                        help=f"Edit target role: {role}"
+                    )
+                    st.session_state['selected_target_roles'][i] = edited_target_role
+                with col_remove:
+                    if st.button("🗑️", key=f"remove_target_role_btn_{i}", help="Remove this target role from the list"):
+                        target_roles_to_remove.append(i)
+            
+            # Remove roles (in reverse order to maintain indices)
+            for idx in reversed(target_roles_to_remove):
+                st.session_state['selected_target_roles'].pop(idx)
+                # Force rerun to update the display
+                st.rerun()
+    
+    with col8:
+        st.markdown('''
+        <div class="tooltip-label">
+            Business Priorities 
+            <div class="tooltip-icon" data-tooltip="Select business priorities that align with client's strategic objectives. These help in understanding the client's focus areas and tailoring the proposal accordingly.">ℹ️</div>
+        </div>
+        ''', unsafe_allow_html=True)
+        
+        # Get priorities from function
+        business_priorities_list = get_priority_suggestions()
+        
+        # Priority checkboxes
+        st.write("**Business Priorities :**")
+        
+        # Initialize session state for selected priorities
+        if 'selected_business_priorities' not in st.session_state:
+            st.session_state['selected_business_priorities'] = []
+        
+        # Generate checkboxes dynamically from function
+        for i, priority in enumerate(business_priorities_list):
+            business_priority_checkbox_key = f"business_priority_checkbox_{i}"
+            is_priority_checked = st.checkbox(
+                f"{priority['icon']} **{priority['title']}**", 
+                key=business_priority_checkbox_key,
+                help=f"Business Priority: {priority['description']} - Select if this aligns with client's strategic objectives."
+            )
+            
+            # Update selected business priorities based on checkbox state
+            if is_priority_checked and priority['title'] not in st.session_state['selected_business_priorities']:
+                st.session_state['selected_business_priorities'].append(priority['title'])
+            elif not is_priority_checked and priority['title'] in st.session_state['selected_business_priorities']:
+                st.session_state['selected_business_priorities'].remove(priority['title'])
+        
+        # Display selected business priorities summary
+        if st.session_state['selected_business_priorities']:
+            st.write("**Selected Business Priorities:**")
+            for priority in st.session_state['selected_business_priorities']:
+                st.write(f"• {priority}")
+
+    st.markdown("---")
+    # New row with Client Additional Requirements and RFI Additional Specs
+    col9, col10= st.columns([1, 1])
+    
+    with col9:
+        st.markdown('''
+        <div class="tooltip-label">
+            Client Additional Requirements
+            <div class="tooltip-icon" data-tooltip="Document any additional specific requirements, constraints, expectations, compliance requirements, budget limitations, timeline constraints, or special considerations mentioned by the client that are not covered in the main requirements section.">ℹ️</div>
+        </div>
+        ''', unsafe_allow_html=True)
+        client_additional_requirements = st.text_area(
+            label="", 
+            placeholder="Enter specific client requirements, expectations, project scope, compliance needs, budget constraints...", 
+            height=200, 
+            key="client_additional_requirements_textarea",
+            label_visibility="collapsed"
+        )
+    
+    with col10:
+        st.markdown('''
+        <div class="tooltip-label">
+            RFI Additional Specs
+            <div class="tooltip-icon" data-tooltip="AI-generated additional specifications and technical requirements based on RFI analysis. These are supplementary specs that complement the main requirements and help ensure comprehensive proposal coverage.">ℹ️</div>
+        </div>
+        ''', unsafe_allow_html=True)
+        # Get AI suggestion 1 from function
+        rfi_additional_specs_content = get_ai_suggestion_1()
+        rfi_additional_specs = st.text_area(
+            label="", 
+            value=rfi_additional_specs_content, 
+            height=200, 
+            key="rfi_additional_specs_textarea",
+            label_visibility="collapsed"
+        )
+        
+        # Refresh button for RFI additional specs
+        if st.button("🔄 Refresh RFI Additional Specs", key="refresh_rfi_additional_specs_btn", help="Generate new AI-powered additional specifications based on current RFI analysis"):
+            st.session_state['rfi_additional_specs_refreshed'] = get_ai_suggestion_1()
+            st.rerun()
+    
+    st.markdown("---")
+    # Handle validation trigger from main app
+    if 'trigger_validation' in st.session_state and st.session_state.trigger_validation:
+        st.session_state.show_validation = True
+        st.session_state.trigger_validation = False
+
+
+client_tab()

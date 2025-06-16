@@ -380,7 +380,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Tab buttons
-tab_names = ["Client Information", "Template Library", "Client Database", "Analytics Dashboard"]
+tab_names = ["Client Information", "Seller Information", "Project Specifications", "Generate Proposal"]
 
 # Create tab buttons
 cols = st.columns(4)
@@ -468,12 +468,7 @@ else:  # Analytics Dashboard
     # st.markdown("Your proposal success rate has improved by 12% this quarter, with the highest performance in software development projects.")
 
 # Footer with updated buttons
-st.markdown("""
-<div class="footer">
-    <div class="footer-buttons">
-    </div>
-</div>
-""", unsafe_allow_html=True)
+
 
 # Footer buttons styling - keeping original colors for footer buttons
 st.markdown("""
@@ -542,4 +537,3 @@ with col1:
 with col2:
     if st.button("📊 Generate Presentation", key="generate_btn", use_container_width=True):
         generate_presentation()
-
