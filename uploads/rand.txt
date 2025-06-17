@@ -1,0 +1,10 @@
+Seperation bw the tab names
+
+pain points to be -> info about the client
+
+SPOC name 
+
+
+chromadb/ GS/new_RFI_Gs.sql
+chromadb /GS/RF!_GS.sql 
+

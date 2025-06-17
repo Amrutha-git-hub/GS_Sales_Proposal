@@ -4,6 +4,7 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnableLambda
 load_dotenv()
+import json
 
 llm = ChatGoogleGenerativeAI(model = 'gemini-1.5-flash')
 
@@ -30,7 +31,7 @@ rfi_painpoint_prompt = ChatPromptTemplate.from_template(template)
 
 from langchain_core.prompts import ChatPromptTemplate
 
-from utils import vectorize
+from .utils import vectorize
 
 def format_docs(docs):
     return '\n\n'.join(doc.page_content for doc in docs)
@@ -65,7 +66,6 @@ def get_pain_points(file: str,company_name : str):
         | StrOutputParser()
     )
     result = rag_chain.invoke({"query": "Extract key business concerns and paint points from this RFI."})
-    print(clean_to_list(result))
-    return clean_to_list(result)
+    print(type(json.loads(clean_to_list(result))))
+    return json.loads(clean_to_list(result))
 
-get_pain_points('rfi2.pdf',"Benori")

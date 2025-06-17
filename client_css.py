@@ -180,39 +180,53 @@ client_css = """
     .summary-control-btn:hover {
         background: #0056b3;
     }
+    
+    /* Fixed tooltip label alignment */
     .tooltip-label {
-    font-size: 20px;
-    font-weight: bold;
-    margin-bottom: 4px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-.tooltip-icon {
-    position: relative;
-    display: inline-block;
-    cursor: pointer;
-}
-.tooltip-icon::after {
-    content: attr(data-tooltip);
-    visibility: hidden;
-    width: 250px;
-    background-color: #555;
-    color: #fff;
-    text-align: left;
-    border-radius: 6px;
-    padding: 8px;
-    position: absolute;
-    z-index: 1;
-    bottom: 125%;
-    left: 50%;
-    margin-left: -125px;
-    opacity: 0;
-    transition: opacity 0.3s;
-}
-.tooltip-icon:hover::after {
-    visibility: visible;
-    opacity: 1;
-}
+        font-size: 16px;
+        font-weight: bold;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        height: 24px;
+        line-height: 24px;
+        min-height: 32px;
+        display: flex;
+        align-items: flex-end;
+    }
+    
+    .tooltip-icon {
+        position: relative;
+        display: inline-block;
+        cursor: pointer;
+        margin-left: 0;
+    }
+    
+    .tooltip-icon::after {
+        content: attr(data-tooltip);
+        visibility: hidden;
+        width: 250px;
+        background-color: #555;
+        color: #fff;
+        text-align: left;
+        border-radius: 6px;
+        padding: 8px;
+        position: absolute;
+        z-index: 1;
+        bottom: 125%;
+        left: 50%;
+        margin-left: -125px;
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+    
+    .tooltip-icon:hover::after {
+        visibility: visible;
+        opacity: 1;
+    }
+
+
+
 </style>
 """

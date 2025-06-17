@@ -121,3 +121,5 @@ async def get_urls(company_name: str, runner=runner, user_id=USER_ID, session_id
     print(final_msg)
     return json.loads(final_msg)
 
+import asyncio
+asyncio.run(get_urls("growth sutra"))

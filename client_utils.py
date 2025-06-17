@@ -5,7 +5,7 @@ import os
 
 from WebsiteUrl_Agent.agent import get_urls
 import asyncio 
-
+from Rag.rag import *
 # Function to get URLs (placeholder function)
 def get_urls_list() -> List[str]:
     """
@@ -206,20 +206,11 @@ These are automatically generated pain points from analysis."""
 # from Rag.rag import get_pain_points
 
 
-def get_summary_items(filename , companyname) -> dict:
-    """
-    Hardcoded function that returns summary items with key-value pairs
-    Replace this with your actual function that fetches summary data
-    """
-    return {
-        "Market Analysis": "Market trends show increasing demand for digital solutions with focus on user experience and automation.",
-        "Competitive Landscape": "Key competitors are investing heavily in AI and machine learning capabilities to gain market advantage.",
-        "Technology Stack": "Recommended modern tech stack includes cloud-native architecture, microservices, and API-first approach.",
-    }
 
 
-# def get_summmary_items(file,company_name):
-#     return get_pain_points(file,company_name)
+def get_pain_items(file,company_name):
+    print("-----------------------------------------------------------")
+    return get_pain_points(file,company_name)
 
 
 # Function to get AI suggestion 1 (placeholder function)

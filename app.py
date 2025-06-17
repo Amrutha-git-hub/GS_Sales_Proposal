@@ -98,272 +98,474 @@ def generate_presentation():
         # - Save to database
         
         return True
+
+# NOTE: Add this line at the very top of your main script (before any other Streamlit commands):
+# st.set_page_config(page_title="Sales Proposal Generator", page_icon="📊", layout="wide", initial_sidebar_state="collapsed")
         
 st.markdown("""
-<style>/* Import Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+<style>
+/* Import Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap');
 
-/* Global styles */
+/* Global styles - Full screen utilization */
 .stApp {
-    background: #1a1a1a;
+    background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
     font-family: 'Inter', sans-serif;
+    min-height: 100vh;
 }
 
-/* Remove default padding */
+/* Remove default padding and make full width */
 .block-container {
-    padding-top: 2rem;
-    padding-bottom: 2rem;
-    max-width: 1200px;
+    padding: 1rem 2rem 2rem 2rem;
+    max-width: 100% !important;
+    width: 100% !important;
+    margin: 0 !important;
 }
 
-/* Header styling */
+/* Main container - Full width */
+.main-container {
+    width: 100%;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+}
+
+/* Header styling - Full width with glassmorphism */
 .main-header {
-    text-align: center;
-    padding: 2rem 0;
-    margin-bottom: 3rem;
-    background: #2d3748 ;
-    border-radius: 15px;
-    border: 1px solid #3a3a3a;
+    width: 100%;
+    padding: 3rem 0;
+    margin-bottom: 2rem;
+    background: rgba(45, 55, 72, 0.3);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.main-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, rgba(59, 130, 246, 0.1), rgba(147, 51, 234, 0.1));
+    z-index: -1;
 }
 
 .main-header h1 {
-    color: #f8f9fa;
-    font-size: 3rem;
-    font-weight: 700;
+    color: #ffffff;
+    font-size: 4rem;
+    font-weight: 800;
     margin: 0;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
     letter-spacing: -0.02em;
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6, #06b6d4);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
-/* Tab styling */
-.tab-container {
-    display: flex;
-    justify-content: center;
-    gap: 1rem;
-    margin-bottom: 3rem;
-    flex-wrap: wrap;
-}
-
-.tab-button {
-    background: #1a1a1a;
-    color: #ecf0f1;
-    border: 1px solid #3a3a3a;
-    padding: 1rem 2rem;
-    border-radius: 10px;
-    font-weight: 600;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    min-width: 180px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.tab-button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
-    background: #2a2a2a;
-    border-color: #4a5568;
-}
-
-.tab-button.active {
-    background: #2d3748;
-    transform: translateY(-1px);
-    box-shadow: 0 5px 18px rgba(45, 55, 72, 0.4);
-    border-color: #4a5568;
-}
-
-/* Content area */
-.content-area {
-    background: #2a2a2a;
-    padding: 2rem;
-    border-radius: 15px;
+/* Creative tab separators */
+.tab-nav-container {
+    width: 100%;
+    position: relative;
     margin-bottom: 2rem;
-    border: 1px solid #3a3a3a;
-    min-height: 600px;
+}
+
+.tab-separator-line {
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(90deg, 
+        transparent 0%, 
+        rgba(59, 130, 246, 0.3) 25%, 
+        rgba(147, 51, 234, 0.5) 50%, 
+        rgba(59, 130, 246, 0.3) 75%, 
+        transparent 100%);
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 1;
+}
+
+.tab-separator {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 4rem;
+    position: relative;
+}
+
+.separator-diamond {
+    width: 8px;
+    height: 8px;
+    background: linear-gradient(45deg, #3b82f6, #8b5cf6);
+    transform: rotate(45deg);
+    border-radius: 2px;
+    box-shadow: 0 0 15px rgba(59, 130, 246, 0.6);
+    animation: pulse-diamond 2s ease-in-out infinite;
+    z-index: 2;
+}
+
+.separator-line {
+    width: 2px;
+    height: 30px;
+    background: linear-gradient(180deg, 
+        rgba(59, 130, 246, 0.8) 0%, 
+        rgba(147, 51, 234, 0.6) 50%, 
+        rgba(59, 130, 246, 0.8) 100%);
+    margin: 4px 0;
+    border-radius: 1px;
+    box-shadow: 0 0 10px rgba(59, 130, 246, 0.4);
+    z-index: 2;
+}
+
+@keyframes pulse-diamond {
+    0%, 100% {
+        transform: rotate(45deg) scale(1);
+        box-shadow: 0 0 15px rgba(59, 130, 246, 0.6);
+    }
+    50% {
+        transform: rotate(45deg) scale(1.2);
+        box-shadow: 0 0 25px rgba(147, 51, 234, 0.8);
+    }
+}
+
+/* Tab styling - Improved modern design */
+.stButton > button {
+    background: rgba(42, 42, 42, 0.8) !important;
+    color: #ecf0f1 !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    font-weight: 600 !important;
+    font-size: 1.1rem !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1px !important;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
+    height: 4rem !important;
+    border-radius: 15px !important;
+    backdrop-filter: blur(10px) !important;
+    position: relative !important;
+    overflow: hidden !important;
+}
+
+.stButton > button::before {
+    content: '' !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: -100% !important;
+    width: 100% !important;
+    height: 100% !important;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent) !important;
+    transition: left 0.5s ease !important;
+}
+
+.stButton > button:hover::before {
+    left: 100% !important;
+}
+
+.stButton > button:hover {
+    transform: translateY(-3px) scale(1.02) !important;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4) !important;
+    background: rgba(58, 58, 58, 0.9) !important;
+    border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Active tab styling - Vibrant gradient */
+.stButton > button:focus,
+.stButton > button:active {
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6) !important;
+    color: #ffffff !important;
+    border-color: #1d4ed8 !important;
+    transform: translateY(-2px) scale(1.03) !important;
+    box-shadow: 0 10px 40px rgba(59, 130, 246, 0.4) !important;
+    font-weight: 700 !important;
+}
+
+/* Content area - Full width with modern styling */
+.content-area {
+    background: rgba(42, 42, 42, 0.4);
+    backdrop-filter: blur(20px);
+    padding: 3rem;
+    border-radius: 20px;
+    margin-bottom: 2rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    min-height: 70vh;
+    width: 100%;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.content-area::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(147, 51, 234, 0.05));
+    z-index: -1;
 }
 
 .content-area h2 {
-    color: #f8f9fa;
-    font-size: 2rem;
-    margin-bottom: 1rem;
-    font-weight: 600;
+    color: #ffffff;
+    font-size: 2.5rem;
+    margin-bottom: 1.5rem;
+    font-weight: 700;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .content-area h3 {
-    color: #f8f9fa;
-    font-size: 1.3rem;
-    margin-bottom: 1rem;
+    color: #e2e8f0;
+    font-size: 1.5rem;
+    margin-bottom: 1.2rem;
     font-weight: 600;
 }
 
 .content-area p {
-    color: #ecf0f1;
-    font-size: 1.1rem;
-    line-height: 1.6;
-    margin-bottom: 1rem;
+    color: #cbd5e0;
+    font-size: 1.2rem;
+    line-height: 1.8;
+    margin-bottom: 1.5rem;
 }
 
-/* Footer styling */
-.footer {
-    background: #2a2a2a;
+/* Full-width grid layouts for content */
+.full-width-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    width: 100%;
+    margin: 2rem 0;
+}
+
+.grid-item {
+    background: rgba(255, 255, 255, 0.05);
     padding: 2rem;
     border-radius: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+}
+
+.grid-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+/* Footer styling - Full width */
+.footer {
+    background: rgba(42, 42, 42, 0.3);
+    backdrop-filter: blur(20px);
+    padding: 2rem;
+    border-radius: 20px;
     text-align: center;
     margin-top: 3rem;
-    border: 1px solid #3a3a3a;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    width: 100%;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
-.footer-buttons {
-    display: flex;
-    justify-content: center;
-    gap: 1.5rem;
-    flex-wrap: wrap;
+/* Footer button styling - Enhanced */
+.footer .stButton > button {
+    height: 4rem !important;
+    font-weight: 700 !important;
+    border-radius: 15px !important;
+    border: none !important;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    font-size: 1.1rem !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1px !important;
+    position: relative !important;
+    overflow: hidden !important;
 }
 
-.footer-button {
-    background: linear-gradient(145deg, #27ae60, #2ecc71);
-    color: #2c3e50;
-    border: none;
-    padding: 0.8rem 1.5rem;
-    border-radius: 8px;
-    font-weight: 600;
-    font-size: 0.9rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 3px 10px rgba(39, 174, 96, 0.3);
-    min-width: 120px;
+.footer .stButton > button::before {
+    content: '' !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: -100% !important;
+    width: 100% !important;
+    height: 100% !important;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent) !important;
+    transition: left 0.6s ease !important;
 }
 
-.footer-button:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 15px rgba(39, 174, 96, 0.4);
-    background: linear-gradient(145deg, #2ecc71, #27ae60);
+.footer .stButton > button:hover::before {
+    left: 100% !important;
 }
 
-.refresh-button {
-    background: linear-gradient(145deg, #f39c12, #e67e22);
-    color: #2c3e50;
-    border: none;
-    padding: 0.8rem 1.5rem;
-    border-radius: 8px;
-    font-weight: 600;
-    font-size: 0.9rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 3px 10px rgba(243, 156, 18, 0.3);
-    min-width: 120px;
+/* Refresh Button */
+.footer div[data-testid="column"]:nth-child(1) .stButton > button {
+    background: linear-gradient(135deg, #f39c12, #e67e22) !important;
+    color: #ffffff !important;
+    box-shadow: 0 6px 20px rgba(243, 156, 18, 0.4) !important;
 }
 
-.refresh-button:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 15px rgba(243, 156, 18, 0.4);
-    background: linear-gradient(145deg, #e67e22, #f39c12);
+.footer div[data-testid="column"]:nth-child(1) .stButton > button:hover {
+    transform: translateY(-3px) scale(1.05) !important;
+    box-shadow: 0 10px 30px rgba(243, 156, 18, 0.6) !important;
+    background: linear-gradient(135deg, #e67e22, #d35400) !important;
 }
 
-.generate-button {
-    background: linear-gradient(145deg, #e74c3c, #c0392b);
-    color: #f8f9fa;
-    border: none;
-    padding: 0.8rem 1.5rem;
-    border-radius: 8px;
-    font-weight: 600;
-    font-size: 0.9rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 3px 10px rgba(231, 76, 60, 0.3);
-    min-width: 120px;
+/* Generate Presentation Button */
+.footer div[data-testid="column"]:nth-child(2) .stButton > button {
+    background: linear-gradient(135deg, #e74c3c, #c0392b) !important;
+    color: #ffffff !important;
+    box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4) !important;
 }
 
-.generate-button:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
-    background: linear-gradient(145deg, #c0392b, #e74c3c);
+.footer div[data-testid="column"]:nth-child(2) .stButton > button:hover {
+    transform: translateY(-3px) scale(1.05) !important;
+    box-shadow: 0 10px 30px rgba(231, 76, 60, 0.6) !important;
+    background: linear-gradient(135deg, #c0392b, #a93226) !important;
+}
+
+/* Input styling - Modern glassmorphism */
+.stSelectbox > div > div > div,
+.stTextInput > div > div > input,
+.stTextArea > div > div > textarea {
+    background: rgba(44, 62, 80, 0.3) !important;
+    backdrop-filter: blur(10px) !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    border-radius: 10px !important;
+    font-size: 1.1rem !important;
+    transition: all 0.3s ease !important;
+}
+
+.stSelectbox > div > div > div:focus,
+.stTextInput > div > div > input:focus,
+.stTextArea > div > div > textarea:focus {
+    border-color: #3b82f6 !important;
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.3) !important;
+    background: rgba(44, 62, 80, 0.5) !important;
+}
+
+/* File uploader styling */
+.stFileUploader > div {
+    background: rgba(44, 62, 80, 0.3) !important;
+    backdrop-filter: blur(10px) !important;
+    border: 2px dashed rgba(255, 255, 255, 0.3) !important;
+    border-radius: 15px !important;
+    padding: 2rem !important;
+    transition: all 0.3s ease !important;
+}
+
+.stFileUploader > div:hover {
+    border-color: #3b82f6 !important;
+    background: rgba(44, 62, 80, 0.4) !important;
+}
+
+.stFileUploader label, .stFileUploader p, .stFileUploader svg {
+    color: #ffffff !important;
+    fill: #ffffff !important;
+}
+
+/* Sidebar removal */
+.css-1d391kg {
+    display: none !important;
 }
 
 /* Hide Streamlit elements */
 #MainMenu {visibility: hidden;}
 footer {visibility: hidden;}
 header {visibility: hidden;}
+.stToolbar {visibility: hidden;}
 
-/* Custom input styling */
-.stSelectbox > div > div > div {
-    background-color: #2c3e50;
-    color: #f8f9fa;
-    border: 1px solid #4a5568;
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
 }
 
-.stTextInput > div > div > input, .stTextArea > div > div > textarea {
-    background-color: #2c3e50;
-    color: #f8f9fa;
-    border: 1px solid #4a5568;
-}
-
-/* File uploader styling */
-.stFileUploader > div {
-    background-color: #2c3e50;
-    border: 2px dashed #4a5568;
+::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
     border-radius: 10px;
-    padding: 1rem;
 }
 
-.stFileUploader label, .stFileUploader p, .stFileUploader svg {
-    color: #f8f9fa !important;
-    fill: #f8f9fa !important;
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    border-radius: 10px;
 }
 
-/* Custom divider */
-hr {
-    border: none;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-    margin: 2rem 0;
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #2563eb, #7c3aed);
 }
 
-/* Mandatory field styling */
-.mandatory-field {
-    border: 2px solid #e74c3c !important;
-    background-color: #2c1810 !important;
+/* Responsive design */
+@media (max-width: 768px) {
+    .main-header h1 {
+        font-size: 2.5rem;
+    }
+    
+    .content-area {
+        padding: 1.5rem;
+    }
+    
+    .stButton > button {
+        height: 3rem !important;
+        font-size: 0.9rem !important;
+    }
 }
 
-.field-warning {
-    color: #e74c3c;
-    font-size: 0.9rem;
-    margin-top: 0.25rem;
+/* Loading animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.content-area {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+/* Gradient text for headings */
+.gradient-text {
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6, #06b6d4);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 700;
+}
+
+/* Enhanced metrics and cards */
+.metric-card {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 2rem;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.metric-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.metric-value {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #3b82f6;
+    margin-bottom: 0.5rem;
+}
+
+.metric-label {
+    color: #cbd5e0;
+    font-size: 1.1rem;
     font-weight: 500;
-}
-
-/* Fixed Tab Button Styling - All tabs dark, active tab blue */
-.stButton > button {
-    background: #2a2a2a !important;
-    color: #ecf0f1 !important;
-    border: 1px solid #3a3a3a !important;
-    font-weight: 600 !important;
-    font-size: 1rem !important;
-    text-transform: uppercase !important;
-    letter-spacing: 0.5px !important;
-    transition: all 0.3s ease !important;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2) !important;
-    height: 3rem !important;
-    border-radius: 10px !important;
-}
-
-.stButton > button:hover {
-    transform: translateY(-2px) !important;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3) !important;
-    background: #3a3a3a !important;
-    border-color: #4a5568 !important;
-}
-
-/* Active tab styling - Blue color */
-.stButton > button:focus,
-.stButton > button:active {
-    background: linear-gradient(145deg, #3b82f6, #2563eb) !important;
-    color: #ffffff !important;
-    border-color: #1d4ed8 !important;
-    transform: translateY(-1px) !important;
-    box-shadow: 0 5px 18px rgba(59, 130, 246, 0.4) !important;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -372,168 +574,193 @@ hr {
 if 'active_tab' not in st.session_state:
     st.session_state.active_tab = 0
 
-# Header
-st.markdown("""
-<div class="main-header">
-    <h1>Sales Proposal Generator</h1>
-</div>
-""", unsafe_allow_html=True)
-
 # Tab buttons
 tab_names = ["Client Information", "Seller Information", "Project Specifications", "Generate Proposal"]
 
-# Create tab buttons
-cols = st.columns(4)
+# Create tab buttons with full width
+cols = st.columns(4, gap="large")
 for i, tab_name in enumerate(tab_names):
     with cols[i]:
         if st.button(tab_name, key=f"tab_{i}", use_container_width=True):
             st.session_state.active_tab = i
 
-# Dynamic styling for active tab - Blue color when active
+# Dynamic styling for active tab
 st.markdown(f"""
 <style>
-    div[data-testid="column"]:nth-child({st.session_state.active_tab + 1}) button {{
-        background: linear-gradient(145deg, #3b82f6, #2563eb) !important;
+    /* Active tab styling for the new column layout */
+    div[data-testid="column"]:nth-child({(st.session_state.active_tab * 2) + 1}) button {{
+        background: linear-gradient(135deg, #3b82f6, #8b5cf6) !important;
         color: #ffffff !important;
         border-color: #1d4ed8 !important;
-        font-weight: 700 !important;
-        transform: translateY(-1px) !important;
-        box-shadow: 0 5px 18px rgba(59, 130, 246, 0.4) !important;
+        font-weight: 800 !important;
+        transform: translateY(-2px) scale(1.03) !important;
+        box-shadow: 0 10px 40px rgba(59, 130, 246, 0.4) !important;
+    }}
+    
+    /* Add glowing effect to active tab separator */
+    div[data-testid="column"]:nth-child({(st.session_state.active_tab * 2) + 2}) .separator-diamond,
+    div[data-testid="column"]:nth-child({(st.session_state.active_tab * 2)}) .separator-diamond {{
+        animation: glow-diamond 1.5s ease-in-out infinite !important;
+    }}
+    
+    @keyframes glow-diamond {{
+        0%, 100% {{
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.8);
+        }}
+        50% {{
+            box-shadow: 0 0 30px rgba(147, 51, 234, 1);
+        }}
     }}
 </style>
 """, unsafe_allow_html=True)
 
+# # Content area with full width container
+# st.markdown('<div class="content-area">', unsafe_allow_html=True)
 
 if st.session_state.active_tab == 0:
     client_tab()
 
 elif st.session_state.active_tab == 1:
-    st.markdown("## 📄 Template Library")
-    # st.markdown("Browse and customize our collection of proven proposal templates.")
+    st.markdown('<h2 class="gradient-text">📄 Template Library</h2>', unsafe_allow_html=True)
+    st.markdown("Browse and customize our collection of proven proposal templates.")
     
-    # col1, col2, col3 = st.columns(3)
-    
-    # with col1:
-    #     st.markdown("### Software Development")
-    #     st.markdown("- Web Application Template")
-    #     st.markdown("- Mobile App Template")
-    #     st.markdown("- API Development Template")
-    
-    # with col2:
-    #     st.markdown("### Consulting Services")
-    #     st.markdown("- Business Strategy Template")
-    #     st.markdown("- Process Optimization Template")
-    #     st.markdown("- Digital Transformation Template")
-    
-    # with col3:
-    #     st.markdown("### Marketing & Design")
-    #     st.markdown("- Brand Identity Template")
-    #     st.markdown("- Digital Marketing Template")
-    #     st.markdown("- Website Design Template")
+    # Full-width grid layout for templates
+    st.markdown("""
+    <div class="full-width-grid">
+        <div class="grid-item">
+            <h3 class="gradient-text">Software Development</h3>
+            <p>• Web Application Template</p>
+            <p>• Mobile App Template</p>
+            <p>• API Development Template</p>
+            <p>• Cloud Infrastructure Template</p>
+        </div>
+        <div class="grid-item">
+            <h3 class="gradient-text">Consulting Services</h3>
+            <p>• Business Strategy Template</p>
+            <p>• Process Optimization Template</p>
+            <p>• Digital Transformation Template</p>
+            <p>• Technology Audit Template</p>
+        </div>
+        <div class="grid-item">
+            <h3 class="gradient-text">Marketing & Design</h3>
+            <p>• Brand Identity Template</p>
+            <p>• Digital Marketing Template</p>
+            <p>• Website Design Template</p>
+            <p>• Social Media Strategy Template</p>
+        </div>
+        <div class="grid-item">
+            <h3 class="gradient-text">Enterprise Solutions</h3>
+            <p>• ERP Implementation Template</p>
+            <p>• Data Analytics Template</p>
+            <p>• Security Assessment Template</p>
+            <p>• Integration Services Template</p>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
 elif st.session_state.active_tab == 2:
-    st.markdown("## 👥 Client Database")
-    # st.markdown("Manage your client relationships and proposal history.")
+    st.markdown('<h2 class="gradient-text">👥 Client Database</h2>', unsafe_allow_html=True)
+    st.markdown("Manage your client relationships and proposal history.")
     
-    # col1, col2 = st.columns(2)
+    col1, col2, col3 = st.columns([2, 2, 2], gap="large")
     
-    # with col1:
-    #     st.markdown("### Recent Clients")
-    #     clients = ["Acme Corp", "TechStart Inc", "Global Solutions", "Innovation Labs"]
-    #     for client in clients:
-    #         st.markdown(f"• {client}")
+    with col1:
+        st.markdown("""
+        <div class="metric-card">
+            <h3 class="gradient-text">Recent Clients</h3>
+            <p>• Acme Corporation</p>
+            <p>• TechStart Inc</p>
+            <p>• Global Solutions Ltd</p>
+            <p>• Innovation Labs</p>
+            <p>• Digital Dynamics</p>
+            <p>• Future Systems Co</p>
+        </div>
+        """, unsafe_allow_html=True)
     
-    # with col2:
-    #     st.markdown("### Proposal Statistics")
-    #     st.metric("Total Proposals", "47", "+12%")
-    #     st.metric("Success Rate", "73%", "+5%")
-    #     st.metric("Average Value", "$18,500", "+8%")
+    with col2:
+        st.markdown("""
+        <div class="metric-card">
+            <div class="metric-value">47</div>
+            <div class="metric-label">Total Proposals</div>
+            <p style="color: #10b981; margin-top: 1rem;">+12% this month</p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+    with col3:
+        st.markdown("""
+        <div class="metric-card">
+            <div class="metric-value">73%</div>
+            <div class="metric-label">Success Rate</div>
+            <p style="color: #10b981; margin-top: 1rem;">+5% improvement</p>
+        </div>
+        """, unsafe_allow_html=True)
 
 else:  # Analytics Dashboard
-    st.markdown("## 📊 Analytics ")
-    # st.markdown("Track your proposal performance and business metrics.")
+    st.markdown('<h2 class="gradient-text">📊 Analytics Dashboard</h2>', unsafe_allow_html=True)
+    st.markdown("Track your proposal performance and business metrics.")
     
-    # col1, col2, col3 = st.columns(3)
+    # Metrics row
+    col1, col2, col3, col4 = st.columns(4, gap="large")
     
-    # with col1:
-    #     st.metric("This Month", "$125,000", "+15%")
+    with col1:
+        st.markdown("""
+        <div class="metric-card">
+            <div class="metric-value">$125K</div>
+            <div class="metric-label">This Month</div>
+            <p style="color: #10b981; margin-top: 1rem;">+15% growth</p>
+        </div>
+        """, unsafe_allow_html=True)
     
-    # with col2:
-    #     st.metric("Proposals Sent", "23", "+3")
+    with col2:
+        st.markdown("""
+        <div class="metric-card">
+            <div class="metric-value">23</div>
+            <div class="metric-label">Proposals Sent</div>
+            <p style="color: #10b981; margin-top: 1rem;">+3 from last month</p>
+        </div>
+        """, unsafe_allow_html=True)
     
-    # with col3:
-    #     st.metric("Conversion Rate", "68%", "+12%")
+    with col3:
+        st.markdown("""
+        <div class="metric-card">
+            <div class="metric-value">68%</div>
+            <div class="metric-label">Conversion Rate</div>
+            <p style="color: #10b981; margin-top: 1rem;">+12% improvement</p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+    with col4:
+        st.markdown("""
+        <div class="metric-card">
+            <div class="metric-value">$18.5K</div>
+            <div class="metric-label">Average Value</div>
+            <p style="color: #10b981; margin-top: 1rem;">+8% increase</p>
+        </div>
+        """, unsafe_allow_html=True)
     
-    # st.markdown("### 📈 Performance Trends")
-    # st.markdown("Your proposal success rate has improved by 12% this quarter, with the highest performance in software development projects.")
+    st.markdown('<div style="margin: 3rem 0;"></div>', unsafe_allow_html=True)
+    
+    st.markdown("""
+    <div class="grid-item">
+        <h3 class="gradient-text">📈 Performance Trends</h3>
+        <p>Your proposal success rate has improved by 12% this quarter, with the highest performance in software development projects. The average deal size has increased significantly, and client satisfaction scores are at an all-time high.</p>
+        <p>Key insights: Enterprise clients show 85% higher conversion rates, and proposals with detailed technical specifications convert 40% better than generic templates.</p>
+    </div>
+    """, unsafe_allow_html=True)
 
-# Footer with updated buttons
+st.markdown('</div>', unsafe_allow_html=True)
 
+# Footer with enhanced styling
+st.markdown('<div class="footer">', unsafe_allow_html=True)
 
-# Footer buttons styling - keeping original colors for footer buttons
-st.markdown("""
-<style>
-    /* Footer button styling - separate from tab buttons */
-    .footer .stButton > button {
-        height: 3rem !important;
-        font-weight: 600 !important;
-        border-radius: 8px !important;
-        border: none !important;
-        transition: all 0.3s ease !important;
-        font-size: 0.9rem !important;
-        text-transform: none !important;
-        letter-spacing: 0 !important;
-    }
-    
-    /* Refresh Button */
-    .footer div[data-testid="column"]:nth-child(1) .stButton > button {
-        background: linear-gradient(145deg, #f39c12, #e67e22) !important;
-        color: #2c3e50 !important;
-        box-shadow: 0 3px 10px rgba(243, 156, 18, 0.3) !important;
-    }
-    
-    .footer div[data-testid="column"]:nth-child(1) .stButton > button:hover {
-        transform: translateY(-1px) !important;
-        box-shadow: 0 4px 15px rgba(243, 156, 18, 0.4) !important;
-        background: linear-gradient(145deg, #e67e22, #f39c12) !important;
-    }
-    
-    /* Generate Presentation Button */
-    .footer div[data-testid="column"]:nth-child(2) .stButton > button {
-        background: linear-gradient(145deg, #e74c3c, #c0392b) !important;
-        color: #f8f9fa !important;
-        box-shadow: 0 3px 10px rgba(231, 76, 60, 0.3) !important;
-    }
-    
-    .footer div[data-testid="column"]:nth-child(2) .stButton > button:hover {
-        transform: translateY(-1px) !important;
-        box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4) !important;
-        background: linear-gradient(145deg, #c0392b, #e74c3c) !important;
-    }
-    
-    /* Settings and About Buttons */
-    .footer div[data-testid="column"]:nth-child(3) .stButton > button,
-    .footer div[data-testid="column"]:nth-child(4) .stButton > button {
-        background: linear-gradient(145deg, #27ae60, #2ecc71) !important;
-        color: #2c3e50 !important;
-        box-shadow: 0 3px 10px rgba(39, 174, 96, 0.3) !important;
-    }
-    
-    .footer div[data-testid="column"]:nth-child(3) .stButton > button:hover,
-    .footer div[data-testid="column"]:nth-child(4) .stButton > button:hover {
-        transform: translateY(-1px) !important;
-        box-shadow: 0 4px 15px rgba(39, 174, 96, 0.4) !important;
-        background: linear-gradient(145deg, #2ecc71, #27ae60) !important;
-    }
-</style>
-""", unsafe_allow_html=True)
-
-col1, col2 = st.columns(2)
+col1, col2 = st.columns(2, gap="large")
 
 with col1:
-    if st.button("🔄 Refresh", key="refresh_btn", use_container_width=True):
+    if st.button("🔄 Refresh All Data", key="refresh_btn", use_container_width=True):
         refresh_all_data()
 
 with col2:
     if st.button("📊 Generate Presentation", key="generate_btn", use_container_width=True):
         generate_presentation()
+
+st.markdown('</div>', unsafe_allow_html=True)

@@ -10,7 +10,7 @@ from langchain_chroma import Chroma
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_huggingface import HuggingFaceEmbeddings
-from prompts import image_prompt  # Make sure this exists
+from .prompts import image_prompt  # Make sure this exists
 
 # --- Utility Functions ---
 
