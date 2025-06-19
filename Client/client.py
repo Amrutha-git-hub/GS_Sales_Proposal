@@ -16,6 +16,23 @@ if 'css_applied' not in st.session_state:
     st.markdown(client_css, unsafe_allow_html=True)
 
 # Function to save uploaded file and return the file path
+def save_uploaded_file_and_get_path(uploaded_file):
+    """Save uploaded file to a temporary directory and return the file path"""
+    if uploaded_file is not None:
+        # Create uploads directory if it doesn't exist
+        upload_dir = "uploads"
+        if not os.path.exists(upload_dir):
+            os.makedirs(upload_dir)
+        
+        # Create file path
+        file_path = os.path.join(upload_dir, uploaded_file.name)
+        
+        # Save the file
+        with open(file_path, "wb") as f:
+            f.write(uploaded_file.getbuffer())
+        
+        return file_path
+    return None
 
 # Main App
 def client_tab():
@@ -58,18 +75,6 @@ def client_tab():
         st.session_state['linkedin_profiles'] = {}
     if 'last_searched_spoc' not in st.session_state:
         st.session_state['last_searched_spoc'] = ""
-    
-    # Initialize added pain points tracking
-    if 'added_pain_points' not in st.session_state:
-        st.session_state['added_pain_points'] = set()
-    
-    # Initialize processing state
-    if 'processing_rfi' not in st.session_state:
-        st.session_state['processing_rfi'] = False
-    
-    # Initialize uploaded file info
-    if 'uploaded_file_info' not in st.session_state:
-        st.session_state['uploaded_file_info'] = None
     
     # Top section with client name and URLs
     col1, col2 = st.columns([1, 1])
@@ -164,6 +169,7 @@ def client_tab():
 
     # Document upload and pain points section
     col3, col4 = st.columns([1, 1])
+        
 
     with col3:
         st.markdown('''
@@ -193,78 +199,46 @@ def client_tab():
         </style>
         """, unsafe_allow_html=True)
         
-        # Show different UI based on analysis status
-        if st.session_state.get('document_analyzed', False) and st.session_state.get('uploaded_file_info'):
-            # Show analyzed document info with option to upload new
-            file_info = st.session_state['uploaded_file_info']
-            
-            # Display analyzed document info
-            st.markdown(f"""
-            <div style="
-                padding: 12px;
-                border-radius: 6px;
-                background-color: #2d5016;
-                color: #ffffff;
-                margin-bottom: 10px;
-                border: 1px solid #4a7c20;
-            ">
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <span>✅</span>
-                    <div>
-                        <div style="font-weight: 500;">Document Analyzed Successfully</div>
-                        <div style="font-size: 0.85em; opacity: 0.9;">📄 {file_info['name']} ({file_info['size']})</div>
-                    </div>
-                </div>
-            </div>
-            """, unsafe_allow_html=True)
-            
-            # Option to upload new document
-            if st.button("📤 Upload New Document", key="upload_new_doc_btn", help="Upload a different RFI document"):
-                # Reset analysis state
-                st.session_state['document_analyzed'] = False
-                st.session_state['uploaded_file_info'] = None
-                st.session_state['rfi_pain_points_items'] = {}
-                st.session_state['uploaded_file_path'] = None
-                st.session_state['added_pain_points'] = set()
-                st.rerun()
+        # FILE UPLOAD - Always enabled, independent of client name
+        rfi_document_upload = st.file_uploader(
+            label="Upload RFI Document", 
+            type=['pdf', 'docx', 'txt', 'csv','png','jpg','jpeg'], 
+            key="rfi_document_uploader",
+            label_visibility="collapsed"
+        )
         
-        else:
-            # Show file uploader when no document is analyzed
-            rfi_document_upload = st.file_uploader(
-                label="Upload RFI Document", 
-                type=['pdf', 'docx', 'txt', 'csv','png','jpg','jpeg'], 
-                key="rfi_document_uploader",
-                label_visibility="collapsed"
-            )
+        # Show file info and analyze button in a compact way
+        if rfi_document_upload is not None:
+            # Very compact single line display
+            file_size_kb = round(rfi_document_upload.size / 1024, 1)
+            file_size_display = f"{file_size_kb}KB" if file_size_kb < 1024 else f"{round(file_size_kb/1024, 1)}MB"
             
-            # Show file info and analyze button in a compact way
-            if rfi_document_upload is not None:
-                # Very compact single line display
-                file_size_kb = round(rfi_document_upload.size / 1024, 1)
-                file_size_display = f"{file_size_kb}KB" if file_size_kb < 1024 else f"{round(file_size_kb/1024, 1)}MB"
-                
-                # Single compact row
-                col_info, col_btn = st.columns([2.5, 1])
-                with col_info:
-                    st.markdown(f"<span style='font-size:0.8em'>📄 {rfi_document_upload.name[:25]}{'...' if len(rfi_document_upload.name) > 25 else ''} ({file_size_display})</span>", 
-                            unsafe_allow_html=True)
-                with col_btn:
-                    analyze_clicked = st.button("Analyze", key="analyze_rfi_document_btn",
-                                            help="Process RFI document",
-                                            type="primary", use_container_width=True)
-                
-                # Handle analyze button click
-                if analyze_clicked:
-                    if not client_enterprise_name:
-                        st.error("❌ Please enter the Client Enterprise Name first")
-                    else:
-                        # Set processing flag
-                        st.session_state['processing_rfi'] = True
-                        st.rerun()  # Refresh to show processing state
+            # Single compact row
+            col_info, col_btn = st.columns([2.5, 1])
+            with col_info:
+                st.markdown(f"<span style='font-size:0.8em'>📄 {rfi_document_upload.name[:25]}{'...' if len(rfi_document_upload.name) > 25 else ''} ({file_size_display})</span>", 
+                        unsafe_allow_html=True)
+            with col_btn:
+                analyze_clicked = st.button("Analyze", key="analyze_rfi_document_btn",
+                                        help="Process RFI document",
+                                        type="primary", use_container_width=True)
             
-            # Show processing indicator
+            # Initialize processing state if not exists
+            if 'processing_rfi' not in st.session_state:
+                st.session_state['processing_rfi'] = False
+            
+            # Handle analyze button click
+            if analyze_clicked:
+                if not client_enterprise_name:
+                    st.error("❌ Please enter the Client Enterprise Name first")
+                else:
+                    # Set processing flag
+                    st.session_state['processing_rfi'] = True
+                    st.rerun()  # Refresh to show processing state
+            
+            # Show processing indicator without blocking UI
             if st.session_state.get('processing_rfi', False):
-                #st.info("🔄 Analyzing RFI document...")
+                #st.info("🔄 Analyzing RFI document in background...")
                 
                 # Perform the actual processing
                 try:
@@ -273,14 +247,6 @@ def client_tab():
                     st.session_state['uploaded_file_path'] = file_path
                     
                     if file_path and client_enterprise_name:
-                        # Store file info for later display
-                        file_size_kb = round(rfi_document_upload.size / 1024, 1)
-                        file_size_display = f"{file_size_kb}KB" if file_size_kb < 1024 else f"{round(file_size_kb/1024, 1)}MB"
-                        st.session_state['uploaded_file_info'] = {
-                            'name': rfi_document_upload.name,
-                            'size': file_size_display
-                        }
-                        
                         # Extract pain points using the file path and company name
                         st.session_state.pain_point = get_pain_points(file_path, client_enterprise_name)
                         # Automatically generate RFI pain points items
@@ -289,7 +255,6 @@ def client_tab():
                         st.session_state['document_analyzed'] = True
                         st.session_state['processing_rfi'] = False  # Reset processing flag
                         #st.success("✅ RFI document analyzed successfully!")
-                        time.sleep(1)  # Brief pause to show success message
                         st.rerun()  # Refresh to update UI
                     else:
                         st.error("❌ Error saving the uploaded file")
@@ -300,7 +265,6 @@ def client_tab():
                     st.session_state['rfi_pain_points_items'] = {}
                     st.session_state['document_analyzed'] = False
                     st.session_state['processing_rfi'] = False
-
     with col4:
         st.markdown('''
         <div class="tooltip-label">
@@ -323,7 +287,6 @@ def client_tab():
         # Update session state when text area changes (only if enabled)
         if client_name_provided and enterprise_details != st.session_state.enterprise_details_content:
             st.session_state.enterprise_details_content = enterprise_details
-
     # Additional row with editable content and summary with + buttons
     col5, col6 = st.columns([1, 1])
     
@@ -352,93 +315,75 @@ def client_tab():
         client_requirements_provided = bool(client_name_provided and client_requirements.strip())
           
     with col6:
-        # Title with tooltip only (no buttons)
-        st.markdown('''
-        <div class="tooltip-label">
-            Client Pain Points
-            <div class="tooltip-icon" data-tooltip="This area displays extracted pain points from RFI documents or website analysis. You can also manually enter client's business challenges, current pain points, and organizational details that will help customize your proposal.">ⓘ</div>
-        </div>
-        ''', unsafe_allow_html=True)
-        
-        # Get RFI pain points items from session state or use dummy data
-        if client_name_provided and st.session_state.get('rfi_pain_points_items'):
-            rfi_pain_points_items = st.session_state['rfi_pain_points_items']
-        else:
-            # Dummy data when no client name or no file uploaded
-            rfi_pain_points_items = {
-                "Market Positioning & Competitive Advantage": "Need stronger market positioning and differentiation from competitors",
-                "Lead Generation & Sales Conversion": "Struggling with consistent lead generation and converting prospects to customers",
-                "Digital Presence & Brand Identity": "Lacking cohesive digital presence and professional brand identity"
-            }
-        
-        # Use a single container for all pain points items
-        with st.container():
-            # Display pain points items with add buttons
-            for i, (key, value) in enumerate(rfi_pain_points_items.items()):
-                # Create a box container with + button and content on same horizontal level
-                col_add, col_content = st.columns([0.5, 9], gap="small")
-                
-                # Check if this pain point has been added
-                is_added = key in st.session_state.get('added_pain_points', set())
-                
-                with col_add:
-                    # Style the button to align vertically with the content box
-                    st.markdown("""
-                    <style>
-                    div[data-testid="column"] > div > div > button {
-                        height: 48px !important;
-                        margin-top: 5px !important;
-                    }
-                    </style>
-                    """, unsafe_allow_html=True)
+            # Title with tooltip only (no buttons)
+            st.markdown('''
+            <div class="tooltip-label">
+                Client Pain Points
+                <div class="tooltip-icon" data-tooltip="This area displays extracted pain points from RFI documents or website analysis. You can also manually enter client's business challenges, current pain points, and organizational details that will help customize your proposal.">ⓘ</div>
+            </div>
+            ''', unsafe_allow_html=True)
+            
+            # Get RFI pain points items from session state or use dummy data
+            if client_name_provided and st.session_state.get('rfi_pain_points_items'):
+                rfi_pain_points_items = st.session_state['rfi_pain_points_items']
+            else:
+                # Dummy data when no client name or no file uploaded
+                rfi_pain_points_items = {
+                    "Market Positioning & Competitive Advantage": "Need stronger market positioning and differentiation from competitors",
+                    "Lead Generation & Sales Conversion": "Struggling with consistent lead generation and converting prospects to customers",
+                    "Digital Presence & Brand Identity": "Lacking cohesive digital presence and professional brand identity"
+                }
+            
+            # Use a single container for all pain points items
+            with st.container():
+                # Display pain points items with add buttons
+                for i, (key, value) in enumerate(rfi_pain_points_items.items()):
+                    # Create a box container with + button and content on same horizontal level
+                    col_add, col_content = st.columns([0.5, 9], gap="small")
                     
-                    # Change button appearance based on whether it's been added
-                    button_text = "✅" if is_added else "➕"
-                    button_disabled = is_added
-                    
-                    if st.button(button_text, 
-                               key=f"add_rfi_pain_point_item_{i}", 
-                               help=f"Add '{key}' to client requirements section" if not is_added else "Already added",
-                               disabled=button_disabled):
-                        # Get current content from the session state (not the widget key)
-                        current_content = st.session_state.get('client_requirements_content', '')
+                    with col_add:
+                        # Style the button to align vertically with the content box
+                        st.markdown("""
+                        <style>
+                        div[data-testid="column"] > div > div > button {
+                            height: 48px !important;
+                            margin-top: 5px !important;
+                        }
+                        </style>
+                        """, unsafe_allow_html=True)
                         
-                        # Append the value to the content
-                        new_content = current_content + f"\n\n{value}" if current_content else value
-                        
-                        # Update the session state content variable
-                        st.session_state.client_requirements_content = new_content
-                        
-                        # Mark this pain point as added
-                        if 'added_pain_points' not in st.session_state:
-                            st.session_state['added_pain_points'] = set()
-                        st.session_state['added_pain_points'].add(key)
-                        
-                        # No success message, just rerun to update UI
-                        st.rerun()
+                        if st.button("➕", key=f"add_rfi_pain_point_item_{i}", help=f"Add '{key}' to client requirements section"):
+                            # Get current content from the session state (not the widget key)
+                            current_content = st.session_state.get('client_requirements_content', '')
+                            
+                            # Append the value to the content
+                            new_content = current_content + f"\n\n{value}" if current_content else value
+                            
+                            # Update the session state content variable
+                            st.session_state.client_requirements_content = new_content
+                            
+                            # Show success message
+                            #st.success(f"✅ '{key}' added to Client Requirements!")
+                            st.rerun()
 
-                with col_content:
-                    # Display key in a styled container box with better visibility
-                    # Change background color if added
-                    bg_color = "#2d5016" if is_added else "#404040"  # Green background if added
-                    
-                    st.markdown(f"""
-                    <div style="
-                        padding: 12px;
-                        border-radius: 6px;
-                        margin: 5px 0;
-                        background-color: {bg_color};
-                        color: #ffffff;
-                        font-weight: 500;
-                        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-                        min-height: 24px;
-                        display: flex;
-                        align-items: center;
-                    ">
-                        📋 {key}
-                    </div>
-                    """, unsafe_allow_html=True)
-    
+                    with col_content:
+                        # Display key in a styled container box with better visibility
+                        st.markdown(f"""
+                        <div style="
+                            padding: 12px;
+                            border-radius: 6px;
+                            margin: 5px 0;
+                            background-color: #404040;
+                            color: #ffffff;
+                            font-weight: 500;
+                            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                            min-height: 24px;
+                            display: flex;
+                            align-items: center;
+                        ">
+                            📋 {key}
+                        </div>
+                        """, unsafe_allow_html=True)
     # SPOC Row
     col_spoc1, col_spoc2 = st.columns([1, 1])
 
@@ -641,7 +586,7 @@ def client_tab():
         if spoc_name_provided:
             business_priorities_list = get_ai_business_priorities(new_target_role)
         else:
-            business_priorities_list = ['Strategic Growth and Vision',' Financial Performance and Sustainability','Leadership and Organizational Alignment']
+            business_priorities_list = [{'title': 'Revenue Growth and Market Share Expansion', 'icon': '📈'}, {'title': 'Profitability and Cost Optimization', 'icon': '💰'}, {'title': 'Digital Transformation and Innovation', 'icon': '🤖'}]
         
         # Initialize session state for selected priorities
         if 'selected_business_priorities' not in st.session_state:
@@ -707,7 +652,26 @@ def client_tab():
         ''', unsafe_allow_html=True)
         
         # Get AI suggestion 1 from function
-        rfi_additional_specs_content = get_ai_client_requirements(client_requirements=client_requirements,enterprise_details=enterprise_details) if client_name_provided and client_requirements_provided else  ""
+
+        # Use a stable key based on client name + requirements hash
+        requirement_key = f"{client_enterprise_name.strip()}__{hash(client_requirements.strip())}"
+
+        if client_name_provided and client_requirements_provided:
+            # Only run the AI call if not already cached
+            if 'rfi_additional_specs_cache' not in st.session_state:
+                st.session_state['rfi_additional_specs_cache'] = {}
+
+            if requirement_key in st.session_state['rfi_additional_specs_cache']:
+                rfi_additional_specs_content = st.session_state['rfi_additional_specs_cache'][requirement_key]
+            else:
+                rfi_additional_specs_content = get_ai_client_requirements(
+                    client_requirements=client_requirements,
+                    enterprise_details=enterprise_details
+                )
+                st.session_state['rfi_additional_specs_cache'][requirement_key] = rfi_additional_specs_content
+        else:
+            rfi_additional_specs_content = 'Enter additional client requirements and specifications if any'
+
         
         # TEXT AREA - DISABLED if no client name
         rfi_additional_specs = st.text_area(

@@ -64,8 +64,9 @@ Guidelines:
 Respond in the following format:
 
 [
-  "Priority 1",
-  "Priority 2",
-  "Priority 3"
+    {{"title": "Strategic Growth and Vision", "icon": "📈"}},
+    {{"title": "Operational Efficiency", "icon": "⚙️"}},
+    {{"title": "Customer Experience", "icon": "💡"}}
 ]
+
 '''

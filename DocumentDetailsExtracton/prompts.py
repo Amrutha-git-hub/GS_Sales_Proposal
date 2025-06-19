@@ -23,16 +23,17 @@ You are a highly capable business analyst AI with deep expertise in sales, techn
 
 From this document, extract and synthesize **three key insights or business pain points** that the client organization is implicitly or explicitly concerned about. Each pain point should be labeled under a relevant category, followed by a brief, insightful summary.
 
-Your output should strictly follow this format:
+Here is the context of the sales proposal:
+{context}
 
-Here is the context of the salse proposal : {context}
+Respond with **only** a valid JSON dictionary using the following format:
 
-
-return {{
-    "Category1": "Insightful and concise pain point summary for this category.",
-    "Category2": "Another brief insight under a different relevant category.",
-    "Category3": "A third meaningful insight under its appropriate category.",
+{{
+    "Category 1": "Insightful and concise pain point summary.",
+    "Category 2": "Another brief and relevant pain point summary.",
+    "Category 3": "A third valuable insight from the RFI."
 }}
 
-Only output this JSON-style dictionary — no explanations or additional text. Ensure the insights are useful to a product strategist or sales proposal team.
+❌ Do **not** add any explanation, text before or after the dictionary, markdown, comments, or labels.  
+✅ Return **only** the raw JSON dictionary — nothing else.
 """

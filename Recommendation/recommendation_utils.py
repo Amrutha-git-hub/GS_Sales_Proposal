@@ -1,7 +1,7 @@
 from langchain_core.prompts import ChatPromptTemplate
 from .prompts import *
 from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain_core.output_parsers import StrOutputParser
+from langchain_core.output_parsers import JsonOutputParser,StrOutputParser
 from dotenv import load_dotenv
 from DocumentDetailsExtracton.doc_xtraction_utils import clean_to_list
 load_dotenv()
@@ -20,6 +20,7 @@ def get_ai_client_requirements(enterprise_details,client_requirements):
 
 def get_ai_business_priorities(spoc_role="CEO"):
     template = ChatPromptTemplate.from_template(business_priotiiry_recommendation_prompt)
-    chain = template | llm | StrOutputParser()
+    chain = template | llm | JsonOutputParser()
     result = chain.invoke({'client_spoc_role':spoc_role})
-    return json.loads(clean_to_list(result))
+    print(result)
+    return result
