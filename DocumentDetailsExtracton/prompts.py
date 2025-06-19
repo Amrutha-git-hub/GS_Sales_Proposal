@@ -25,12 +25,14 @@ From this document, extract and synthesize **three key insights or business pain
 
 Your output should strictly follow this format:
 
-return {
+Here is the context of the salse proposal : {context}
+
+
+return {{
     "Category1": "Insightful and concise pain point summary for this category.",
     "Category2": "Another brief insight under a different relevant category.",
     "Category3": "A third meaningful insight under its appropriate category.",
-}
+}}
 
 Only output this JSON-style dictionary — no explanations or additional text. Ensure the insights are useful to a product strategist or sales proposal team.
 """
-

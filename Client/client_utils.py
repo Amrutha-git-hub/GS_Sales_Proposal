@@ -5,7 +5,7 @@ import os
 
 from WebsiteUrl_Agent.agent_runner import get_urls
 import asyncio 
-from GS_Sales_Proposal.DocumentDetailsExtracton.pain_points_extractor import *
+from DocumentDetailsExtracton.pain_points_extractor import *
 # Function to get URLs (placeholder function)
 
 def get_urls_list(company_name) -> List[str]:
@@ -72,6 +72,21 @@ def get_priority_suggestions() -> List[dict]:
         }
     ]
 
+def get_editable_content() -> str:
+    """
+    Placeholder function that returns editable content
+    Replace this with your actual function that fetches editable content
+    """
+    return """This is editable content from the function:
+
+- Project requirements and specifications
+- Current implementation status
+- Key stakeholder feedback
+- Next steps and action items
+- Additional notes and observations
+
+You can modify this content as needed."""
+
 
 # Function to get summary items (NEW)
 # from Rag.rag import get_pain_points
@@ -105,3 +120,21 @@ def save_uploaded_file(uploaded_file, save_dir="uploaded_rf_is"):
         f.write(uploaded_file.getbuffer())
 
     return save_path
+
+def save_uploaded_file_and_get_path(uploaded_file):
+    """Save uploaded file to a temporary directory and return the file path"""
+    if uploaded_file is not None:
+        # Create uploads directory if it doesn't exist
+        upload_dir = "uploads"
+        if not os.path.exists(upload_dir):
+            os.makedirs(upload_dir)
+        
+        # Create file path
+        file_path = os.path.join(upload_dir, uploaded_file.name)
+        
+        # Save the file
+        with open(file_path, "wb") as f:
+            f.write(uploaded_file.getbuffer())
+        
+        return file_path
+    return None

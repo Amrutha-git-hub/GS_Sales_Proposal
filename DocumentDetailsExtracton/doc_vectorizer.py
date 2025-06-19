@@ -18,22 +18,26 @@ def get_filename(file_path):
     return os.path.splitext(os.path.basename(file_path))[0]
 
 def file_router(file):
-    kind = filetype.guess(file)
-    if kind is None:
-        return "Unknown"
+    try:
+        kind = filetype.guess(file)
+        if kind is None:
+            return "Unknown"
 
-    file_type = kind.mime
+        file_type = kind.mime
 
-    if file_type.startswith("image/"):
-        return 'imagesingle'
+        if file_type.startswith("image/"):
+            return 'imagesingle'
 
-    loader = PyPDFLoader(file)
-    docs = loader.load()
+        loader = PyPDFLoader(file)
+        docs = loader.load()
 
-    if not len(docs[0].page_content):
-        return 'imagepdf'
-    else:
-        return 'pdf'
+        if not len(docs[0].page_content):
+            return 'imagepdf'
+        else:
+            return 'pdf'
+    except Exception as e:
+        print(f"Error in file_router: {e}")
+        return 'pdf'  # Default fallback
 
 def encode_image(image) -> str:
     buffer = BytesIO()
@@ -77,63 +81,128 @@ def image_handler_append(image):
 # --- Vectorization Functions ---
 
 def vectorize_text(text: str, company_name: str, filename: str = "text_input"):
-    splitter = RecursiveCharacterTextSplitter(chunk_size=600, chunk_overlap=50)
-    docs = splitter.split_text(text)
-    persist_directory = os.path.join("chroma_store", company_name, filename)
-
-    vectorstore = Chroma.from_texts(
-        docs,
-        embedding=HuggingFaceEmbeddings(),
-        persist_directory=persist_directory
-    )
-    # Remove persist() call - Chroma auto-persists when persist_directory is specified
-    return vectorstore
+    try:
+        splitter = RecursiveCharacterTextSplitter(chunk_size=600, chunk_overlap=50)
+        docs = splitter.split_text(text)
+        
+        # Create persist directory
+        persist_directory = os.path.join("chroma_store", company_name, filename)
+        os.makedirs(persist_directory, exist_ok=True)
+        
+        # Create collection name (sanitize company name)
+        collection_name = f"{company_name}_{filename}".replace(" ", "_").replace("-", "_").lower()
+        
+        vectorstore = Chroma.from_texts(
+            texts=docs,
+            embedding=HuggingFaceEmbeddings(),
+            persist_directory=persist_directory,
+            collection_name=collection_name
+        )
+        return vectorstore
+        
+    except Exception as e:
+        print(f"Error in vectorize_text: {e}")
+        # Fallback to in-memory store
+        vectorstore = Chroma.from_texts(
+            texts=docs,
+            embedding=HuggingFaceEmbeddings(),
+            collection_name=f"fallback_{collection_name}"
+        )
+        return vectorstore
 
 def vectorize_single_image(image, company_name: str):
-    summary = image_handler(image)
-    filename = "image_single"
-    return vectorize_text(summary, company_name, filename)
+    try:
+        summary = image_handler(image)
+        filename = "image_single"
+        return vectorize_text(summary, company_name, filename)
+    except Exception as e:
+        print(f"Error in vectorize_single_image: {e}")
+        # Return a minimal vectorstore with error message
+        return vectorize_text("Error processing image", company_name, "error_image")
 
 def vectorize_multiple_images(image_path: str, company_name: str):
-    images = convert_from_path(image_path)
-    filename = get_filename(image_path)
-    summary = ''
+    try:
+        images = convert_from_path(image_path)
+        filename = get_filename(image_path)
+        summary = ''
 
-    for i, image in enumerate(images):
-        if i == 0:
-            summary = image_handler(image)
-        else:
-            summary += image_handler_append(image)
+        for i, image in enumerate(images):
+            if i == 0:
+                summary = image_handler(image)
+            else:
+                summary += image_handler_append(image)
 
-    return vectorize_text(summary, company_name, filename)
+        return vectorize_text(summary, company_name, filename)
+    except Exception as e:
+        print(f"Error in vectorize_multiple_images: {e}")
+        return vectorize_text("Error processing PDF images", company_name, "error_pdf_images")
 
 def vectorize_docs(filepath: str, company_name: str):
-    loader = PyPDFLoader(filepath)
-    docs = loader.load()
-    splitter = RecursiveCharacterTextSplitter(chunk_size=600, chunk_overlap=80)
-    chunks = splitter.split_documents(docs)
-    filename = get_filename(filepath)
-    persist_directory = os.path.join("chroma_store", company_name, filename)
-
-    vectorstore = Chroma.from_documents(
-        chunks,
-        HuggingFaceEmbeddings(),
-        persist_directory=persist_directory
-    )
-    # Remove persist() call - Chroma auto-persists when persist_directory is specified
-    return vectorstore
+    try:
+        loader = PyPDFLoader(filepath)
+        docs = loader.load()
+        splitter = RecursiveCharacterTextSplitter(chunk_size=600, chunk_overlap=80)
+        chunks = splitter.split_documents(docs)
+        filename = get_filename(filepath)
+        
+        # Create persist directory
+        persist_directory = os.path.join("chroma_store", company_name, filename)
+        os.makedirs(persist_directory, exist_ok=True)
+        
+        # Create collection name (sanitize)
+        collection_name = f"{company_name}_{filename}".replace(" ", "_").replace("-", "_").lower()
+        
+        vectorstore = Chroma.from_documents(
+            documents=chunks,
+            embedding=HuggingFaceEmbeddings(),
+            persist_directory=persist_directory,
+            collection_name=collection_name
+        )
+        return vectorstore
+        
+    except Exception as e:
+        print(f"Error in vectorize_docs: {e}")
+        # Fallback to in-memory store
+        try:
+            loader = PyPDFLoader(filepath)
+            docs = loader.load()
+            splitter = RecursiveCharacterTextSplitter(chunk_size=600, chunk_overlap=80)
+            chunks = splitter.split_documents(docs)
+            
+            vectorstore = Chroma.from_documents(
+                documents=chunks,
+                embedding=HuggingFaceEmbeddings(),
+                collection_name=f"fallback_{company_name}_{filename}".replace(" ", "_").lower()
+            )
+            return vectorstore
+        except Exception as fallback_error:
+            print(f"Fallback also failed: {fallback_error}")
+            # Return minimal vectorstore
+            return Chroma.from_texts(
+                texts=["Error loading document"],
+                embedding=HuggingFaceEmbeddings(),
+                collection_name="error_fallback"
+            )
 
 # --- Entry Point for Routing ---
 
 def vectorize(filepath: str, company_name: str):
-    file_type = file_router(filepath)
-    print(f"Detected file type: {file_type}")
+    try:
+        file_type = file_router(filepath)
+        print(f"Detected file type: {file_type}")
 
-    if file_type == 'imagesingle':
-        return vectorize_single_image(filepath, company_name)
-    elif file_type == 'imagepdf':
-        return vectorize_multiple_images(filepath, company_name)
-    else:
-        return vectorize_docs(filepath, company_name)
-
-
+        if file_type == 'imagesingle':
+            return vectorize_single_image(filepath, company_name)
+        elif file_type == 'imagepdf':
+            return vectorize_multiple_images(filepath, company_name)
+        else:
+            return vectorize_docs(filepath, company_name)
+            
+    except Exception as e:
+        print(f"Error in vectorize main function: {e}")
+        # Ultimate fallback
+        return Chroma.from_texts(
+            texts=[f"Error processing file: {str(e)}"],
+            embedding=HuggingFaceEmbeddings(),
+            collection_name="ultimate_fallback"
+        )

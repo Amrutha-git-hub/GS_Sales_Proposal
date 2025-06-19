@@ -8,7 +8,7 @@ import json
 
 llm = ChatGoogleGenerativeAI(model = 'gemini-1.5-flash')
 
-from .prompts import rfi_painpoint_prompt
+from .prompts import *
 
 from langchain_core.prompts import ChatPromptTemplate
 
@@ -16,9 +16,10 @@ from .doc_vectorizer import vectorize
 
 from .doc_xtraction_utils import *
 
-def get_pain_points(file: str, company_name : str,):
-    rfi_painpoint_prompt = ChatPromptTemplate.from_template(rfi_painpoint_prompt)
-    retriever = vectorize(file,company_name).as_retriever()
+def get_pain_points(file: str, company_name: str):
+    # Use a different variable name to avoid conflict with imported prompt
+    pain_point_template = ChatPromptTemplate.from_template(rfi_painpoint_prompt)
+    retriever = vectorize(file, company_name).as_retriever()
 
     # Extract the query string from input and pass to retriever
     context_chain = (
@@ -29,13 +30,15 @@ def get_pain_points(file: str, company_name : str,):
 
     rag_chain = (
         {"context": context_chain}
-        | rfi_painpoint_prompt
+        | pain_point_template  # Use the renamed variable
         | llm
         | StrOutputParser()
     )
-    result = rag_chain.invoke({"query": "Extract key business concerns and paint points from this RFI."})
-    print(type(json.loads(clean_to_list(result))))
-    return json.loads(clean_to_list(result))
-
-
-
+    
+    try:
+        result = rag_chain.invoke({"query": "Extract key business concerns and pain points from this RFI."})
+        print(type(json.loads(clean_to_list(result))))
+        return json.loads(clean_to_list(result))
+    except Exception as e:
+        print(f"Error in get_pain_points: {e}")
+        return []
