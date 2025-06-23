@@ -1,3 +1,7 @@
+
+
+
+
 import streamlit as st
 import pandas as pd
 import os
@@ -5,9 +9,10 @@ from typing import List
 from .client_utils import *
 import threading
 import time
-from LinkedIN.linkedin_serp import *
+from Search.Linkedin.linkedin_serp import *
 from Recommendation.recommendation_utils import *
 from .client_css import client_css
+
 
 
 # Apply CSS only once at the beginning with a unique key to prevent duplication
@@ -16,6 +21,23 @@ if 'css_applied' not in st.session_state:
     st.markdown(client_css, unsafe_allow_html=True)
 
 # Function to save uploaded file and return the file path
+def save_uploaded_file_and_get_path(uploaded_file):
+    """Save uploaded file to a temporary directory and return the file path"""
+    if uploaded_file is not None:
+        # Create uploads directory if it doesn't exist
+        upload_dir = os.getenv("FILE_SAVE_PATH")
+        if not os.path.exists(upload_dir):
+            os.makedirs(upload_dir)
+        
+        # Create file path
+        file_path = os.path.join(upload_dir, uploaded_file.name)
+        
+        # Save the file
+        with open(file_path, "wb") as f:
+            f.write(uploaded_file.getbuffer())
+        
+        return file_path
+    return None
 
 # Main App
 def client_tab():
@@ -32,7 +54,7 @@ def client_tab():
     
     # Initialize client requirements content in session state
     if 'client_requirements_content' not in st.session_state:
-        st.session_state.client_requirements_content = get_editable_content()
+        st.session_state.client_requirements_content = ""
     
     # Initialize URLs list in session state
     if 'client_website_urls_list' not in st.session_state:
@@ -59,18 +81,12 @@ def client_tab():
     if 'last_searched_spoc' not in st.session_state:
         st.session_state['last_searched_spoc'] = ""
     
-    # Initialize added pain points tracking
-    if 'added_pain_points' not in st.session_state:
-        st.session_state['added_pain_points'] = set()
-    
-    # Initialize processing state
-    if 'processing_rfi' not in st.session_state:
-        st.session_state['processing_rfi'] = False
-    
-    # Initialize uploaded file info
-    if 'uploaded_file_info' not in st.session_state:
-        st.session_state['uploaded_file_info'] = None
-    
+    # Initialize scraping states
+    if 'scraping_in_progress' not in st.session_state:
+        st.session_state['scraping_in_progress'] = False
+    if 'pending_scrape_url' not in st.session_state:
+        st.session_state['pending_scrape_url'] = None
+
     # Top section with client name and URLs
     col1, col2 = st.columns([1, 1])
     
@@ -83,7 +99,7 @@ def client_tab():
         """, unsafe_allow_html=True)
         
         # Create a sub-column layout for name input and find URLs button
-        name_col, button_col = st.columns([4, 1])
+        name_col, button_col = st.columns([3, 1])
         
         with name_col:
             client_enterprise_name = st.text_input(
@@ -97,16 +113,18 @@ def client_tab():
             # Find URLs button - only enabled when client name has more than 2 characters
             find_urls_disabled = not (client_enterprise_name and len(client_enterprise_name.strip()) > 2)
             
-            if st.button("🔍 Find URLs", 
+            if st.button("🔍 Find Website",
                         disabled=find_urls_disabled,
                         help="Find website URLs for this company",
                         key="find_urls_button"):
-                # Fetch URLs without any spinner or screen reloading
-                try:
-                    st.session_state['client_website_urls_list'] = get_urls_list(client_enterprise_name.strip())
-                    st.session_state['last_company_name'] = client_enterprise_name
-                except Exception as e:
-                    st.session_state['client_website_urls_list'] = []
+                # Add spinner while fetching URLs
+                with st.spinner(f"Finding Websites for '{client_enterprise_name.strip()}'..."):
+                    try:
+                        st.session_state['client_website_urls_list'] = get_urls_list(client_enterprise_name.strip())
+                        st.session_state['last_company_name'] = client_enterprise_name
+                    except Exception as e:
+                        st.session_state['client_website_urls_list'] = []
+                        st.error(f"Error finding URLs: {str(e)}")
         
         # Clear URLs if company name is cleared
         if not client_enterprise_name and st.session_state['last_company_name']:
@@ -116,55 +134,103 @@ def client_tab():
         # Show validation warning if triggered and field is empty
         if st.session_state.show_validation and check_field_validation("Client Enterprise Name", client_enterprise_name, True):
             show_field_warning("Client Enterprise Name")
-
+    
     with col2:
-        # Label row with inline emoji buttons
+        # Label row with inline emoji and tooltip
         st.markdown('''
         <div class="tooltip-label" style="display: flex; align-items: center; gap: 8px;">
             <span>Client Website URL</span>
             <div class="tooltip-icon" data-tooltip="Enter or select the client's official website URL. The system will automatically analyze the website to extract company information, services, and business details to help customize your proposal.">ⓘ</div>
-            <span style="margin-left: 8px; font-size: 16px; cursor: pointer;" title="Open selected client website in new tab">🌐</span>
         </div>
         ''', unsafe_allow_html=True)
         
-        # URL selection logic - Always show normal dropdown, just disable when no client name
-        client_name_provided = bool(client_enterprise_name and client_enterprise_name.strip())
+        # Create columns for dropdown and buttons - dropdown takes most space, buttons share remaining space
+        url_col, btn1_col, btn2_col, btn3_col = st.columns([7, 1, 1, 1])
         
-        if not st.session_state.get('client_website_urls_list'):
-            # No URLs available - show default option
-            url_options = ["Select / Enter client website URL"]
-        else:
-            # URLs available - show them in dropdown
-            url_options = ["Select / Enter client website URL"] + st.session_state['client_website_urls_list']
+        with url_col:
+            # URL selection logic - Always show normal dropdown, just disable when no client name
+            client_name_provided = bool(client_enterprise_name and client_enterprise_name.strip())
+            
+            if not st.session_state.get('client_website_urls_list'):
+                # No URLs available - show default option
+                url_options = ["Select client website URL"]
+            else:
+                # URLs available - show them in dropdown
+                url_options = ["Select client website URL"] + st.session_state['client_website_urls_list']
+            
+            client_website_url = st.selectbox(
+                label="Client Website URL",
+                options=url_options,
+                key="client_website_url_selector",
+                label_visibility="collapsed",
+                disabled=not client_name_provided,
+                accept_new_options=True
+            )
+            
+            # Reset to empty string if default option is selected
+            if client_website_url == "Select client website URL":
+                client_website_url = ""
         
-        client_website_url = st.selectbox(
-            label="Client Website URL",
-            options=url_options,
-            key="client_website_url_selector",
-            label_visibility="collapsed",
-            disabled=not client_name_provided
-        )
+        # Each button in its own column for horizontal alignment
+        with btn1_col:
+            if client_website_url:
+                st.link_button("🌐", client_website_url, help="Visit website")
+            else:
+                st.button("🌐", help="Visit website", disabled=True)
+        with btn2_col:
+            # Button 2: Refresh URL List
+            refresh_clicked = st.button("🔄", help="Refresh website URLs list", key="refresh_urls_btn")
         
-        # Reset to empty string if default option is selected
-        if client_website_url == "Select / Enter client website URL":
-            client_website_url = ""
-        
-        # Auto-extract website details when URL is selected
-        if client_website_url and client_website_url != st.session_state.get('last_analyzed_url', ''):
+        with btn3_col:
+            # Button 3: Scrape Website - Set up pending scrape instead of immediate execution
+            scrape_clicked = st.button("📑", help="Get enterprise details", key="scrape_website_btn", disabled=not client_website_url)
+            
+            # Handle scrape button click by setting up pending operation
+            if scrape_clicked and client_website_url:
+                st.session_state['pending_scrape_url'] = client_website_url
+                st.session_state['scraping_in_progress'] = True
+                st.rerun()
+
+        # Handle refresh action outside columns for better UX
+        if refresh_clicked and client_name_provided:
             try:
-                website_details = get_url_details(client_website_url)
-                st.session_state.enterprise_details_content = website_details
-                st.session_state['last_analyzed_url'] = client_website_url
+                with st.spinner("Refreshing website URLs..."):
+                    st.session_state['client_website_urls_list'] = get_urls_list(client_enterprise_name)
+                    st.success("Website URLs refreshed!")
+                    st.rerun()  # Refresh the page to show updated URLs
             except Exception as e:
-                pass  # Silently handle errors in auto-extraction
-        
-        # Show validation warning if triggered and field is empty (optional)
-        if st.session_state.show_validation and check_field_validation("Client Website URL", client_website_url, False):
-            show_field_warning("Client Website URL")
+                st.error(f"Error refreshing URLs: {str(e)}")
 
-    # Document upload and pain points section
+        # Handle pending scraping operation OUTSIDE of columns to prevent UI blocking
+        if st.session_state.get('scraping_in_progress') and st.session_state.get('pending_scrape_url'):
+            # Show full-width spinner
+            with st.spinner(f"Scraping website details from {st.session_state['pending_scrape_url']}..."):
+                try:
+                    # Perform the scraping operation
+                    website_details = get_url_details(st.session_state['pending_scrape_url'])
+                    st.session_state.enterprise_details_content = website_details
+                    st.session_state['last_analyzed_url'] = st.session_state['pending_scrape_url']
+                    
+                    # Clear pending operation
+                    st.session_state['scraping_in_progress'] = False
+                    st.session_state['pending_scrape_url'] = None
+                    
+                    st.success("Website details extracted successfully!")
+                    st.rerun()  # Refresh to show updated details
+                    
+                except Exception as e:
+                    # Clear pending operation on error
+                    st.session_state['scraping_in_progress'] = False
+                    st.session_state['pending_scrape_url'] = None
+                    st.error(f"Error scraping website: {str(e)}")
+
+    # Show validation warning if triggered and field is empty (optional)
+    if st.session_state.show_validation and check_field_validation("Client Website URL", client_website_url, False):
+        show_field_warning("Client Website URL")
+    
+    # Continue with col3 and col4 - these will now render properly without being blocked
     col3, col4 = st.columns([1, 1])
-
+            
     with col3:
         st.markdown('''
         <div class="tooltip-label">
@@ -173,7 +239,7 @@ def client_tab():
         </div>
         ''', unsafe_allow_html=True)
         
-        # Add custom CSS to make file uploader more compact
+        # Add custom CSS for file uploader and animations
         st.markdown("""
         <style>
         .stFileUploader > div > div > div {
@@ -190,81 +256,120 @@ def client_tab():
             padding: 0.25rem 0.5rem !important;
             min-height: 2rem !important;
         }
+        
+        /* Animation for processing file */
+        .processing-file {
+            animation: pulse 1.5s ease-in-out infinite;
+            background: linear-gradient(90deg, #e3f2fd, #bbdefb, #e3f2fd);
+            background-size: 200% 100%;
+            animation: shimmer 2s linear infinite;
+            border-radius: 4px;
+            padding: 2px 4px;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+        
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+        
+        .analyzing-text {
+            color: #1976d2;
+            font-weight: 500;
+        }
         </style>
         """, unsafe_allow_html=True)
         
-        # Show different UI based on analysis status
-        if st.session_state.get('document_analyzed', False) and st.session_state.get('uploaded_file_info'):
-            # Show analyzed document info with option to upload new
-            file_info = st.session_state['uploaded_file_info']
-            
-            # Display analyzed document info
-            st.markdown(f"""
-            <div style="
-                padding: 12px;
-                border-radius: 6px;
-                background-color: #2d5016;
-                color: #ffffff;
-                margin-bottom: 10px;
-                border: 1px solid #4a7c20;
-            ">
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <span>✅</span>
-                    <div>
-                        <div style="font-weight: 500;">Document Analyzed Successfully</div>
-                        <div style="font-size: 0.85em; opacity: 0.9;">📄 {file_info['name']} ({file_info['size']})</div>
-                    </div>
-                </div>
-            </div>
-            """, unsafe_allow_html=True)
-            
-            # Option to upload new document
-            if st.button("📤 Upload New Document", key="upload_new_doc_btn", help="Upload a different RFI document"):
-                # Reset analysis state
-                st.session_state['document_analyzed'] = False
-                st.session_state['uploaded_file_info'] = None
-                st.session_state['rfi_pain_points_items'] = {}
-                st.session_state['uploaded_file_path'] = None
-                st.session_state['added_pain_points'] = set()
-                st.rerun()
+        # FILE UPLOAD - Always enabled, independent of client name
+        rfi_document_upload = st.file_uploader(
+            label="Upload RFI Document", 
+            type=['pdf', 'docx', 'txt', 'csv','png','jpg','jpeg'], 
+            key="rfi_document_uploader",
+            label_visibility="collapsed"
+        )
         
-        else:
-            # Show file uploader when no document is analyzed
-            rfi_document_upload = st.file_uploader(
-                label="Upload RFI Document", 
-                type=['pdf', 'docx', 'txt', 'csv','png','jpg','jpeg'], 
-                key="rfi_document_uploader",
-                label_visibility="collapsed"
-            )
+        # Show file info and analyze button in a compact way
+        if rfi_document_upload is not None:
+            # Very compact single line display
+            file_size_kb = round(rfi_document_upload.size / 1024, 1)
+            file_size_display = f"{file_size_kb}KB" if file_size_kb < 1024 else f"{round(file_size_kb/1024, 1)}MB"
             
-            # Show file info and analyze button in a compact way
-            if rfi_document_upload is not None:
-                # Very compact single line display
-                file_size_kb = round(rfi_document_upload.size / 1024, 1)
-                file_size_display = f"{file_size_kb}KB" if file_size_kb < 1024 else f"{round(file_size_kb/1024, 1)}MB"
-                
-                # Single compact row
-                col_info, col_btn = st.columns([2.5, 1])
-                with col_info:
+            # Initialize processing state if not exists
+            if 'processing_rfi' not in st.session_state:
+                st.session_state['processing_rfi'] = False
+            
+            # Check if currently processing
+            is_processing = st.session_state.get('processing_rfi', False)
+            
+            # Single compact row
+            col_info, col_btn = st.columns([2.5, 1])
+            
+            with col_info:
+                if is_processing:
+                    # Show animated processing state
+                    st.markdown(f"""
+                    <div class="processing-file">
+                        <span style='font-size:0.8em' class="analyzing-text">
+                            🔄 {rfi_document_upload.name[:20]}{'...' if len(rfi_document_upload.name) > 20 else ''} (Analyzing...)
+                        </span>
+                    </div>
+                    """, unsafe_allow_html=True)
+                else:
+                    # Show normal file info
                     st.markdown(f"<span style='font-size:0.8em'>📄 {rfi_document_upload.name[:25]}{'...' if len(rfi_document_upload.name) > 25 else ''} ({file_size_display})</span>", 
                             unsafe_allow_html=True)
-                with col_btn:
-                    analyze_clicked = st.button("Analyze", key="analyze_rfi_document_btn",
-                                            help="Process RFI document",
-                                            type="primary", use_container_width=True)
-                
-                # Handle analyze button click
-                if analyze_clicked:
-                    if not client_enterprise_name:
-                        st.error("❌ Please enter the Client Enterprise Name first")
-                    else:
-                        # Set processing flag
-                        st.session_state['processing_rfi'] = True
-                        st.rerun()  # Refresh to show processing state
             
-            # Show processing indicator
+            with col_btn:
+                # Disable button while processing
+                # Different colors for different states
+                button_color = "#FF6B6B" if is_processing else "#4CAF50"
+
+                st.markdown(f"""
+                <style>
+                div.stButton > button:first-child {{
+                    background-color: {button_color};
+                    color: white;
+                    border: none;
+                }}
+                </style>
+                """, unsafe_allow_html=True)
+
+
+
+                # Your button code
+                analyze_clicked = st.button(
+                    "Analyzing..." if is_processing else "Get pain points",
+                    key="analyze_rfi_document_btn",
+                    help="Process RFI document" if not is_processing else "Processing in progress...",
+                    type="secondary" ,
+                    disabled=is_processing,
+                    use_container_width=True
+                )
+            
+            # Handle analyze button click
+            if analyze_clicked and not is_processing:
+                if not client_enterprise_name:
+                    st.error("❌ Please enter the Client Enterprise Name first")
+                else:
+                    # Set processing flag
+                    st.session_state['processing_rfi'] = True
+                    st.rerun()  # Refresh to show processing state
+            
+            # Show processing indicator with spinner
             if st.session_state.get('processing_rfi', False):
-                #st.info("🔄 Analyzing RFI document...")
+                # Show spinner in a container
+                with st.container():
+                    col_spinner, col_text = st.columns([0.5, 4])
+                    with col_spinner:
+                        with st.spinner(''):
+                            pass
+                    with col_text:
+                        st.markdown("**🔍 Analyzing RFI document and extracting key insights...**")
                 
                 # Perform the actual processing
                 try:
@@ -273,14 +378,6 @@ def client_tab():
                     st.session_state['uploaded_file_path'] = file_path
                     
                     if file_path and client_enterprise_name:
-                        # Store file info for later display
-                        file_size_kb = round(rfi_document_upload.size / 1024, 1)
-                        file_size_display = f"{file_size_kb}KB" if file_size_kb < 1024 else f"{round(file_size_kb/1024, 1)}MB"
-                        st.session_state['uploaded_file_info'] = {
-                            'name': rfi_document_upload.name,
-                            'size': file_size_display
-                        }
-                        
                         # Extract pain points using the file path and company name
                         st.session_state.pain_point = get_pain_points(file_path, client_enterprise_name)
                         # Automatically generate RFI pain points items
@@ -288,8 +385,9 @@ def client_tab():
                         st.session_state['rfi_pain_points_items'] = pain_points_data
                         st.session_state['document_analyzed'] = True
                         st.session_state['processing_rfi'] = False  # Reset processing flag
-                        #st.success("✅ RFI document analyzed successfully!")
-                        time.sleep(1)  # Brief pause to show success message
+                        
+                        # Show success message briefly
+                        st.success("✅ RFI document analyzed successfully!")
                         st.rerun()  # Refresh to update UI
                     else:
                         st.error("❌ Error saving the uploaded file")
@@ -335,7 +433,7 @@ def client_tab():
         </div>
         ''', unsafe_allow_html=True)
         
-        # TEXT AREA - DISABLED if no client name
+       
         client_requirements = st.text_area(
             label="Client Requirements", 
             value=st.session_state.client_requirements_content if client_name_provided else "", 
@@ -360,26 +458,37 @@ def client_tab():
         </div>
         ''', unsafe_allow_html=True)
         
+        # Initialize selected pain points in session state if not exists
+        if 'selected_pain_points' not in st.session_state:
+            st.session_state['selected_pain_points'] = set()
+        
         # Get RFI pain points items from session state or use dummy data
         if client_name_provided and st.session_state.get('rfi_pain_points_items'):
             rfi_pain_points_items = st.session_state['rfi_pain_points_items']
         else:
             # Dummy data when no client name or no file uploaded
             rfi_pain_points_items = {
-                "Market Positioning & Competitive Advantage": "Need stronger market positioning and differentiation from competitors",
-                "Lead Generation & Sales Conversion": "Struggling with consistent lead generation and converting prospects to customers",
-                "Digital Presence & Brand Identity": "Lacking cohesive digital presence and professional brand identity"
+               
+                "Revenue Challenges": "**Revenue Challenges** • Sales declined by 15% year-over-year despite market growth\n• Missed quarterly revenue targets by $2.3M for three consecutive quarters\n• Average deal size decreased by 22% due to increased price competition\n• Customer churn rate increased to 18%, up from 12% previous year\n• Revenue per customer dropped 8% as clients downgraded service tiers\n• New product launches generated only 60% of projected revenue\n• Seasonal revenue fluctuations creating 40% variance between peak and low periods\n• Pipeline conversion rates fell from 35% to 24% over past 12 months\n\n",
+                
+                "Cost and Margin Pressure": "**Cost and Margin Pressure** • Cost of Goods Sold increased by 12% due to supply chain disruptions\n• Labor costs rose 18% while productivity remained flat\n• Raw material prices up 25% with limited ability to pass costs to customers\n• Operational efficiency decreased by 14% due to outdated processes\n• Procurement costs increased 20% from supplier consolidation issues\n• Technology infrastructure costs grew 30% without proportional business benefits\n• Regulatory compliance expenses added $1.8M in unexpected annual costs\n• Facility and overhead costs up 16% while revenue remained stagnant\n\n",
+                
+                "Market Expansion and Customer Acquisition": "**Market Expansion and Customer Acquisition**\n\n • Win rate on new business opportunities dropped from 42% to 28%\n• Customer acquisition cost increased 35% while customer lifetime value declined\n• Expansion into new geographic markets yielding only 40% of projected results\n• Lack of local market knowledge resulting in 60% longer sales cycles\n• Digital marketing campaigns generating 50% fewer qualified leads\n• Competition from new market entrants capturing 25% of target customer segment\n• Limited brand recognition in new markets requiring 3x marketing investment\n• Difficulty penetrating enterprise accounts with average sales cycle extending to 18 months\n\n"
+
             }
-        
+        # Initialize content mapping in session state if not exists
+        if 'pain_point_content_map' not in st.session_state:
+            st.session_state['pain_point_content_map'] = {}
+
         # Use a single container for all pain points items
         with st.container():
-            # Display pain points items with add buttons
+            # Display pain points items with add/remove buttons
             for i, (key, value) in enumerate(rfi_pain_points_items.items()):
-                # Create a box container with + button and content on same horizontal level
-                col_add, col_content = st.columns([0.5, 9], gap="small")
+                # Check if this item is selected
+                is_selected = key in st.session_state['selected_pain_points']
                 
-                # Check if this pain point has been added
-                is_added = key in st.session_state.get('added_pain_points', set())
+                # Create a box container with +/- button and content on same horizontal level
+                col_add, col_content = st.columns([0.5, 9], gap="small")
                 
                 with col_add:
                     # Style the button to align vertically with the content box
@@ -392,53 +501,107 @@ def client_tab():
                     </style>
                     """, unsafe_allow_html=True)
                     
-                    # Change button appearance based on whether it's been added
-                    button_text = "✅" if is_added else "➕"
-                    button_disabled = is_added
+                    # Change button appearance based on selection state
+                    button_text = "❌" if is_selected else "➕"
+                    button_help = f"Remove '{key}' from client requirements" if is_selected else f"Add '{key}' to client requirements section"
+                    button_type = "secondary" 
                     
                     if st.button(button_text, 
-                               key=f"add_rfi_pain_point_item_{i}", 
-                               help=f"Add '{key}' to client requirements section" if not is_added else "Already added",
-                               disabled=button_disabled):
-                        # Get current content from the session state (not the widget key)
-                        current_content = st.session_state.get('client_requirements_content', '')
+                            key=f"toggle_rfi_pain_point_item_{i}", 
+                            help=button_help,
+                            type=button_type,
+                            disabled=not client_name_provided):
                         
-                        # Append the value to the content
-                        new_content = current_content + f"\n\n{value}" if current_content else value
+                        if is_selected:
+                            # REMOVE FUNCTIONALITY
+                            # Get current content from the session state
+                            current_content = st.session_state.get('client_requirements_content', '')
+                            
+                            # Get the original content that was added for this key
+                            original_content = st.session_state['pain_point_content_map'].get(key, value)
+                            
+                            # Remove this specific pain point section from content
+                            # Try multiple removal patterns to be more robust
+                            patterns_to_remove = [
+                                f"\n\n{original_content}",
+                                f"{original_content}\n\n",
+                                original_content
+                            ]
+                            
+                            updated_content = current_content
+                            for pattern in patterns_to_remove:
+                                updated_content = updated_content.replace(pattern, "")
+                            
+                            # Clean up any excessive newlines
+                            updated_content = '\n\n'.join([section.strip() for section in updated_content.split('\n\n') if section.strip()])
+                            
+                            # Update the session state content variable
+                            st.session_state.client_requirements_content = updated_content
+                            
+                            # Remove from selected items and content map
+                            st.session_state['selected_pain_points'].discard(key)
+                            if key in st.session_state['pain_point_content_map']:
+                                del st.session_state['pain_point_content_map'][key]
+                            
+                            # Show removal message
+                           # st.success(f"🗑️ '{key}' removed from Client Requirements!")
+                            
+                        else:
+                            # ADD FUNCTIONALITY
+                            # Get current content from the session state
+                            current_content = st.session_state.get('client_requirements_content', '')
+                            
+                            # Append the value to the content
+                            new_content = current_content + f"\n\n{value}" if current_content else value
+                            
+                            # Update the session state content variable
+                            st.session_state.client_requirements_content = new_content
+                            
+                            # Store the content in mapping for future removal
+                            st.session_state['pain_point_content_map'][key] = value
+                            
+                            # Mark this item as selected
+                            st.session_state['selected_pain_points'].add(key)
+                            
+                            # Show success message
+                            #st.success(f"✅ '{key}' added to Client Requirements!")
                         
-                        # Update the session state content variable
-                        st.session_state.client_requirements_content = new_content
-                        
-                        # Mark this pain point as added
-                        if 'added_pain_points' not in st.session_state:
-                            st.session_state['added_pain_points'] = set()
-                        st.session_state['added_pain_points'].add(key)
-                        
-                        # No success message, just rerun to update UI
                         st.rerun()
 
                 with col_content:
-                    # Display key in a styled container box with better visibility
-                    # Change background color if added
-                    bg_color = "#2d5016" if is_added else "#404040"  # Green background if added
+                    # [Same styling code as before]
+                    if is_selected:
+                        background_color = "#2e7d32"
+                        border_color = "#4caf50"
+                        text_color = "#ffffff"
+                        icon = "✅"
+                        box_shadow = "0 2px 8px rgba(76, 175, 80, 0.3)"
+                    else:
+                        background_color = "#404040"
+                        border_color = "#404040"
+                        text_color = "#ffffff"
+                        icon = "📋"
+                        box_shadow = "0 2px 4px rgba(0,0,0,0.1)"
                     
                     st.markdown(f"""
                     <div style="
                         padding: 12px;
                         border-radius: 6px;
                         margin: 5px 0;
-                        background-color: {bg_color};
-                        color: #ffffff;
+                        background-color: {background_color};
+                        border: 2px solid {border_color};
+                        color: {text_color};
                         font-weight: 500;
-                        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                        box-shadow: {box_shadow};
                         min-height: 24px;
                         display: flex;
                         align-items: center;
+                        transition: all 0.3s ease;
                     ">
-                        📋 {key}
+                        {icon} {key}
                     </div>
                     """, unsafe_allow_html=True)
-    
+                            
     # SPOC Row
     col_spoc1, col_spoc2 = st.columns([1, 1])
 
@@ -491,7 +654,8 @@ def client_tab():
                 options=linkedin_options,
                 key="spoc_linkedin_profile_selector",
                 label_visibility="collapsed",
-                disabled=not spoc_name_provided
+                disabled=not spoc_name_provided,
+                accept_new_options=True,
             )
             
             # Extract the actual URL from the selected option
@@ -507,7 +671,8 @@ def client_tab():
                 options=["No LinkedIn profiles found. Try a different name."],
                 key="spoc_linkedin_profile_selector",
                 label_visibility="collapsed",
-                disabled=True
+                disabled=True,
+                accept_new_options=True
             )
             spoc_linkedin_profile = None
         else:
@@ -517,7 +682,8 @@ def client_tab():
                 options=["Enter SPOC name to get LinkedIn profiles"],
                 key="spoc_linkedin_profile_selector",
                 label_visibility="collapsed",
-                disabled=not spoc_name_provided
+                disabled=not spoc_name_provided,
+                accept_new_options=True
             )
 
     # Display selected profile information and handle dynamic updates
@@ -591,7 +757,9 @@ def client_tab():
             st.session_state['current_selected_profile_url'] = None
             profile_changed = True
 
-    # Existing row with roles and priorities
+
+# Existing row with roles and priorities
+# Existing row with roles and priorities
     col7, col8 = st.columns([1, 1])
 
     with col7:
@@ -602,34 +770,67 @@ def client_tab():
         </div>
         ''', unsafe_allow_html=True)
 
-        # Get roles from function
-        target_roles_list = get_roles_list()
-
         # Initialize session state for roles if not exists
         if 'selected_target_roles' not in st.session_state:
             st.session_state['selected_target_roles'] = []
 
-        # Prepare role options for dropdown
+        # Prepare role options for dropdown based on LinkedIn profile selection
         role_options = ["Select a role..."]
         
-        # Add standard roles from get_roles_list()
-        if target_roles_list:
-            role_options.extend(target_roles_list)
+        # Get default roles from function
+        target_roles_list = get_roles_list() or []
         
-        # Add LinkedIn roles if available
-        if spoc_name_provided and st.session_state.get('linkedin_profiles'):
-            for url, profile_data in st.session_state['linkedin_profiles'].items():
-                linkedin_role = profile_data.get('role')
-                if linkedin_role and linkedin_role not in role_options:
-                    role_options.append(linkedin_role)
+        # Check if a LinkedIn profile is selected
+        selected_linkedin_role = None
+        if (spoc_name_provided and 
+            st.session_state.get('linkedin_profiles') and 
+            'spoc_linkedin_profile' in locals() and 
+            spoc_linkedin_profile):
+            
+            # Get the selected LinkedIn profile data
+            selected_profile_data = st.session_state['linkedin_profiles'].get(spoc_linkedin_profile)
+            if selected_profile_data:
+                selected_linkedin_role = selected_profile_data.get('role')
+                if selected_linkedin_role:
+                    # Show LinkedIn profile role + default roles from get_roles_list()
+                    role_options = ["Select a role...", selected_linkedin_role]
+                    # Add default roles, avoiding duplicates
+                    for role in target_roles_list:
+                        if role not in role_options:
+                            role_options.append(role)
+        
+        # If no LinkedIn profile selected, show all available roles
+        if not selected_linkedin_role:
+            # Add standard roles from get_roles_list()
+            role_options.extend(target_roles_list)
+            
+            # Add LinkedIn roles if available (but no specific profile selected)
+            if spoc_name_provided and st.session_state.get('linkedin_profiles'):
+                for url, profile_data in st.session_state['linkedin_profiles'].items():
+                    linkedin_role = profile_data.get('role')
+                    if linkedin_role and linkedin_role not in role_options:
+                        role_options.append(linkedin_role)
+
+        # Determine the default/current value for the selectbox
+        current_selection = "Select a role..."
+        if selected_linkedin_role and selected_linkedin_role in role_options:
+            # Auto-select the LinkedIn role
+            current_selection = selected_linkedin_role
+        elif "target_role_selector_dropdown" in st.session_state:
+            # Keep the current selection if it exists in options
+            current_value = st.session_state["target_role_selector_dropdown"]
+            if current_value in role_options:
+                current_selection = current_value
 
         # ROLES DROPDOWN
         new_target_role = st.selectbox(
             label="Target Role Selector", 
             options=role_options,
+            index=role_options.index(current_selection) if current_selection in role_options else 0,
             key="target_role_selector_dropdown",
             label_visibility="collapsed",
-            disabled=not (client_name_provided and spoc_name_provided)
+            disabled=not (client_name_provided and spoc_name_provided),
+            accept_new_options=True
         )
     with col8:
         st.markdown('''
@@ -638,10 +839,52 @@ def client_tab():
             <div class="tooltip-icon" data-tooltip="Select Business priorities of the SPOC.">ⓘ</div>
         </div>
         ''', unsafe_allow_html=True)
-        if spoc_name_provided:
-            business_priorities_list = get_ai_business_priorities(new_target_role)
+        
+        # Get business priorities based on selected LinkedIn roles or use defaults
+        if spoc_name_provided and 'selected_target_roles' in st.session_state and st.session_state['selected_target_roles']:
+            try:
+                # Get priorities for the selected LinkedIn roles only
+                business_priorities_list = []
+                for role in st.session_state['selected_target_roles']:
+                    role_priorities = get_ai_business_priorities(role)
+                    if role_priorities:
+                        business_priorities_list.extend(role_priorities)
+                
+                # Remove duplicates while preserving order
+                seen = set()
+                unique_priorities = []
+                for priority in business_priorities_list:
+                    # Handle both string and dict formats for duplicate checking
+                    if isinstance(priority, dict):
+                        priority_title = priority.get('title', str(priority))
+                    else:
+                        priority_title = str(priority)
+                    
+                    if priority_title not in seen:
+                        seen.add(priority_title)
+                        unique_priorities.append(priority)
+                
+                business_priorities_list = unique_priorities
+                
+                # If no priorities found for selected roles, use defaults
+                if not business_priorities_list:
+                    raise ValueError("No priorities found for selected roles")
+                    
+            except Exception as e:
+                # Handle any errors by showing default priorities
+                st.warning("Unable to load role-specific priorities. Showing default options.")
+                business_priorities_list = [
+                    {'title': 'Revenue Growth and Market Share Expansion', 'icon': '📈'}, 
+                    {'title': 'Profitability and Cost Optimization', 'icon': '💰'}, 
+                    {'title': 'Digital Transformation and Innovation', 'icon': '🤖'}
+                ]
         else:
-            business_priorities_list = ['Strategic Growth and Vision',' Financial Performance and Sustainability','Leadership and Organizational Alignment']
+            # Default priorities when no SPOC name or no selected roles
+            business_priorities_list = [
+                {'title': 'Revenue Growth and Market Share Expansion', 'icon': '📈'}, 
+                {'title': 'Profitability and Cost Optimization', 'icon': '💰'}, 
+                {'title': 'Digital Transformation and Innovation', 'icon': '🤖'}
+            ]
         
         # Initialize session state for selected priorities
         if 'selected_business_priorities' not in st.session_state:
@@ -651,7 +894,7 @@ def client_tab():
         for i, priority in enumerate(business_priorities_list):
             business_priority_checkbox_key = f"business_priority_checkbox_{i}"
             
-            # Handle both string and dict formats - FIXED
+            # Handle both string and dict formats
             if isinstance(priority, dict):
                 # If priority is a dictionary
                 priority_title = priority.get('title', str(priority))
@@ -663,7 +906,7 @@ def client_tab():
                 priority_icon = '📋'  # Default icon
                 display_text = f"{priority_icon} **{priority_title}**"
             
-            # Check if this priority should be pre-selected - FIXED
+            # Check if this priority should be pre-selected
             default_checked = priority_title in st.session_state.get('selected_business_priorities', [])
             
             is_priority_checked = st.checkbox(
@@ -677,8 +920,69 @@ def client_tab():
                 st.session_state['selected_business_priorities'].append(priority_title)
             elif not is_priority_checked and priority_title in st.session_state['selected_business_priorities']:
                 st.session_state['selected_business_priorities'].remove(priority_title)
-    col9, col10= st.columns([1, 1])
+    #col9, col10= st.columns([1, 1])
     
+    # with col9:
+    #     st.markdown('''
+    #     <div class="tooltip-label">
+    #         Additional Client Requirements
+    #         <div class="tooltip-icon" data-tooltip="Document any additional specific requirements, constraints, expectations, compliance requirements, budget limitations, timeline constraints, or special considerations mentioned by the client that are not covered in the main requirements section.">ⓘ</div>
+    #     </div>
+    #     ''', unsafe_allow_html=True)
+        
+    #     # TEXT AREA - DISABLED if no client name
+    #     client_additional_requirements = st.text_area(
+    #         label="Additional Client Requirements", 
+    #         placeholder="Enter client name first to enable this field" if not client_name_provided else "Enter specific client requirements, expectations, project scope, compliance needs, budget constraints...", 
+    #         height=200, 
+    #         key="client_additional_requirements_textarea",
+    #         label_visibility="collapsed",
+    #         disabled=not client_name_provided
+    #     )
+    
+    
+    # with col10:
+    #     st.markdown('''
+    #     <div class="tooltip-label">
+    #          Additional Specifications to be considered
+    #         <div class="tooltip-icon" data-tooltip="AI-generated additional specifications and technical requirements based on RFI analysis. These are supplementary specs that complement the main requirements and help ensure comprehensive proposal coverage.">ⓘ</div>
+    #     </div>
+    #     ''', unsafe_allow_html=True)
+        
+    #     # Get AI suggestion 1 from function
+
+    #     # Use a stable key based on client name + requirements hash
+    #     requirement_key = f"{client_enterprise_name.strip()}__{hash(client_requirements.strip())}"
+
+    #     if client_name_provided and client_requirements_provided:
+    #         # Only run the AI call if not already cached
+    #         if 'rfi_additional_specs_cache' not in st.session_state:
+    #             st.session_state['rfi_additional_specs_cache'] = {}
+
+    #         if requirement_key in st.session_state['rfi_additional_specs_cache']:
+    #             rfi_additional_specs_content = st.session_state['rfi_additional_specs_cache'][requirement_key]
+    #         else:
+    #             rfi_additional_specs_content = get_ai_client_requirements(
+    #                 client_requirements=client_requirements,
+    #                 enterprise_details=enterprise_details
+    #             )
+    #             st.session_state['rfi_additional_specs_cache'][requirement_key] = rfi_additional_specs_content
+    #     else:
+    #         rfi_additional_specs_content = 'Enter additional client requirements and specifications if any'
+
+        
+    #     # TEXT AREA - DISABLED if no client name
+    #     rfi_additional_specs = st.text_area(
+    #         label="Additional Specifications", 
+    #         value=rfi_additional_specs_content, 
+    #         height=200, 
+    #         key="rfi_additional_specs_textarea",
+    #         label_visibility="collapsed",
+    #         disabled=not client_requirements_provided,
+    #         placeholder="Enter client name first to enable this field" if not client_name_provided else ""
+    #     )
+    col9, col10 = st.columns([1, 1])
+
     with col9:
         st.markdown('''
         <div class="tooltip-label">
@@ -690,36 +994,164 @@ def client_tab():
         # TEXT AREA - DISABLED if no client name
         client_additional_requirements = st.text_area(
             label="Additional Client Requirements", 
-            placeholder="Enter client name first to enable this field" if not client_name_provided else "Enter specific client requirements, expectations, project scope, compliance needs, budget constraints...", 
-            height=200, 
+            value=st.session_state.get('client_additional_requirements_content', '') if client_name_provided else "",
+            placeholder="Enter client name first to enable this field" if not client_name_provided else "Enter specific client requirements, expectations, project scope, compliance needs, budget constraints...",
+            height=200,
             key="client_additional_requirements_textarea",
             label_visibility="collapsed",
             disabled=not client_name_provided
         )
-    
-    
+        
+        # Update the session state when the text area changes (only if enabled)
+        if client_name_provided:
+            st.session_state.client_additional_requirements_content = client_additional_requirements
+        client_additional_requirements_provided = bool(client_name_provided and client_additional_requirements.strip())
+
     with col10:
+        # Title with tooltip only (no buttons)
         st.markdown('''
         <div class="tooltip-label">
-             Additional Specifications to be considered
+            Additional Specifications to be considered
             <div class="tooltip-icon" data-tooltip="AI-generated additional specifications and technical requirements based on RFI analysis. These are supplementary specs that complement the main requirements and help ensure comprehensive proposal coverage.">ⓘ</div>
         </div>
         ''', unsafe_allow_html=True)
         
-        # Get AI suggestion 1 from function
-        rfi_additional_specs_content = get_ai_client_requirements(client_requirements=client_requirements,enterprise_details=enterprise_details) if client_name_provided and client_requirements_provided else  ""
+        # Initialize selected additional specs in session state if not exists
+        if 'selected_additional_specs' not in st.session_state:
+            st.session_state['selected_additional_specs'] = set()
         
-        # TEXT AREA - DISABLED if no client name
-        rfi_additional_specs = st.text_area(
-            label="Additional Specifications", 
-            value=rfi_additional_specs_content, 
-            height=200, 
-            key="rfi_additional_specs_textarea",
-            label_visibility="collapsed",
-            disabled=not client_requirements_provided,
-            placeholder="Enter client name first to enable this field" if not client_name_provided else ""
-        )
+        # Get additional specs items from session state or use dummy data
+        if client_name_provided and st.session_state.get('additional_specs_items'):
+            additional_specs_items = st.session_state['additional_specs_items']
+        else:
+            # Dummy data when no client name or no specific data
+            additional_specs_items = {
+                "Technical Infrastructure Requirements": "**Technical Infrastructure Requirements**\n• Cloud hosting with 99.9% uptime SLA and auto-scaling capabilities\n• Multi-region deployment for disaster recovery and performance optimization\n• Integration with existing ERP, CRM, and financial management systems\n• API-first architecture with RESTful services and webhook support\n• Database performance optimization with sub-second query response times\n• Security compliance with SOC2, ISO 27001, and industry-specific regulations\n• Load balancing and CDN implementation for global content delivery\n• Automated backup and recovery systems with point-in-time restoration\n\n",
+                
+                "Compliance and Security Standards": "**Compliance and Security Standards**\n• GDPR, CCPA, and regional data privacy regulation compliance\n• End-to-end encryption for data in transit and at rest\n• Multi-factor authentication and role-based access controls\n• Regular security audits and penetration testing protocols\n• Data retention and deletion policies per regulatory requirements\n• Audit trail logging for all system interactions and data changes\n• Incident response plan with 4-hour notification requirements\n• Employee background checks and security clearance verification\n\n",
+                
+                "Performance and Scalability Metrics": "**Performance and Scalability Metrics**\n• System response time under 2 seconds for 95% of user interactions\n• Concurrent user capacity of 10,000+ with linear scaling capability\n• Database query optimization with indexing and caching strategies\n• Mobile application performance with offline synchronization\n• Bandwidth optimization for low-connectivity environments\n• Real-time analytics and reporting with sub-minute data refresh\n• Automated performance monitoring with threshold-based alerting\n• Capacity planning with predictive scaling based on usage patterns\n\n"
+            }
+        
+        # Initialize content mapping in session state if not exists
+        if 'additional_specs_content_map' not in st.session_state:
+            st.session_state['additional_specs_content_map'] = {}
 
+        # Use a single container for all additional specs items
+        with st.container():
+            # Display additional specs items with add/remove buttons
+            for i, (key, value) in enumerate(additional_specs_items.items()):
+                # Check if this item is selected
+                is_selected = key in st.session_state['selected_additional_specs']
+                
+                # Create a box container with +/- button and content on same horizontal level
+                col_add, col_content = st.columns([0.5, 9], gap="small")
+                
+                with col_add:
+                    # Style the button to align vertically with the content box
+                    st.markdown("""
+                    <style>
+                    div[data-testid="column"] > div > div > button {
+                        height: 48px !important;
+                        margin-top: 5px !important;
+                    }
+                    </style>
+                    """, unsafe_allow_html=True)
+                    
+                    # Change button appearance based on selection state
+                    button_text = "❌" if is_selected else "➕"
+                    button_help = f"Remove '{key}' from additional requirements" if is_selected else f"Add '{key}' to additional requirements section"
+                    button_type = "secondary" 
+                    
+                    if st.button(button_text, 
+                            key=f"toggle_additional_spec_item_{i}", 
+                            help=button_help,
+                            type=button_type,
+                            disabled=not client_name_provided):
+                        
+                        if is_selected:
+                            # REMOVE FUNCTIONALITY
+                            # Get current content from the session state
+                            current_content = st.session_state.get('client_additional_requirements_content', '')
+                            
+                            # Get the original content that was added for this key
+                            original_content = st.session_state['additional_specs_content_map'].get(key, value)
+                            
+                            # Remove this specific additional spec section from content
+                            # Try multiple removal patterns to be more robust
+                            patterns_to_remove = [
+                                f"\n\n{original_content}",
+                                f"{original_content}\n\n",
+                                original_content
+                            ]
+                            
+                            updated_content = current_content
+                            for pattern in patterns_to_remove:
+                                updated_content = updated_content.replace(pattern, "")
+                            
+                            # Clean up any excessive newlines
+                            updated_content = '\n\n'.join([section.strip() for section in updated_content.split('\n\n') if section.strip()])
+                            
+                            # Update the session state content variable
+                            st.session_state.client_additional_requirements_content = updated_content
+                            
+                            # Remove from selected items and content map
+                            st.session_state['selected_additional_specs'].discard(key)
+                            if key in st.session_state['additional_specs_content_map']:
+                                del st.session_state['additional_specs_content_map'][key]
+                            
+                        else:
+                            # ADD FUNCTIONALITY
+                            # Get current content from the session state
+                            current_content = st.session_state.get('client_additional_requirements_content', '')
+                            
+                            # Append the value to the content
+                            new_content = current_content + f"\n\n{value}" if current_content else value
+                            
+                            # Update the session state content variable
+                            st.session_state.client_additional_requirements_content = new_content
+                            
+                            # Store the content in mapping for future removal
+                            st.session_state['additional_specs_content_map'][key] = value
+                            
+                            # Mark this item as selected
+                            st.session_state['selected_additional_specs'].add(key)
+                        
+                        st.rerun()
+
+                with col_content:
+                    # Style the content box based on selection state
+                    if is_selected:
+                        background_color = "#2e7d32"
+                        border_color = "#4caf50"
+                        text_color = "#ffffff"
+                        icon = "✅"
+                        box_shadow = "0 2px 8px rgba(76, 175, 80, 0.3)"
+                    else:
+                        background_color = "#404040"
+                        border_color = "#404040"
+                        text_color = "#ffffff"
+                        icon = "📋"
+                        box_shadow = "0 2px 4px rgba(0,0,0,0.1)"
+                    
+                    st.markdown(f"""
+                    <div style="
+                        padding: 12px;
+                        border-radius: 6px;
+                        margin: 5px 0;
+                        background-color: {background_color};
+                        border: 2px solid {border_color};
+                        color: {text_color};
+                        font-weight: 500;
+                        box-shadow: {box_shadow};
+                        min-height: 24px;
+                        display: flex;
+                        align-items: center;
+                        transition: all 0.3s ease;
+                    ">
+                        {icon} {key}
+                    </div>
+                    """, unsafe_allow_html=True)
     # Handle validation trigger from main app
     if 'trigger_validation' in st.session_state and st.session_state.trigger_validation:
         st.session_state.show_validation = True

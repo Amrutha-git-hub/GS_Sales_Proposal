@@ -119,7 +119,7 @@ for i, tab_name in enumerate(tab_names):
         if st.button(tab_name, key=f"tab_{i}", use_container_width=True):
             st.session_state.active_tab = i
 
-# Dynamic styling for active tab
+# Dynamic styling for active tab (this will apply immediately for default tab 0)
 st.markdown(f"""
 <style>
     /* Active tab styling for the new column layout */
@@ -145,6 +145,16 @@ st.markdown(f"""
         50% {{
             box-shadow: 0 0 30px rgba(147, 51, 234, 1);
         }}
+    }}
+    
+    /* ADDITIONAL: Ensure the first tab (Client Information) is highlighted by default on page load */
+    div[data-testid="column"]:nth-child(1) button {{
+        background: linear-gradient(135deg, #3b82f6, #8b5cf6) !important;
+        color: #ffffff !important;
+        border-color: #1d4ed8 !important;
+        font-weight: 800 !important;
+        transform: translateY(-2px) scale(1.03) !important;
+        box-shadow: 0 10px 40px rgba(59, 130, 246, 0.4) !important;
     }}
 </style>
 """, unsafe_allow_html=True)

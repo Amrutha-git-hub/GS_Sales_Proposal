@@ -5,7 +5,7 @@ import os
 
 from WebsiteUrl_Agent.agent_runner import get_urls
 import asyncio 
-from DocumentDetailsExtracton.pain_points_extractor import *
+from Document_Upload_Vectordb.pain_points_extractor import *
 # Function to get URLs (placeholder function)
 
 def get_urls_list(company_name) -> List[str]:
