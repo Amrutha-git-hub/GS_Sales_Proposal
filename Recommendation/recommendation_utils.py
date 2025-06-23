@@ -3,7 +3,7 @@ from .prompts import *
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.output_parsers import JsonOutputParser,StrOutputParser
 from dotenv import load_dotenv
-from DocumentDetailsExtracton.doc_xtraction_utils import clean_to_list
+from Document_Upload_Vectordb.doc_xtraction_utils import clean_to_list
 load_dotenv()
 import json
 
