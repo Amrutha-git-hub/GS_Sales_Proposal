@@ -39,14 +39,33 @@ def save_uploaded_file_and_get_path(uploaded_file):
         return file_path
     return None
 
-# Main App
-def client_tab():
+def validate_client_mandatory_fields(st):
+    """Validate client mandatory fields"""
+    client_name = st.session_state.get('last_company_name', '').strip()
+    client_requirement = st.session_state.get('client_requirements_content', '').strip()
+    
+    # Debug prints to check values
+    print(f"DEBUG - Client Name: '{client_name}'")
+    print(f"DEBUG - Client Requirement: '{client_requirement}'")
+    print(f"DEBUG - Validation Result: {bool(client_name) and bool(client_requirement)}")
+    
+    # Also display debug info in the UI for easier debugging
+    if st.session_state.get('debug_mode', False):
+        st.write(f"🔍 Debug Info:")
+        st.write(f"- Client Name: '{client_name}' (Length: {len(client_name)})")
+        st.write(f"- Client Requirement: '{client_requirement}' (Length: {len(client_requirement)})")
+        st.write(f"- Validation Result: {bool(client_name) and bool(client_requirement)}")
+    return True
+    #return bool(client_name) and bool(client_requirement)
+
+def client_tab(st):
     # Re-apply CSS after every rerun to ensure persistence
     st.markdown(client_css, unsafe_allow_html=True)
     
     # Initialize validation trigger
     if 'show_validation' not in st.session_state:
         st.session_state.show_validation = False
+    
     
     # Initialize enterprise details content in session state
     if 'enterprise_details_content' not in st.session_state:
@@ -134,6 +153,7 @@ def client_tab():
         # Show validation warning if triggered and field is empty
         if st.session_state.show_validation and check_field_validation("Client Enterprise Name", client_enterprise_name, True):
             show_field_warning("Client Enterprise Name")
+       
     
     with col2:
         # Label row with inline emoji and tooltip
@@ -174,16 +194,16 @@ def client_tab():
         # Each button in its own column for horizontal alignment
         with btn1_col:
             if client_website_url:
-                st.link_button("🌐", client_website_url, help="Visit website")
+                st.link_button("🌐", client_website_url, help="Visit website",use_container_width=True)
             else:
-                st.button("🌐", help="Visit website", disabled=True)
+                st.button("🌐", help="Visit website", disabled=True,use_container_width=True)
         with btn2_col:
             # Button 2: Refresh URL List
-            refresh_clicked = st.button("🔄", help="Refresh website URLs list", key="refresh_urls_btn")
+            refresh_clicked = st.button("🔄", help="Refresh website URLs list", key="refresh_urls_btn",use_container_width=True,disabled=not client_website_url)
         
         with btn3_col:
             # Button 3: Scrape Website - Set up pending scrape instead of immediate execution
-            scrape_clicked = st.button("📑", help="Get enterprise details", key="scrape_website_btn", disabled=not client_website_url)
+            scrape_clicked = st.button("📑", help="Get enterprise details", key="scrape_website_btn",use_container_width=True, disabled=not client_website_url)
             
             # Handle scrape button click by setting up pending operation
             if scrape_clicked and client_website_url:

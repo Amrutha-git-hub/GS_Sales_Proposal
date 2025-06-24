@@ -135,37 +135,7 @@ def add_professional_css():
         background: #404040;
     }
     
-    /* Button styling - more compact */
-    .stButton > button {
-        border-radius: 4px;
-        font-weight: 600;
-        padding: 0.3rem 0.8rem;
-        transition: all 0.3s ease;
-        font-size: 0.85rem;
-        height: 2.2rem;
-    }
-    
-    .stButton > button[kind="primary"] {
-        background: linear-gradient(135deg, #3498db, #2980b9);
-        border: none;
-        color: #f0f0f0;
-    }
-    
-    .stButton > button[kind="primary"]:hover {
-        background: linear-gradient(135deg, #2980b9, #21618c);
-        transform: translateY(-1px);
-    }
-    
-    .stButton > button[kind="secondary"] {
-        border: 2px solid #666;
-        color: #d0d0d0;
-        background: #3a3a3a;
-    }
-    
-    .stButton > button[kind="secondary"]:hover {
-        background: #555;
-        border-color: #777;
-    }
+    /* REMOVED CONFLICTING BUTTON STYLES - Let app.py handle tab buttons */
     
     /* Link button styling - more compact */
     .external-link-btn {
