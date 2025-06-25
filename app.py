@@ -143,13 +143,13 @@ for i, tab_name in enumerate(tab_names):
         tab_enabled = True
         
         if i == 1:  # Seller Information tab
-            if not validate_client_mandatory_fields(st):
+            if not validate_client_mandatory_fields():
                 tab_enabled = False
         elif i == 2:  # Project Specifications tab
-            if not validate_client_mandatory_fields(st) or not validate_seller_mandatory_fields():
+            if not validate_client_mandatory_fields() or not validate_seller_mandatory_fields():
                 tab_enabled = False
         elif i == 3:  # Generate Proposal tab
-            if not validate_client_mandatory_fields(st) or not validate_seller_mandatory_fields() or not validate_project_mandatory_fields():
+            if not validate_client_mandatory_fields() or not validate_seller_mandatory_fields() or not validate_project_mandatory_fields():
                 tab_enabled = False
         
         # Create button with conditional styling
@@ -166,12 +166,12 @@ for i, tab_name in enumerate(tab_names):
                 if i == 1:  # Seller tab
                     show_validation_popup("Client Information")
                 elif i == 2:  # Project tab
-                    if not validate_client_mandatory_fields(st):
+                    if not validate_client_mandatory_fields():
                         show_validation_popup("Client Information")
                     else:
                         show_validation_popup("Seller Information")
                 elif i == 3:  # Generate tab
-                    if not validate_client_mandatory_fields(st):
+                    if not validate_client_mandatory_fields():
                         show_validation_popup("Client Information")
                     elif not validate_seller_mandatory_fields():
                         show_validation_popup("Seller Information")
@@ -304,7 +304,7 @@ if st.session_state.active_tab == 0:
 
 elif st.session_state.active_tab == 1:
     # Double-check validation before showing seller tab
-    if validate_client_mandatory_fields(st):
+    if validate_client_mandatory_fields():
         seller_tab()
     else:
         st.session_state.active_tab = 0  # Force back to client tab
@@ -313,7 +313,7 @@ elif st.session_state.active_tab == 1:
 
 elif st.session_state.active_tab == 2:
     # Check both client and seller validations
-    if not validate_client_mandatory_fields(st):
+    if not validate_client_mandatory_fields():
         st.session_state.active_tab = 0  # Force back to client tab
         show_validation_popup("Client Information")
         st.rerun()
@@ -360,7 +360,7 @@ elif st.session_state.active_tab == 2:
 
 else:  # Generate Proposal Tab
     # Check all validations
-    if not validate_client_mandatory_fields(st):
+    if not validate_client_mandatory_fields():
         st.session_state.active_tab = 0
         show_validation_popup("Client Information")
         st.rerun()

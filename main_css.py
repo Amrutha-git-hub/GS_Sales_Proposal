@@ -1,7 +1,7 @@
 import streamlit as st
 
 def add_professional_css():
-    """Add professional CSS styling - MADE MORE COMPACT"""
+    """Add professional CSS styling - BLACK AND WHITE THEME"""
     st.markdown("""
     <style>
     /* Global styling */
@@ -9,55 +9,55 @@ def add_professional_css():
         padding-top: 1rem;
         padding-bottom: 1rem;
         max-width: 1200px;
-        background: #1a1a1a;
+        background:#ffffff;
     }
     
     /* Header styling - more compact */
     .main-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #333333 0%, #7fffff 100%);
         padding: 1rem;
         border-radius: 6px;
         margin-bottom: 1rem;
         text-align: center;
-        color: #f0f0f0;
+        color: #0088ff;
     }
     
     .main-header h1 {
         margin: 0;
         font-size: 1.6rem;
         font-weight: 600;
-        color: #f0f0f0;
+        color: #0088ff;
     }
     
     .main-header p {
         margin: 0.2rem 0 0 0;
         font-size: 0.9rem;
         opacity: 0.9;
-        color: #f0f0f0;
+        color: #cccccc;
     }
     
     /* Section styling - much more compact */
     .form-section {
         padding: 0.8rem 1rem;
         border-radius: 6px;
-        box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+        box-shadow: 0 1px 4px rgba(255,255,255,0.1);
         margin-bottom: 0.8rem;
-        border: 1px solid #444;
-        background: #2d2d2d;
+        border: 1px solid #666666;
+        background: #7fffff;
     }
     
     .section-title {
-        color: #e0e0e0;
+        color: #0088ff;
         font-size: 1rem;
         font-weight: 600;
         margin-bottom: 0.6rem;
         padding-bottom: 0.2rem;
-        border-bottom: 2px solid #3498db;
+        border-bottom: 2px solid #666666;
     }
     
     /* Form field styling - MADE SMALLER */
     .field-label {
-        color: #d0d0d0;
+        color: #cccccc;
         font-weight: 600;
         margin-bottom: 0.2rem;
         display: block;
@@ -65,7 +65,7 @@ def add_professional_css():
     }
     
     .required-asterisk {
-        color: #e74c3c;
+        color: #0088ff;
         font-weight: bold;
         margin-left: 3px;
     }
@@ -73,73 +73,71 @@ def add_professional_css():
     /* Input field improvements - MUCH MORE COMPACT */
     .stTextInput > div > div > input {
         border-radius: 4px;
-        border: 1px solid #555;
+        border: 1px solid #666666;
         padding: 0.4rem 0.6rem;
         font-size: 0.85rem;
         transition: all 0.3s ease;
-        background: #3a3a3a;
-        color: #e0e0e0;
+        background: #7fffff;
+        color: #0088ff;
         height: 2.2rem;
     }
     
     .stTextInput > div > div > input:focus {
-        border-color: #3498db;
-        box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.3);
-        background: #404040;
+        border-color: #999999;
+        box-shadow: 0 0 0 2px rgba(153, 153, 153, 0.3);
+        background: #7fffff;
     }
     
     .stSelectbox > div > div > div {
         border-radius: 4px;
-        border: 1px solid #555;
+        border: 1px solid #666666;
         transition: all 0.3s ease;
-        background: #3a3a3a;
-        color: #e0e0e0;
+        background: #7fffff;
+        color: #0088ff;
         min-height: 2.2rem;
     }
     
     .stSelectbox > div > div > div:focus-within {
-        border-color: #3498db;
-        box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.3);
-        background: #404040;
+        border-color: #999999;
+        box-shadow: 0 0 0 2px rgba(153, 153, 153, 0.3);
+        background: #7fffff;
     }
     
     .stTextArea > div > div > textarea {
         border-radius: 4px;
-        border: 1px solid #555;
+        border: 1px solid #666666;
         padding: 0.4rem 0.6rem;
         font-size: 0.85rem;
         transition: all 0.3s ease;
-        background: #3a3a3a;
-        color: #e0e0e0;
+        background: #7fffff;
+        color: #0088ff;
     }
     
     .stTextArea > div > div > textarea:focus {
-        border-color: #3498db;
-        box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.3);
-        background: #404040;
+        border-color: #999999;
+        box-shadow: 0 0 0 2px rgba(153, 153, 153, 0.3);
+        background: #7fffff;
     }
     
     /* File uploader styling - more compact */
     .stFileUploader > div {
-        border: 2px dashed #666;
+        border: 2px dashed #999999;
         border-radius: 6px;
         padding: 0.8rem;
         text-align: center;
         transition: all 0.3s ease;
-        background: #333;
-        color: #d0d0d0;
+        background: #7fffff;
+        color: #cccccc;
     }
     
     .stFileUploader > div:hover {
-        border-color: #3498db;
-        background: #404040;
+        border-color: #0088ff;
+        background: #7fffff;
     }
-    
-    /* REMOVED CONFLICTING BUTTON STYLES - Let app.py handle tab buttons */
     
     /* Link button styling - more compact */
     .external-link-btn {
-        background: #27ae60;
+        background: #666666;
         border: none;
         padding: 0.3rem 0.6rem;
         border-radius: 4px;
@@ -148,21 +146,21 @@ def add_professional_css():
         transition: all 0.3s ease;
         display: inline-block;
         font-size: 0.75rem;
-        color: #f0f0f0;
+        color: #0088ff;
         height: 2.2rem;
         line-height: 1.6rem;
     }
     
     .external-link-btn:hover {
-        background: #219a52;
+        background: #7fffff;
         transform: translateY(-1px);
         text-decoration: none;
-        color: #f0f0f0;
+        color: #0088ff;
     }
     
     /* Validation styling - more compact */
     .validation-success {
-        color: #27ae60;
+        color: #0088ff;
         font-size: 0.75rem;
         margin-top: 0.2rem;
         display: flex;
@@ -171,7 +169,7 @@ def add_professional_css():
     }
     
     .validation-error {
-        color: #e74c3c;
+        color: #cccccc;
         font-size: 0.75rem;
         margin-top: 0.2rem;
         display: flex;
@@ -183,21 +181,21 @@ def add_professional_css():
     .progress-container {
         padding: 0.8rem;
         border-radius: 6px;
-        box-shadow: 0 1px 4px rgba(0,0,0,0.3);
-        border: 1px solid #444;
-        background: #2d2d2d;
-        color: #e0e0e0;
+        box-shadow: 0 1px 4px rgba(255,255,255,0.1);
+        border: 1px solid #666666;
+        background: #7fffff;
+        color: #0088ff;
     }
     
     /* Info styling - more compact */
     .info-container {
-        background: #333;
-        border-left: 4px solid #3498db;
+        background: #7fffff;
+        border-left: 4px solid #666666;
         padding: 0.6rem;
         border-radius: 0 4px 4px 0;
         margin: 0.3rem 0;
         font-size: 0.85rem;
-        color: #d0d0d0;
+        color: #cccccc;
     }
     
     /* Reduce spacing between elements - CRITICAL FOR COMPACTNESS */
@@ -212,19 +210,19 @@ def add_professional_css():
     /* Compact sidebar */
     .css-1d391kg {
         padding-top: 0.8rem;
-        background: #1a1a1a;
-        color: #e0e0e0;
+        background:#ffffff;
+        color: #0088ff;
     }
     
     /* General dark theme colors */
     .stApp {
-        background: #1a1a1a;
-        color: #e0e0e0;
+        background:#ffffff;
+        color: #0088ff;
     }
     
     /* Streamlit element colors */
     .stMarkdown {
-        color: #e0e0e0;
+        color: #0088ff;
     }
     
     /* Hide default streamlit styling */
@@ -240,19 +238,19 @@ def add_professional_css():
     .left-column, .right-column {
         padding: 0.6rem;
         border-radius: 6px;
-        box-shadow: 0 1px 4px rgba(0,0,0,0.3);
-        border: 1px solid #444;
-        background: #2d2d2d;
+        box-shadow: 0 1px 4px rgba(255,255,255,0.1);
+        border: 1px solid #666666;
+        background: #7fffff;
         height: 100%;
     }
     
     .column-header {
-        color: #e0e0e0;
+        color: #0088ff;
         font-size: 0.95rem;
         font-weight: 600;
         margin-bottom: 0.6rem;
         padding-bottom: 0.2rem;
-        border-bottom: 2px solid #3498db;
+        border-bottom: 2px solid #666666;
     }
     
     .column-content {
@@ -260,8 +258,8 @@ def add_professional_css():
     }
     
     .suggestion-container {
-        background: #3a3a3a;
-        border: 1px solid #555;
+        background: #7fffff;
+        border: 1px solid #666666;
         padding: 0.5rem;
         margin: 0.3rem 0;
         border-radius: 4px;
@@ -269,19 +267,19 @@ def add_professional_css():
     }
     
     .suggestion-container:hover {
-        background: #454545;
-        border-color: #666;
+        background: #7fffff;
+        border-color: #999999;
     }
     
     .suggestion-title {
         font-size: 0.8rem;
         font-weight: 500;
-        color: #e0e0e0;
+        color: #0088ff;
     }
     
     .suggestion-added {
-        background: #2d4a2d !important;
-        border-color: #4a7c59 !important;
+        background: #7fffff !important;
+        border-color: #999999 !important;
     }
     
     .warning-container, .info-container {
@@ -292,15 +290,15 @@ def add_professional_css():
     }
     
     .warning-container {
-        background: #4a3d2d;
-        border: 1px solid #7c6539;
-        color: #f39c12;
+        background: #7fffff;
+        border: 1px solid #666666;
+        color: #cccccc;
     }
     
     .action-buttons {
         margin-top: 0.8rem;
         padding-top: 0.6rem;
-        border-top: 1px solid #444;
+        border-top: 1px solid #666666;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -314,7 +312,7 @@ app_css = """
 
 /* Global styles - 75% screen width with equal margins */
 .stApp {
-    background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+    background:#ffffff;
     font-family: 'Inter', sans-serif;
     min-height: 100vh;
 }
@@ -342,38 +340,22 @@ app_css = """
     width: 100%;
     padding: 3rem 0;
     margin-bottom: 2rem;
-    background: rgba(45, 55, 72, 0.3);
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: #7fffff;
+    border: 1px solid #666666;
     border-radius: 20px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 8px 32px rgba(255, 255, 255, 0.1);
     position: relative;
     overflow: hidden;
 }
 
-.main-header::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(45deg, rgba(59, 130, 246, 0.1), rgba(147, 51, 234, 0.1));
-    z-index: -1;
-}
-
 .main-header h1 {
-    color: #ffffff;
+    color: #0088ff;
     font-size: 4rem;
     font-weight: 800;
     margin: 0;
     text-align: center;
-    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
+    text-shadow: 2px 2px 8px rgba(255, 255, 255, 0.1);
     letter-spacing: -0.02em;
-    background: linear-gradient(135deg, #3b82f6, #8b5cf6, #06b6d4);
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
 }
 
 /* Creative tab separators */
@@ -388,9 +370,9 @@ app_css = """
     height: 1px;
     background: linear-gradient(90deg, 
         transparent 0%, 
-        rgba(59, 130, 246, 0.3) 25%, 
-        rgba(147, 51, 234, 0.5) 50%, 
-        rgba(59, 130, 246, 0.3) 75%, 
+        #666666 25%, 
+        #999999 50%, 
+        #666666 75%, 
         transparent 100%);
     position: absolute;
     top: 50%;
@@ -410,10 +392,10 @@ app_css = """
 .separator-diamond {
     width: 8px;
     height: 8px;
-    background: linear-gradient(45deg, #3b82f6, #8b5cf6);
+    background: #0088ff;
     transform: rotate(45deg);
     border-radius: 2px;
-    box-shadow: 0 0 15px rgba(59, 130, 246, 0.6);
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
     animation: pulse-diamond 2s ease-in-out infinite;
     z-index: 2;
 }
@@ -422,31 +404,31 @@ app_css = """
     width: 2px;
     height: 30px;
     background: linear-gradient(180deg, 
-        rgba(59, 130, 246, 0.8) 0%, 
-        rgba(147, 51, 234, 0.6) 50%, 
-        rgba(59, 130, 246, 0.8) 100%);
+        #666666 0%, 
+        #999999 50%, 
+        #666666 100%);
     margin: 4px 0;
     border-radius: 1px;
-    box-shadow: 0 0 10px rgba(59, 130, 246, 0.4);
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
     z-index: 2;
 }
 
 @keyframes pulse-diamond {
     0%, 100% {
         transform: rotate(45deg) scale(1);
-        box-shadow: 0 0 15px rgba(59, 130, 246, 0.6);
+        box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
     }
     50% {
         transform: rotate(45deg) scale(1.2);
-        box-shadow: 0 0 25px rgba(147, 51, 234, 0.8);
+        box-shadow: 0 0 25px rgba(255, 255, 255, 0.5);
     }
 }
 
 /* Tab styling - Improved modern design */
 .stButton > button {
-    background: rgba(42, 42, 42, 0.8) !important;
-    color: #ecf0f1 !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    background: #2a2a2a !important;
+    color: #0088ff !important;
+    border: 1px solid #666666 !important;
     font-weight: 600 !important;
     font-size: 1.1rem !important;
     text-transform: uppercase !important;
@@ -455,7 +437,6 @@ app_css = """
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
     height: 4rem !important;
     border-radius: 15px !important;
-    backdrop-filter: blur(10px) !important;
     position: relative !important;
     overflow: hidden !important;
 }
@@ -477,30 +458,29 @@ app_css = """
 
 .stButton > button:hover {
     transform: translateY(-3px) scale(1.02) !important;
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4) !important;
-    background: rgba(58, 58, 58, 0.9) !important;
-    border-color: rgba(255, 255, 255, 0.2) !important;
+    box-shadow: 0 8px 30px rgba(255, 255, 255, 0.1) !important;
+    background: #3a3a3a !important;
+    border-color: #999999 !important;
 }
 
-/* Active tab styling - Vibrant gradient */
+/* Active tab styling */
 .stButton > button:focus,
 .stButton > button:active {
-    background: linear-gradient(135deg, #3b82f6, #8b5cf6) !important;
-    color: #ffffff !important;
-    border-color: #1d4ed8 !important;
+    background: #0088ff !important;
+    color:#ffffff !important;
+    border-color: #cccccc !important;
     transform: translateY(-2px) scale(1.03) !important;
-    box-shadow: 0 10px 40px rgba(59, 130, 246, 0.4) !important;
+    box-shadow: 0 10px 40px rgba(255, 255, 255, 0.2) !important;
     font-weight: 700 !important;
 }
 
 /* Content area - Full width within the 75% container */
 .content-area {
-    background: rgba(42, 42, 42, 0.4);
-    backdrop-filter: blur(20px);
+    background: #7fffff;
     padding: 3rem;
     border-radius: 20px;
     margin-bottom: 2rem;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid #666666;
     min-height: 70vh;
     width: 100%;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
@@ -508,19 +488,8 @@ app_css = """
     overflow: hidden;
 }
 
-.content-area::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(147, 51, 234, 0.05));
-    z-index: -1;
-}
-
 .content-area h2 {
-    color: #ffffff;
+    color: #0088ff;
     font-size: 2.5rem;
     margin-bottom: 1.5rem;
     font-weight: 700;
@@ -528,14 +497,14 @@ app_css = """
 }
 
 .content-area h3 {
-    color: #e2e8f0;
+    color: #cccccc;
     font-size: 1.5rem;
     margin-bottom: 1.2rem;
     font-weight: 600;
 }
 
 .content-area p {
-    color: #cbd5e0;
+    color: #999999;
     font-size: 1.2rem;
     line-height: 1.8;
     margin-bottom: 1.5rem;
@@ -551,28 +520,27 @@ app_css = """
 }
 
 .grid-item {
-    background: rgba(255, 255, 255, 0.05);
+    background: #2a2a2a;
     padding: 2rem;
     border-radius: 15px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid #666666;
     transition: all 0.3s ease;
 }
 
 .grid-item:hover {
     transform: translateY(-5px);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-    background: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 10px 30px rgba(255, 255, 255, 0.1);
+    background: #333333;
 }
 
 /* Footer styling - Full width within container */
 .footer {
-    background: rgba(42, 42, 42, 0.3);
-    backdrop-filter: blur(20px);
+    background: #7fffff;
     padding: 2rem;
     border-radius: 20px;
     text-align: center;
     margin-top: 3rem;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid #666666;
     width: 100%;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
@@ -608,38 +576,37 @@ app_css = """
 
 /* Refresh Button */
 .footer div[data-testid="column"]:nth-child(1) .stButton > button {
-    background: linear-gradient(135deg, #f39c12, #e67e22) !important;
-    color: #ffffff !important;
-    box-shadow: 0 6px 20px rgba(243, 156, 18, 0.4) !important;
+    background: #666666 !important;
+    color: #0088ff !important;
+    box-shadow: 0 6px 20px rgba(255, 255, 255, 0.1) !important;
 }
 
 .footer div[data-testid="column"]:nth-child(1) .stButton > button:hover {
     transform: translateY(-3px) scale(1.05) !important;
-    box-shadow: 0 10px 30px rgba(243, 156, 18, 0.6) !important;
-    background: linear-gradient(135deg, #e67e22, #d35400) !important;
+    box-shadow: 0 10px 30px rgba(255, 255, 255, 0.2) !important;
+    background: #333333 !important;
 }
 
 /* Generate Presentation Button */
 .footer div[data-testid="column"]:nth-child(2) .stButton > button {
-    background: linear-gradient(135deg, #e74c3c, #c0392b) !important;
-    color: #ffffff !important;
-    box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4) !important;
+    background: #0088ff !important;
+    color:#ffffff !important;
+    box-shadow: 0 6px 20px rgba(255, 255, 255, 0.2) !important;
 }
 
 .footer div[data-testid="column"]:nth-child(2) .stButton > button:hover {
     transform: translateY(-3px) scale(1.05) !important;
-    box-shadow: 0 10px 30px rgba(231, 76, 60, 0.6) !important;
-    background: linear-gradient(135deg, #c0392b, #a93226) !important;
+    box-shadow: 0 10px 30px rgba(255, 255, 255, 0.3) !important;
+    background: #cccccc !important;
 }
 
 /* Input styling - Modern glassmorphism */
 .stSelectbox > div > div > div,
 .stTextInput > div > div > input,
 .stTextArea > div > div > textarea {
-    background: rgba(44, 62, 80, 0.3) !important;
-    backdrop-filter: blur(10px) !important;
-    color: #ffffff !important;
-    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    background: #2a2a2a !important;
+    color: #0088ff !important;
+    border: 1px solid #666666 !important;
     border-radius: 10px !important;
     font-size: 1.1rem !important;
     transition: all 0.3s ease !important;
@@ -648,29 +615,28 @@ app_css = """
 .stSelectbox > div > div > div:focus,
 .stTextInput > div > div > input:focus,
 .stTextArea > div > div > textarea:focus {
-    border-color: #3b82f6 !important;
-    box-shadow: 0 0 20px rgba(59, 130, 246, 0.3) !important;
-    background: rgba(44, 62, 80, 0.5) !important;
+    border-color: #999999 !important;
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.1) !important;
+    background: #333333 !important;
 }
 
 /* File uploader styling */
 .stFileUploader > div {
-    background: rgba(44, 62, 80, 0.3) !important;
-    backdrop-filter: blur(10px) !important;
-    border: 2px dashed rgba(255, 255, 255, 0.3) !important;
+    background: #2a2a2a !important;
+    border: 2px dashed #666666 !important;
     border-radius: 15px !important;
     padding: 2rem !important;
     transition: all 0.3s ease !important;
 }
 
 .stFileUploader > div:hover {
-    border-color: #3b82f6 !important;
-    background: rgba(44, 62, 80, 0.4) !important;
+    border-color: #999999 !important;
+    background: #333333 !important;
 }
 
 .stFileUploader label, .stFileUploader p, .stFileUploader svg {
-    color: #ffffff !important;
-    fill: #ffffff !important;
+    color: #0088ff !important;
+    fill: #0088ff !important;
 }
 
 /* Sidebar removal */
@@ -690,17 +656,17 @@ header {visibility: hidden;}
 }
 
 ::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.1);
+    background: #2a2a2a;
     border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb {
-    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    background: #666666;
     border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(135deg, #2563eb, #7c3aed);
+    background: #999999;
 }
 
 /* Responsive design */
@@ -742,20 +708,10 @@ header {visibility: hidden;}
     animation: fadeInUp 0.6s ease-out;
 }
 
-/* Gradient text for headings */
-.gradient-text {
-    background: linear-gradient(135deg, #3b82f6, #8b5cf6, #06b6d4);
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    font-weight: 700;
-}
-
 /* Enhanced metrics and cards */
 .metric-card {
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: #2a2a2a;
+    border: 1px solid #666666;
     border-radius: 15px;
     padding: 2rem;
     text-align: center;
@@ -764,19 +720,19 @@ header {visibility: hidden;}
 
 .metric-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-    background: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 10px 30px rgba(255, 255, 255, 0.1);
+    background: #333333;
 }
 
 .metric-value {
     font-size: 2.5rem;
     font-weight: 800;
-    color: #3b82f6;
+    color: #0088ff;
     margin-bottom: 0.5rem;
 }
 
 .metric-label {
-    color: #cbd5e0;
+    color: #999999;
     font-size: 1.1rem;
     font-weight: 500;
 }
