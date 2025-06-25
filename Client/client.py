@@ -976,13 +976,13 @@ def client_tab(st):
                     # Style the content box based on selection state
                     if is_selected:
                         background_color = "#2e7d32"
-                        border_color = "#4caf50"
+                        border_color = "#5a9f9f"
                         text_color = "#ffffff"
                         icon = "✅"
                         box_shadow = "0 2px 8px rgba(76, 175, 80, 0.3)"
                     else:
                         background_color = "#f5f5f5"
-                        border_color = "#404040"
+                        border_color = "#5a9f9f"
                         text_color = "#000000"
                         icon = "📋"
                         box_shadow = "0 2px 4px rgba(0,0,0,0.1)"
