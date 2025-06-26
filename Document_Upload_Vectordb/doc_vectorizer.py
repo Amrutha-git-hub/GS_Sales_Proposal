@@ -6,6 +6,13 @@ from pdf2image import convert_from_path
 from datetime import datetime
 import hashlib
 
+# New imports for PPT and DOC support
+from pptx import Presentation
+from docx import Document
+import docx2txt
+from langchain_community.document_loaders import UnstructuredPowerPointLoader, Docx2txtLoader
+from langchain_community.document_loaders import UnstructuredWordDocumentLoader
+
 from langchain_core.messages import HumanMessage
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_chroma import Chroma
@@ -61,7 +68,18 @@ def create_base_metadata(file_path, company_name, file_type):
     return metadata
 
 def file_router(file):
+    """Enhanced file router with PPT and DOC support"""
     try:
+        # Get file extension first
+        file_extension = os.path.splitext(file)[1].lower()
+        
+        # Handle specific extensions
+        if file_extension in ['.ppt', '.pptx']:
+            return 'powerpoint'
+        elif file_extension in ['.doc', '.docx']:
+            return 'word_document'
+        
+        # Use filetype for other formats
         kind = filetype.guess(file)
         if kind is None:
             return "Unknown"
@@ -71,13 +89,18 @@ def file_router(file):
         if file_type.startswith("image/"):
             return 'imagesingle'
 
-        loader = PyPDFLoader(file)
-        docs = loader.load()
+        # Check if it's a PDF with text or images
+        if file_type == 'application/pdf' or file_extension == '.pdf':
+            loader = PyPDFLoader(file)
+            docs = loader.load()
 
-        if not len(docs[0].page_content):
-            return 'imagepdf'
-        else:
-            return 'pdf'
+            if not len(docs[0].page_content.strip()):
+                return 'imagepdf'
+            else:
+                return 'pdf'
+                
+        return 'pdf'  # Default fallback
+        
     except Exception as e:
         print(f"Error in file_router: {e}")
         return 'pdf'  # Default fallback
@@ -121,9 +144,107 @@ def image_handler_append(image):
         f.write(summary + '\n')
     return summary
 
+# --- PowerPoint Handler ---
+
+def extract_ppt_content(filepath: str):
+    """Extract text content from PowerPoint files"""
+    try:
+        prs = Presentation(filepath)
+        full_text = []
+        slide_count = 0
+        
+        for slide_num, slide in enumerate(prs.slides, 1):
+            slide_text = f"=== Slide {slide_num} ===\n"
+            
+            for shape in slide.shapes:
+                if hasattr(shape, "text") and shape.text.strip():
+                    slide_text += shape.text + "\n"
+                    
+                # Handle tables in slides
+                if shape.has_table:
+                    table = shape.table
+                    for row in table.rows:
+                        row_text = []
+                        for cell in row.cells:
+                            if cell.text.strip():
+                                row_text.append(cell.text.strip())
+                        if row_text:
+                            slide_text += " | ".join(row_text) + "\n"
+            
+            if slide_text.strip() != f"=== Slide {slide_num} ===":
+                full_text.append(slide_text)
+                slide_count += 1
+        
+        return "\n\n".join(full_text), slide_count
+        
+    except Exception as e:
+        print(f"Error extracting PowerPoint content with python-pptx: {e}")
+        # Fallback to langchain loader
+        try:
+            loader = UnstructuredPowerPointLoader(filepath)
+            docs = loader.load()
+            content = "\n\n".join([doc.page_content for doc in docs])
+            return content, len(docs)
+        except Exception as fallback_error:
+            print(f"Fallback PowerPoint loader failed: {fallback_error}")
+            return f"Error processing PowerPoint file: {str(e)}", 0
+
+# --- Word Document Handler ---
+
+def extract_word_content(filepath: str):
+    """Extract text content from Word documents"""
+    try:
+        file_extension = os.path.splitext(filepath)[1].lower()
+        
+        if file_extension == '.docx':
+            # Use python-docx for .docx files
+            doc = Document(filepath)
+            full_text = []
+            
+            # Extract paragraphs
+            for para in doc.paragraphs:
+                if para.text.strip():
+                    full_text.append(para.text)
+            
+            # Extract tables
+            for table in doc.tables:
+                for row in table.rows:
+                    row_text = []
+                    for cell in row.cells:
+                        if cell.text.strip():
+                            row_text.append(cell.text.strip())
+                    if row_text:
+                        full_text.append(" | ".join(row_text))
+            
+            content = "\n\n".join(full_text)
+            return content, len(doc.paragraphs)
+            
+        elif file_extension == '.doc':
+            # Use python-docx2txt for .doc files
+            content = docx2txt.process(filepath)
+            return content, len(content.split('\n'))
+            
+    except Exception as e:
+        print(f"Error extracting Word content: {e}")
+        # Fallback to langchain loaders
+        try:
+            if filepath.endswith('.docx'):
+                loader = Docx2txtLoader(filepath)
+            else:
+                loader = UnstructuredWordDocumentLoader(filepath)
+            
+            docs = loader.load()
+            content = "\n\n".join([doc.page_content for doc in docs])
+            return content, len(docs)
+            
+        except Exception as fallback_error:
+            print(f"Fallback Word loader failed: {fallback_error}")
+            return f"Error processing Word document: {str(e)}", 0
+
 # --- Enhanced Vectorization Functions ---
 
 def vectorize_text(text: str, company_name: str, filename: str = "text_input", base_metadata: dict = None):
+    """Vectorize text content with metadata"""
     try:
         splitter = RecursiveCharacterTextSplitter(chunk_size=600, chunk_overlap=50)
         docs = splitter.split_text(text)
@@ -169,7 +290,62 @@ def vectorize_text(text: str, company_name: str, filename: str = "text_input", b
         )
         return vectorstore
 
+def vectorize_powerpoint(filepath: str, company_name: str):
+    """Vectorize PowerPoint presentations"""
+    try:
+        content, slide_count = extract_ppt_content(filepath)
+        filename = get_filename(filepath)
+        
+        # Create base metadata
+        base_metadata = create_base_metadata(filepath, company_name, 'powerpoint')
+        base_metadata.update({
+            'total_slides': slide_count,
+            'content_source': 'powerpoint_extraction',
+            'extraction_method': 'python_pptx_with_langchain_fallback',
+            'supports_tables': True,
+            'supports_shapes': True
+        })
+        
+        return vectorize_text(content, company_name, filename, base_metadata)
+        
+    except Exception as e:
+        print(f"Error in vectorize_powerpoint: {e}")
+        error_metadata = {
+            'error': str(e), 
+            'file_type': 'powerpoint',
+            'extraction_failed': True
+        }
+        return vectorize_text("Error processing PowerPoint file", company_name, "error_ppt", error_metadata)
+
+def vectorize_word_document(filepath: str, company_name: str):
+    """Vectorize Word documents"""
+    try:
+        content, paragraph_count = extract_word_content(filepath)
+        filename = get_filename(filepath)
+        
+        # Create base metadata
+        base_metadata = create_base_metadata(filepath, company_name, 'word_document')
+        base_metadata.update({
+            'paragraph_count': paragraph_count,
+            'content_source': 'word_extraction',
+            'extraction_method': 'python_docx_with_langchain_fallback',
+            'supports_tables': True,
+            'supports_formatting': True
+        })
+        
+        return vectorize_text(content, company_name, filename, base_metadata)
+        
+    except Exception as e:
+        print(f"Error in vectorize_word_document: {e}")
+        error_metadata = {
+            'error': str(e), 
+            'file_type': 'word_document',
+            'extraction_failed': True
+        }
+        return vectorize_text("Error processing Word document", company_name, "error_doc", error_metadata)
+
 def vectorize_single_image(image, company_name: str):
+    """Vectorize single images"""
     try:
         # Create base metadata for image
         base_metadata = create_base_metadata(image, company_name, 'single_image')
@@ -188,6 +364,7 @@ def vectorize_single_image(image, company_name: str):
         return vectorize_text("Error processing image", company_name, "error_image", error_metadata)
 
 def vectorize_multiple_images(image_path: str, company_name: str):
+    """Vectorize PDF with images"""
     try:
         images = convert_from_path(image_path)
         filename = get_filename(image_path)
@@ -216,6 +393,7 @@ def vectorize_multiple_images(image_path: str, company_name: str):
         return vectorize_text("Error processing PDF images", company_name, "error_pdf_images", error_metadata)
 
 def vectorize_docs(filepath: str, company_name: str):
+    """Vectorize PDF documents"""
     try:
         loader = PyPDFLoader(filepath)
         docs = loader.load()
@@ -291,6 +469,7 @@ def vectorize_docs(filepath: str, company_name: str):
 # --- Entry Point for Routing ---
 
 def vectorize(filepath: str, company_name: str):
+    """Main vectorization function with enhanced file type support"""
     try:
         file_type = file_router(filepath)
         print(f"Detected file type: {file_type}")
@@ -299,6 +478,10 @@ def vectorize(filepath: str, company_name: str):
             return vectorize_single_image(filepath, company_name)
         elif file_type == 'imagepdf':
             return vectorize_multiple_images(filepath, company_name)
+        elif file_type == 'powerpoint':
+            return vectorize_powerpoint(filepath, company_name)
+        elif file_type == 'word_document':
+            return vectorize_word_document(filepath, company_name)
         else:
             return vectorize_docs(filepath, company_name)
             
@@ -357,3 +540,25 @@ def get_document_metadata_summary(vectorstore):
     except Exception as e:
         print(f"Error getting metadata summary: {e}")
         return None
+
+# --- Additional utility functions for specific file types ---
+
+def get_supported_file_types():
+    """Return list of supported file types"""
+    return {
+        'pdf': ['.pdf'],
+        'powerpoint': ['.ppt', '.pptx'],
+        'word_document': ['.doc', '.docx'],
+        'images': ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff', '.webp']
+    }
+
+def validate_file_type(filepath: str):
+    """Validate if file type is supported"""
+    supported_types = get_supported_file_types()
+    file_extension = os.path.splitext(filepath)[1].lower()
+    
+    for file_type, extensions in supported_types.items():
+        if file_extension in extensions:
+            return True, file_type
+    
+    return False, "unsupported"
