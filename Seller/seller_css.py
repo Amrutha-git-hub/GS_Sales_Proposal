@@ -1,63 +1,63 @@
 seller_css = """
 <style>
     .client-section {
-        background: #2a2a2a;
+        background: #f5f5f5;
         padding: 1.5rem;
         border-radius: 10px;
         border-left: 4px solid #667eea;
         margin-bottom: 1rem;
-        color: #f8f9fa;
+        color: #2a2a2a;
     }
     
     .url-section {
-        background: #2a2a2a;
+        background: #f5f5f5;
         padding: 1.5rem;
         border-radius: 10px;
         border-left: 4px solid #764ba2;
         margin-bottom: 1rem;
-        color: #f8f9fa;
+        color: #2a2a2a;
     }
     
     .document-section {
-        background: #2a2a2a;
+        background: #f5f5f5;
         padding: 1.5rem;
         border-radius: 10px;
-        border: 2px solid #3a3a3a;
+        border: 2px solid #5a9f9f;
         margin-bottom: 1rem;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-        color: #f8f9fa;
+        color: #2a2a2a;
     }
     
     .pain-points-section {
-        background: #2a2a2a;
+        background: #f5f5f5;
         padding: 1.5rem;
         border-radius: 10px;
         border-left: 4px solid #ffc107;
-        color: #f8f9fa;
+        color: #2a2a2a;
     }
     
     .roles-section {
-        background: #2a2a2a;
+        background: #f5f5f5;
         padding: 1.5rem;
         border-radius: 10px;
         border-left: 4px solid #2196f3;
-        color: #f8f9fa;
+        color: #2a2a2a;
     }
     
     .priorities-section {
-        background: #2a2a2a;
+        background: #f5f5f5;
         padding: 1.5rem;
         border-radius: 10px;
         border-left: 4px solid #9c27b0;
-        color: #f8f9fa;
+        color: #2a2a2a;
     }
     
     .ai-suggestion-section {
-        background: #2a2a2a;
+        background: #f5f5f5;
         padding: 1.5rem;
         border-radius: 10px;
         border-left: 4px solid #00bcd4;
-        color: #f8f9fa;
+        color: #2a2a2a;
     }
     
     .upload-section {
@@ -65,13 +65,13 @@ seller_css = """
         border-radius: 10px;
         padding: 2rem;
         text-align: center;
-        background: #2a2a2a;
-        color: #f8f9fa;
+        background: #f5f5f5;
+        color: #2a2a2a;
     }
     
     /* Style section headers */
     .section-header {
-        color: #f8f9fa;
+        color: #2a2a2a;
         font-size: 1.2rem;
         font-weight: 600;
         margin-bottom: 1rem;
@@ -95,7 +95,7 @@ seller_css = """
     }
     
     .optional-label {
-        color: #95a5a6;
+        color: #666666;
         font-size: 0.8rem;
         font-style: italic;
     }
@@ -130,15 +130,15 @@ seller_css = """
     
     /* Summary item styling */
     .summary-item {
-        background: #2a2a2a;
-        border: 1px solid #3a3a3a;
+        background: #f5f5f5;
+        border: 1px solid #5a9f9f;
         border-radius: 8px;
         padding: 12px;
         margin-bottom: 8px;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        color: #f8f9fa;
+        color: #2a2a2a;
     }
     
     .summary-key {
@@ -225,8 +225,206 @@ seller_css = """
         visibility: visible;
         opacity: 1;
     }
+    
+    /* Streamlit input elements styling - ALL INPUTS */
+    
+    /* Text Input */
+    .stTextInput > div > div > input {
+        background-color: #f5f5f5 !important;
+        color: #2a2a2a !important;
+        border: 2px solid #5a9f9f !important;
+        border-radius: 8px !important;
+        padding: 12px !important;
+        font-size: 14px !important;
+    }
+    
+    /* Text Area */
+    .stTextArea > div > div > textarea {
+        background-color: #f5f5f5 !important;
+        color: #2a2a2a !important;
+        border: 2px solid #5a9f9f !important;
+        border-radius: 8px !important;
+        padding: 12px !important;
+        font-size: 14px !important;
+    }
+    
+    /* Number Input */
+    .stNumberInput > div > div > input {
+        background-color: #f5f5f5 !important;
+        color: #2a2a2a !important;
+        border: 2px solid #5a9f9f !important;
+        border-radius: 8px !important;
+        padding: 12px !important;
+        font-size: 14px !important;
+    }
+    
+    /* Select Box */
+    .stSelectbox > div > div > div {
+        background-color: #f5f5f5 !important;
+        color: #2a2a2a !important;
+        border: 2px solid #5a9f9f !important;
+        border-radius: 8px !important;
+    }
+    
+    /* Multiselect */
+    .stMultiSelect > div > div > div {
+        background-color: #f5f5f5 !important;
+        color: #2a2a2a !important;
+        border: 2px solid #5a9f9f !important;
+        border-radius: 8px !important;
+    }
+    
+    /* Date Input */
+    .stDateInput > div > div > input {
+        background-color: #f5f5f5 !important;
+        color: #2a2a2a !important;
+        border: 2px solid #5a9f9f !important;
+        border-radius: 8px !important;
+        padding: 12px !important;
+        font-size: 14px !important;
+    }
+    
+    /* Time Input */
+    .stTimeInput > div > div > input {
+        background-color: #f5f5f5 !important;
+        color: #2a2a2a !important;
+        border: 2px solid #5a9f9f !important;
+        border-radius: 8px !important;
+        padding: 12px !important;
+        font-size: 14px !important;
+    }
+    
+    /* File Uploader */
+    .stFileUploader > div > div {
+        background-color: #f5f5f5 !important;
+        color: #2a2a2a !important;
+        border: 2px solid #5a9f9f !important;
+        border-radius: 8px !important;
+    }
+    
+    /* Color Picker */
+    .stColorPicker > div > div > input {
+        background-color: #f5f5f5 !important;
+        border: 2px solid #5a9f9f !important;
+        border-radius: 8px !important;
+    }
+    
+    /* Focus states for all inputs */
+    .stTextInput > div > div > input:focus,
+    .stTextArea > div > div > textarea:focus,
+    .stNumberInput > div > div > input:focus,
+    .stDateInput > div > div > input:focus,
+    .stTimeInput > div > div > input:focus {
+        border-color: #667eea !important;
+        box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2) !important;
+        outline: none !important;
+        background-color: #f5f5f5 !important;
+        color: #2a2a2a !important;
+    }
+    
+    /* Active/typing states to ensure text stays visible */
+    .stTextInput > div > div > input:active,
+    .stTextArea > div > div > textarea:active,
+    .stNumberInput > div > div > input:active,
+    .stDateInput > div > div > input:active,
+    .stTimeInput > div > div > input:active {
+        background-color: #f5f5f5 !important;
+        color: #2a2a2a !important;
+    }
+    
+    /* Placeholder text for all inputs */
+    .stTextInput > div > div > input::placeholder,
+    .stTextArea > div > div > textarea::placeholder,
+    .stNumberInput > div > div > input::placeholder,
+    .stDateInput > div > div > input::placeholder,
+    .stTimeInput > div > div > input::placeholder {
+        color: #666666 !important;
+        opacity: 0.7 !important;
+    }
+    
+    /* Labels for all input types */
+    .stTextInput > label,
+    .stTextArea > label,
+    .stNumberInput > label,
+    .stSelectbox > label,
+    .stMultiSelect > label,
+    .stDateInput > label,
+    .stTimeInput > label,
+    .stFileUploader > label,
+    .stColorPicker > label {
+        color: #2a2a2a !important;
+        font-weight: 600 !important;
+        margin-bottom: 8px !important;
+    }
+    
+    /* Dropdown options styling */
+    .stSelectbox div[data-baseweb="select"] > div > div,
+    .stMultiSelect div[data-baseweb="select"] > div > div {
+        background-color: #f5f5f5 !important;
+    }
+    
+    /* File uploader drag and drop area */
+    .stFileUploader section {
+        background-color: #f5f5f5 !important;
+        border: 2px dashed #5a9f9f !important;
+        border-radius: 8px !important;
+    }
+input,
+textarea,
+select,
+.stSelectbox,
+.stMultiSelect {
+    color: #2a2a2a !important;
+}
 
-
+   /* Force override all button styling */
+                    button[kind="secondary"] {
+                        height: 48px !important;
+                        border: 2.2px solid #618f8f !important;
+                        border-radius: 4px !important;
+                        margin-top: -5px !important;  /* Move button up */
+                        transform: translateY(-3px) !important;  /* Additional upward adjustment */
+                        background-color: #4a4a4a !important;  /* Dark greyish background */
+                        color: white !important;  /* White text */
+                    }
+                     
+                    button[kind="secondary"]:hover {
+                        border: 2.2px solid #618f8f !important;
+                        transform: translateY(-3px) !important;  /* Keep position on hover */
+                        background-color: #5a5a5a !important;  /* Slightly lighter on hover */
+                        color: white !important;  /* Keep white text on hover */
+                    }
+                     
+                    button[kind="secondary"]:focus {
+                        border: 2.2px solid #618f8f !important;
+                        outline: 2px solid #618f8f !important;
+                        transform: translateY(-3px) !important;  /* Keep position on focus */
+                        background-color: #4a4a4a !important;  /* Keep dark background on focus */
+                        color: white !important;  /* Keep white text on focus */
+                    }
+                     
+                    /* Try targeting by data attributes */
+                    [data-testid] button {
+                        border: 2.2px solid #618f8f !important;
+                        height: 48px !important;
+                        margin-top: -5px !important;  /* Move button up */
+                        transform: translateY(-3px) !important;  /* Additional upward adjustment */
+                        background-color: #4a4a4a !important;  /* Dark greyish background */
+                        color: white !important;  /* White text */
+                    }
+                    
+                    /* Additional targeting for button text specifically */
+                    button[kind="secondary"] p,
+                    button[kind="secondary"] span,
+                    button[kind="secondary"] div {
+                        color: white !important;
+                    }
+                    
+                    [data-testid] button p,
+                    [data-testid] button span,
+                    [data-testid] button div {
+                        color: white !important;
+                    }
 
 </style>
 """

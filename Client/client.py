@@ -7,7 +7,7 @@ import threading
 import time
 from Search.Linkedin.linkedin_serp import *
 from Recommendation.recommendation_utils import *
-from .client_css import client_css
+from .client_css import *
 from .client_dataclass import ClientData, ClientDataManager
 
 
@@ -44,6 +44,7 @@ def client_tab(st):
     # Apply CSS only once
     if not client_data.css_applied:
         st.markdown(client_css, unsafe_allow_html=True)
+        #st.markdown(focus_styles,unsafe_allow_html = True)
         ClientDataManager.update_client_data(css_applied=True)
     
     # Re-apply CSS after every rerun to ensure persistence
@@ -83,7 +84,8 @@ def client_tab(st):
             if st.button("🔍 Find Website",
                         disabled=find_urls_disabled,
                         help="Find website URLs for this company",
-                        key="find_urls_button"):
+                        key="find_urls_button",
+                        type = "secondary"):
                 # Add spinner while fetching URLs
                 with st.spinner(f"Finding Websites for '{client_enterprise_name.strip()}'..."):
                     try:
@@ -232,7 +234,6 @@ def client_tab(st):
             background-size: 200% 100%;
             animation: shimmer 2s linear infinite;
             border-radius: 4px;
-            padding: 2px 4px;
         }
         @keyframes pulse {
             0% { opacity: 0.6; }
@@ -423,15 +424,59 @@ def client_tab(st):
                 is_selected = key in client_data.selected_pain_points
                 
                 # Create a box container with +/- button and content on same horizontal level
-                col_add, col_content = st.columns([0.5, 9], gap="small")
+                col_add, col_content = st.columns([0.5, 9], gap="medium")
                 
                 with col_add:
                     # Style the button to align vertically with the content box
                     st.markdown("""
                     <style>
-                    div[data-testid="column"] > div > div > button {
+                    /* Force override all button styling */
+                    button[kind="secondary"] {
                         height: 48px !important;
-                        margin-top: 5px !important;
+                        border: 2.2px solid #618f8f !important;
+                        border-radius: 4px !important;
+                        margin-top: -5px !important;  /* Move button up */
+                        transform: translateY(-3px) !important;  /* Additional upward adjustment */
+                        background-color: #4a4a4a !important;  /* Dark greyish background */
+                        color: white !important;  /* White text */
+                    }
+                     
+                    button[kind="secondary"]:hover {
+                        border: 2.2px solid #618f8f !important;
+                        transform: translateY(-3px) !important;  /* Keep position on hover */
+                        background-color: #5a5a5a !important;  /* Slightly lighter on hover */
+                        color: white !important;  /* Keep white text on hover */
+                    }
+                     
+                    button[kind="secondary"]:focus {
+                        border: 2.2px solid #618f8f !important;
+                        outline: 2px solid #618f8f !important;
+                        transform: translateY(-3px) !important;  /* Keep position on focus */
+                        background-color: #4a4a4a !important;  /* Keep dark background on focus */
+                        color: white !important;  /* Keep white text on focus */
+                    }
+                     
+                    /* Try targeting by data attributes */
+                    [data-testid] button {
+                        border: 2.2px solid #618f8f !important;
+                        height: 48px !important;
+                        margin-top: -5px !important;  /* Move button up */
+                        transform: translateY(-2.5px) !important;  /* Additional upward adjustment */
+                        background-color: #4a4a4a !important;  /* Dark greyish background */
+                        color: white !important;  /* White text */
+                    }
+                    
+                    /* Additional targeting for button text specifically */
+                    button[kind="secondary"] p,
+                    button[kind="secondary"] span,
+                    button[kind="secondary"] div {
+                        color: white !important;
+                    }
+                    
+                    [data-testid] button p,
+                    [data-testid] button span,
+                    [data-testid] button div {
+                        color: white !important;
                     }
                     </style>
                     """, unsafe_allow_html=True)
@@ -898,7 +943,7 @@ def client_tab(st):
                 is_selected = key in client_data.selected_additional_specs
                 
                 # Create a box container with +/- button and content on same horizontal level
-                col_add, col_content = st.columns([0.5, 9], gap="small")
+                col_add, col_content = st.columns([0.5, 9], gap="medium")
                 
                 with col_add:
                     # Style the button to align vertically with the content box
