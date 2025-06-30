@@ -1,0 +1,908 @@
+2025-06-30 07:01:58,050 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:01:58,051 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:01:58,052 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:01:58,052 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:01:58,052 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:01:58,053 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:01:58,053 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:01:58,054 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:01:58,054 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:01:58,055 - client_module - INFO - Starting client_tab function
+2025-06-30 07:01:58,055 - client_module - DEBUG - Retrieved client data from dataclass manager
+2025-06-30 07:01:58,055 - client_module - DEBUG - Applying CSS for the first time
+2025-06-30 07:01:58,056 - client_module - INFO - CSS applied and updated in client data
+2025-06-30 07:01:58,056 - client_module - DEBUG - CSS re-applied for persistence
+2025-06-30 07:01:58,057 - client_module - DEBUG - Creating top section with client name and URLs
+2025-06-30 07:01:58,057 - client_module - DEBUG - Processing client enterprise name section
+2025-06-30 07:01:58,059 - client_module - DEBUG - Find URLs button disabled: True
+2025-06-30 07:01:58,060 - client_module - DEBUG - Processing client website URL section
+2025-06-30 07:01:58,061 - client_module - DEBUG - Client name provided: False
+2025-06-30 07:01:58,062 - client_module - DEBUG - URL options count: 1
+2025-06-30 07:01:58,062 - client_module - DEBUG - Creating file upload and enterprise details section
+2025-06-30 07:01:58,063 - client_module - DEBUG - Processing file upload section
+2025-06-30 07:01:58,065 - client_module - DEBUG - Processing enterprise details section
+2025-06-30 07:01:58,066 - client_module - DEBUG - Creating client requirements and pain points section
+2025-06-30 07:01:58,067 - client_module - DEBUG - Processing client requirements section
+2025-06-30 07:01:58,068 - client_module - ERROR - Error creating client requirements textarea: There are multiple elements with the same `key='client_requirements_textarea'`. To fix this, please make sure that the `key` argument is unique for each element you create.
+2025-06-30 07:01:58,069 - client_module - INFO - Starting COL6 - Client Pain Points section rendering
+2025-06-30 07:01:58,069 - client_module - INFO - Using dummy pain points data as fallback
+2025-06-30 07:01:58,069 - client_module - DEBUG - Rendering 3 pain point items
+2025-06-30 07:01:58,070 - client_module - DEBUG - Processing pain point item 0: Revenue Challenges
+2025-06-30 07:01:58,070 - client_module - DEBUG - Pain point 'Revenue Challenges' selection status: False
+2025-06-30 07:01:58,071 - client_module - DEBUG - Successfully rendered content box for 'Revenue Challenges'
+2025-06-30 07:01:58,071 - client_module - DEBUG - Processing pain point item 1: Cost and Margin Pressure
+2025-06-30 07:01:58,071 - client_module - DEBUG - Pain point 'Cost and Margin Pressure' selection status: False
+2025-06-30 07:01:58,072 - client_module - DEBUG - Successfully rendered content box for 'Cost and Margin Pressure'
+2025-06-30 07:01:58,073 - client_module - DEBUG - Processing pain point item 2: Market Expansion and Customer Acquisition
+2025-06-30 07:01:58,073 - client_module - DEBUG - Pain point 'Market Expansion and Customer Acquisition' selection status: False
+2025-06-30 07:01:58,074 - client_module - DEBUG - Successfully rendered content box for 'Market Expansion and Customer Acquisition'
+2025-06-30 07:01:58,075 - client_module - INFO - Rendered SPOC name tooltip
+2025-06-30 07:01:58,076 - client_module - INFO - SPOC name input rendered with value: 
+2025-06-30 07:01:58,076 - client_module - INFO - SPOC name provided status: False
+2025-06-30 07:01:58,076 - client_module - INFO - Rendered LinkedIn profile tooltip
+2025-06-30 07:01:58,077 - client_module - INFO - LinkedIn profile selector in disabled state
+2025-06-30 07:01:58,077 - client_module - INFO - Created roles and priorities columns
+2025-06-30 07:01:58,078 - client_module - INFO - Rendered SPOC role tooltip
+2025-06-30 07:01:58,078 - client_module - INFO - Retrieved 10 default roles
+2025-06-30 07:01:58,078 - client_module - INFO - Role selector rendered with selection: Select a role...
+2025-06-30 07:01:58,079 - client_module - INFO - Cleared selected target role
+2025-06-30 07:01:58,079 - client_module - INFO - Rendered business priorities tooltip
+2025-06-30 07:01:58,079 - client_module - INFO - Using 3 business priorities
+2025-06-30 07:01:58,080 - client_module - INFO - Created additional requirements columns
+2025-06-30 07:01:58,081 - client_module - INFO - Rendered additional client requirements tooltip
+2025-06-30 07:01:58,081 - client_module - INFO - Additional requirements text area rendered with 0 characters
+2025-06-30 07:01:58,081 - client_module - INFO - Additional requirements provided status: False
+2025-06-30 07:01:58,081 - client_module - INFO - Rendered additional specifications tooltip
+2025-06-30 07:01:58,081 - client_module - INFO - Using default additional specs items
+2025-06-30 07:02:18,635 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:02:18,635 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:02:18,636 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:02:18,636 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:02:18,637 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:02:18,637 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:02:18,637 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:02:18,637 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:02:18,637 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:02:18,638 - client_module - INFO - Starting client_tab function
+2025-06-30 07:02:18,638 - client_module - DEBUG - Retrieved client data from dataclass manager
+2025-06-30 07:02:18,638 - client_module - DEBUG - Applying CSS for the first time
+2025-06-30 07:02:18,639 - client_module - INFO - CSS applied and updated in client data
+2025-06-30 07:02:18,639 - client_module - DEBUG - CSS re-applied for persistence
+2025-06-30 07:02:18,639 - client_module - DEBUG - Creating top section with client name and URLs
+2025-06-30 07:02:18,640 - client_module - DEBUG - Processing client enterprise name section
+2025-06-30 07:02:18,640 - client_module - DEBUG - Find URLs button disabled: True
+2025-06-30 07:02:18,641 - client_module - DEBUG - Processing client website URL section
+2025-06-30 07:02:18,641 - client_module - DEBUG - Client name provided: False
+2025-06-30 07:02:18,641 - client_module - DEBUG - URL options count: 1
+2025-06-30 07:02:18,642 - client_module - DEBUG - Creating file upload and enterprise details section
+2025-06-30 07:02:18,643 - client_module - DEBUG - Processing file upload section
+2025-06-30 07:02:18,644 - client_module - DEBUG - Processing enterprise details section
+2025-06-30 07:02:18,645 - client_module - DEBUG - Creating client requirements and pain points section
+2025-06-30 07:02:18,646 - client_module - DEBUG - Processing client requirements section
+2025-06-30 07:02:18,646 - client_module - DEBUG - Client requirements provided: False
+2025-06-30 07:02:18,647 - client_module - INFO - Starting COL6 - Client Pain Points section rendering
+2025-06-30 07:02:18,647 - client_module - INFO - Using dummy pain points data as fallback
+2025-06-30 07:02:18,648 - client_module - DEBUG - Rendering 3 pain point items
+2025-06-30 07:02:18,648 - client_module - DEBUG - Processing pain point item 0: Revenue Challenges
+2025-06-30 07:02:18,649 - client_module - DEBUG - Pain point 'Revenue Challenges' selection status: False
+2025-06-30 07:02:18,650 - client_module - DEBUG - Successfully rendered content box for 'Revenue Challenges'
+2025-06-30 07:02:18,650 - client_module - DEBUG - Processing pain point item 1: Cost and Margin Pressure
+2025-06-30 07:02:18,651 - client_module - DEBUG - Pain point 'Cost and Margin Pressure' selection status: False
+2025-06-30 07:02:18,652 - client_module - DEBUG - Successfully rendered content box for 'Cost and Margin Pressure'
+2025-06-30 07:02:18,652 - client_module - DEBUG - Processing pain point item 2: Market Expansion and Customer Acquisition
+2025-06-30 07:02:18,652 - client_module - DEBUG - Pain point 'Market Expansion and Customer Acquisition' selection status: False
+2025-06-30 07:02:18,653 - client_module - DEBUG - Successfully rendered content box for 'Market Expansion and Customer Acquisition'
+2025-06-30 07:02:18,654 - client_module - INFO - Rendered SPOC name tooltip
+2025-06-30 07:02:18,655 - client_module - INFO - SPOC name input rendered with value: 
+2025-06-30 07:02:18,655 - client_module - INFO - SPOC name provided status: False
+2025-06-30 07:02:18,655 - client_module - INFO - Rendered LinkedIn profile tooltip
+2025-06-30 07:02:18,656 - client_module - INFO - LinkedIn profile selector in disabled state
+2025-06-30 07:02:18,656 - client_module - INFO - Created roles and priorities columns
+2025-06-30 07:02:18,657 - client_module - INFO - Rendered SPOC role tooltip
+2025-06-30 07:02:18,657 - client_module - INFO - Retrieved 10 default roles
+2025-06-30 07:02:18,658 - client_module - INFO - Role selector rendered with selection: Select a role...
+2025-06-30 07:02:18,658 - client_module - INFO - Cleared selected target role
+2025-06-30 07:02:18,659 - client_module - INFO - Rendered business priorities tooltip
+2025-06-30 07:02:18,659 - client_module - INFO - Using 3 business priorities
+2025-06-30 07:02:18,661 - client_module - INFO - Created additional requirements columns
+2025-06-30 07:02:18,661 - client_module - INFO - Rendered additional client requirements tooltip
+2025-06-30 07:02:18,662 - client_module - INFO - Additional requirements text area rendered with 0 characters
+2025-06-30 07:02:18,662 - client_module - INFO - Additional requirements provided status: False
+2025-06-30 07:02:18,663 - client_module - INFO - Rendered additional specifications tooltip
+2025-06-30 07:02:18,663 - client_module - INFO - Using default additional specs items
+2025-06-30 07:02:21,708 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:02:21,709 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:02:21,709 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:02:21,872 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:02:21,872 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:02:21,872 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:02:21,873 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:02:21,873 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:02:21,873 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:02:21,873 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:02:21,873 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:02:21,873 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:02:21,873 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:02:21,875 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:02:21,875 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:02:21,875 - Seller.seller - INFO - Seller tab function started
+2025-06-30 07:02:21,876 - Seller.seller - INFO - Initializing new seller tab data
+2025-06-30 07:02:21,883 - Seller.seller - INFO - Seller tab function completed
+2025-06-30 07:02:28,589 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:02:28,590 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:02:28,590 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:02:28,591 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:02:28,591 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:02:28,591 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:02:28,592 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:02:28,592 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:02:28,592 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:02:28,592 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:02:28,592 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:02:28,592 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:02:28,592 - Seller.seller - INFO - Seller tab function started
+2025-06-30 07:02:28,599 - Seller.seller - INFO - Seller tab function completed
+2025-06-30 07:02:33,567 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:02:33,570 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:02:33,570 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:02:33,572 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:02:33,572 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:02:33,573 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:02:33,574 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:02:33,575 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:02:33,575 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:02:33,577 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:02:33,578 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:02:33,578 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:02:33,579 - Seller.seller - INFO - Seller tab function started
+2025-06-30 07:02:33,587 - Seller.seller - INFO - Seller tab function completed
+2025-06-30 07:02:33,758 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:02:33,758 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:02:33,758 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:02:33,759 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:02:33,760 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:02:33,760 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:02:33,760 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:02:33,760 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:02:33,761 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:02:33,761 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:02:33,762 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:02:33,762 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:02:33,762 - Seller.seller - INFO - Seller tab function started
+2025-06-30 07:02:33,770 - Seller.seller - ERROR - Error rendering seller services selector: 'dict' object has no attribute 'add'
+2025-06-30 07:02:33,774 - Seller.seller - ERROR - Traceback (most recent call last):
+  File "/home/shreyank/GS/GS_Sales_Proposal/Seller/seller.py", line 645, in seller_tab
+    seller_enterprise_details, seller_enterprise_details_provided = render_three_column_selector_unified(
+                                                                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        # Column configuration - Made wider to fill screen
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<39 lines>...
+        title_margin_bottom="10px"  # Reduced margin
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/shreyank/GS/GS_Sales_Proposal/t.py", line 307, in render_three_column_selector_unified
+    st.session_state[middle_selected_items_key].add(key)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'dict' object has no attribute 'add'
+
+2025-06-30 07:02:33,774 - Seller.seller - INFO - Seller tab function completed
+2025-06-30 07:03:03,095 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:03:03,097 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:03:03,097 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:03:03,098 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:03:03,098 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:03:03,098 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:03:03,099 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:03:03,100 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:03:03,100 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:03:03,101 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:03:03,101 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:03:03,101 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:03:03,101 - Seller.seller - INFO - Seller tab function started
+2025-06-30 07:03:03,112 - Seller.seller - ERROR - Error rendering seller services selector: 'dict' object has no attribute 'add'
+2025-06-30 07:03:03,113 - Seller.seller - ERROR - Traceback (most recent call last):
+  File "/home/shreyank/GS/GS_Sales_Proposal/Seller/seller.py", line 645, in seller_tab
+    seller_enterprise_details, seller_enterprise_details_provided = render_three_column_selector_unified(
+                                                                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        # Column configuration - Made wider to fill screen
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<39 lines>...
+        title_margin_bottom="10px"  # Reduced margin
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/shreyank/GS/GS_Sales_Proposal/t.py", line 307, in render_three_column_selector_unified
+    st.session_state[middle_selected_items_key].add(key)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'dict' object has no attribute 'add'
+
+2025-06-30 07:03:03,114 - Seller.seller - INFO - Seller tab function completed
+2025-06-30 07:03:07,984 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:03:07,985 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:03:07,985 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:03:07,986 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:03:07,986 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:03:07,986 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:03:07,987 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:03:07,987 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:03:07,987 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:03:07,988 - client_module - INFO - Starting client_tab function
+2025-06-30 07:03:07,988 - client_module - DEBUG - Retrieved client data from dataclass manager
+2025-06-30 07:03:07,988 - client_module - DEBUG - Applying CSS for the first time
+2025-06-30 07:03:07,989 - client_module - INFO - CSS applied and updated in client data
+2025-06-30 07:03:07,990 - client_module - DEBUG - CSS re-applied for persistence
+2025-06-30 07:03:07,990 - client_module - DEBUG - Creating top section with client name and URLs
+2025-06-30 07:03:07,991 - client_module - DEBUG - Processing client enterprise name section
+2025-06-30 07:03:07,992 - client_module - DEBUG - Find URLs button disabled: True
+2025-06-30 07:03:07,992 - client_module - DEBUG - Processing client website URL section
+2025-06-30 07:03:07,994 - client_module - DEBUG - Client name provided: False
+2025-06-30 07:03:07,994 - client_module - DEBUG - URL options count: 1
+2025-06-30 07:03:07,996 - client_module - DEBUG - Creating file upload and enterprise details section
+2025-06-30 07:03:07,997 - client_module - DEBUG - Processing file upload section
+2025-06-30 07:03:07,999 - client_module - DEBUG - Processing enterprise details section
+2025-06-30 07:03:08,000 - client_module - DEBUG - Creating client requirements and pain points section
+2025-06-30 07:03:08,000 - client_module - DEBUG - Processing client requirements section
+2025-06-30 07:03:08,002 - client_module - DEBUG - Client requirements provided: False
+2025-06-30 07:03:08,002 - client_module - INFO - Starting COL6 - Client Pain Points section rendering
+2025-06-30 07:03:08,004 - client_module - INFO - Using dummy pain points data as fallback
+2025-06-30 07:03:08,004 - client_module - DEBUG - Rendering 3 pain point items
+2025-06-30 07:03:08,004 - client_module - DEBUG - Processing pain point item 0: Revenue Challenges
+2025-06-30 07:03:08,005 - client_module - DEBUG - Pain point 'Revenue Challenges' selection status: False
+2025-06-30 07:03:08,006 - client_module - DEBUG - Successfully rendered content box for 'Revenue Challenges'
+2025-06-30 07:03:08,007 - client_module - DEBUG - Processing pain point item 1: Cost and Margin Pressure
+2025-06-30 07:03:08,007 - client_module - DEBUG - Pain point 'Cost and Margin Pressure' selection status: False
+2025-06-30 07:03:08,009 - client_module - DEBUG - Successfully rendered content box for 'Cost and Margin Pressure'
+2025-06-30 07:03:08,009 - client_module - DEBUG - Processing pain point item 2: Market Expansion and Customer Acquisition
+2025-06-30 07:03:08,009 - client_module - DEBUG - Pain point 'Market Expansion and Customer Acquisition' selection status: False
+2025-06-30 07:03:08,011 - client_module - DEBUG - Successfully rendered content box for 'Market Expansion and Customer Acquisition'
+2025-06-30 07:03:08,012 - client_module - INFO - Rendered SPOC name tooltip
+2025-06-30 07:03:08,013 - client_module - INFO - SPOC name input rendered with value: 
+2025-06-30 07:03:08,013 - client_module - INFO - SPOC name provided status: False
+2025-06-30 07:03:08,014 - client_module - INFO - Rendered LinkedIn profile tooltip
+2025-06-30 07:03:08,016 - client_module - INFO - LinkedIn profile selector in disabled state
+2025-06-30 07:03:08,017 - client_module - INFO - Created roles and priorities columns
+2025-06-30 07:03:08,017 - client_module - INFO - Rendered SPOC role tooltip
+2025-06-30 07:03:08,018 - client_module - INFO - Retrieved 10 default roles
+2025-06-30 07:03:08,018 - client_module - INFO - Role selector rendered with selection: Select a role...
+2025-06-30 07:03:08,019 - client_module - INFO - Cleared selected target role
+2025-06-30 07:03:08,020 - client_module - INFO - Rendered business priorities tooltip
+2025-06-30 07:03:08,020 - client_module - INFO - Using 3 business priorities
+2025-06-30 07:03:08,022 - client_module - INFO - Created additional requirements columns
+2025-06-30 07:03:08,023 - client_module - INFO - Rendered additional client requirements tooltip
+2025-06-30 07:03:08,024 - client_module - INFO - Additional requirements text area rendered with 0 characters
+2025-06-30 07:03:08,024 - client_module - INFO - Additional requirements provided status: False
+2025-06-30 07:03:08,025 - client_module - INFO - Rendered additional specifications tooltip
+2025-06-30 07:03:08,025 - client_module - INFO - Using default additional specs items
+2025-06-30 07:03:09,053 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:03:09,054 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:03:09,054 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:03:09,225 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:03:09,226 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:03:09,226 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:03:09,226 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:03:09,226 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:03:09,226 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:03:09,227 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:03:09,227 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:03:09,227 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:03:09,228 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:03:09,228 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:03:09,228 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:03:09,228 - Seller.seller - INFO - Seller tab function started
+2025-06-30 07:03:09,228 - Seller.seller - INFO - Initializing new seller tab data
+2025-06-30 07:03:09,240 - Seller.seller - INFO - Seller tab function completed
+2025-06-30 07:03:10,303 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:03:10,303 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:03:10,303 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:03:10,303 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:03:10,303 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:03:10,303 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:03:10,304 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:03:10,304 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:03:10,304 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:03:10,304 - client_module - INFO - Starting client_tab function
+2025-06-30 07:03:10,304 - client_module - DEBUG - Retrieved client data from dataclass manager
+2025-06-30 07:03:10,305 - client_module - DEBUG - CSS re-applied for persistence
+2025-06-30 07:03:10,305 - client_module - DEBUG - Creating top section with client name and URLs
+2025-06-30 07:03:10,305 - client_module - DEBUG - Processing client enterprise name section
+2025-06-30 07:03:10,306 - client_module - DEBUG - Find URLs button disabled: True
+2025-06-30 07:03:10,306 - client_module - DEBUG - Processing client website URL section
+2025-06-30 07:03:10,307 - client_module - DEBUG - Client name provided: False
+2025-06-30 07:03:10,307 - client_module - DEBUG - URL options count: 1
+2025-06-30 07:03:10,307 - client_module - DEBUG - Creating file upload and enterprise details section
+2025-06-30 07:03:10,308 - client_module - DEBUG - Processing file upload section
+2025-06-30 07:03:10,308 - client_module - DEBUG - Processing enterprise details section
+2025-06-30 07:03:10,309 - client_module - DEBUG - Creating client requirements and pain points section
+2025-06-30 07:03:10,310 - client_module - DEBUG - Processing client requirements section
+2025-06-30 07:03:10,310 - client_module - DEBUG - Client requirements provided: False
+2025-06-30 07:03:10,311 - client_module - INFO - Starting COL6 - Client Pain Points section rendering
+2025-06-30 07:03:10,311 - client_module - INFO - Using dummy pain points data as fallback
+2025-06-30 07:03:10,311 - client_module - DEBUG - Rendering 3 pain point items
+2025-06-30 07:03:10,311 - client_module - DEBUG - Processing pain point item 0: Revenue Challenges
+2025-06-30 07:03:10,311 - client_module - DEBUG - Pain point 'Revenue Challenges' selection status: False
+2025-06-30 07:03:10,312 - client_module - DEBUG - Successfully rendered content box for 'Revenue Challenges'
+2025-06-30 07:03:10,312 - client_module - DEBUG - Processing pain point item 1: Cost and Margin Pressure
+2025-06-30 07:03:10,312 - client_module - DEBUG - Pain point 'Cost and Margin Pressure' selection status: False
+2025-06-30 07:03:10,312 - client_module - DEBUG - Successfully rendered content box for 'Cost and Margin Pressure'
+2025-06-30 07:03:10,313 - client_module - DEBUG - Processing pain point item 2: Market Expansion and Customer Acquisition
+2025-06-30 07:03:10,313 - client_module - DEBUG - Pain point 'Market Expansion and Customer Acquisition' selection status: False
+2025-06-30 07:03:10,313 - client_module - DEBUG - Successfully rendered content box for 'Market Expansion and Customer Acquisition'
+2025-06-30 07:03:10,314 - client_module - INFO - Rendered SPOC name tooltip
+2025-06-30 07:03:10,315 - client_module - INFO - SPOC name input rendered with value: 
+2025-06-30 07:03:10,315 - client_module - INFO - SPOC name provided status: False
+2025-06-30 07:03:10,315 - client_module - INFO - Rendered LinkedIn profile tooltip
+2025-06-30 07:03:10,315 - client_module - INFO - LinkedIn profile selector in disabled state
+2025-06-30 07:03:10,316 - client_module - INFO - Created roles and priorities columns
+2025-06-30 07:03:10,316 - client_module - INFO - Rendered SPOC role tooltip
+2025-06-30 07:03:10,317 - client_module - INFO - Retrieved 10 default roles
+2025-06-30 07:03:10,317 - client_module - INFO - Role selector rendered with selection: Select a role...
+2025-06-30 07:03:10,317 - client_module - INFO - Cleared selected target role
+2025-06-30 07:03:10,317 - client_module - INFO - Rendered business priorities tooltip
+2025-06-30 07:03:10,317 - client_module - INFO - Using 3 business priorities
+2025-06-30 07:03:10,318 - client_module - INFO - Created additional requirements columns
+2025-06-30 07:03:10,319 - client_module - INFO - Rendered additional client requirements tooltip
+2025-06-30 07:03:10,319 - client_module - INFO - Additional requirements text area rendered with 0 characters
+2025-06-30 07:03:10,319 - client_module - INFO - Additional requirements provided status: False
+2025-06-30 07:03:10,319 - client_module - INFO - Rendered additional specifications tooltip
+2025-06-30 07:03:10,319 - client_module - INFO - Using default additional specs items
+2025-06-30 07:03:13,675 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:03:13,678 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:03:13,679 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:03:13,681 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:03:13,682 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:03:13,683 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:03:13,683 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:03:13,683 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:03:13,683 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:03:13,684 - client_module - INFO - Starting client_tab function
+2025-06-30 07:03:13,685 - client_module - DEBUG - Retrieved client data from dataclass manager
+2025-06-30 07:03:13,685 - client_module - DEBUG - CSS re-applied for persistence
+2025-06-30 07:03:13,686 - client_module - DEBUG - Creating top section with client name and URLs
+2025-06-30 07:03:13,686 - client_module - DEBUG - Processing client enterprise name section
+2025-06-30 07:03:13,688 - client_module - INFO - Updated enterprise name: ;ljkljk
+2025-06-30 07:03:13,688 - client_module - DEBUG - Find URLs button disabled: False
+2025-06-30 07:03:13,689 - client_module - DEBUG - Processing client website URL section
+2025-06-30 07:03:13,689 - client_module - DEBUG - Client name provided: True
+2025-06-30 07:03:13,690 - client_module - DEBUG - URL options count: 1
+2025-06-30 07:03:13,691 - client_module - DEBUG - Creating file upload and enterprise details section
+2025-06-30 07:03:13,691 - client_module - DEBUG - Processing file upload section
+2025-06-30 07:03:13,692 - client_module - DEBUG - Processing enterprise details section
+2025-06-30 07:03:13,694 - client_module - DEBUG - Creating client requirements and pain points section
+2025-06-30 07:03:13,695 - client_module - DEBUG - Processing client requirements section
+2025-06-30 07:03:13,696 - client_module - DEBUG - Updated client requirements content
+2025-06-30 07:03:13,696 - client_module - DEBUG - Client requirements provided: False
+2025-06-30 07:03:13,696 - client_module - INFO - Starting COL6 - Client Pain Points section rendering
+2025-06-30 07:03:13,696 - client_module - INFO - Using dummy pain points data as fallback
+2025-06-30 07:03:13,696 - client_module - DEBUG - Rendering 3 pain point items
+2025-06-30 07:03:13,696 - client_module - DEBUG - Processing pain point item 0: Revenue Challenges
+2025-06-30 07:03:13,696 - client_module - DEBUG - Pain point 'Revenue Challenges' selection status: False
+2025-06-30 07:03:13,697 - client_module - DEBUG - Successfully rendered content box for 'Revenue Challenges'
+2025-06-30 07:03:13,697 - client_module - DEBUG - Processing pain point item 1: Cost and Margin Pressure
+2025-06-30 07:03:13,697 - client_module - DEBUG - Pain point 'Cost and Margin Pressure' selection status: False
+2025-06-30 07:03:13,698 - client_module - DEBUG - Successfully rendered content box for 'Cost and Margin Pressure'
+2025-06-30 07:03:13,698 - client_module - DEBUG - Processing pain point item 2: Market Expansion and Customer Acquisition
+2025-06-30 07:03:13,699 - client_module - DEBUG - Pain point 'Market Expansion and Customer Acquisition' selection status: False
+2025-06-30 07:03:13,699 - client_module - DEBUG - Successfully rendered content box for 'Market Expansion and Customer Acquisition'
+2025-06-30 07:03:13,700 - client_module - INFO - Rendered SPOC name tooltip
+2025-06-30 07:03:13,700 - client_module - INFO - SPOC name input rendered with value: 
+2025-06-30 07:03:13,700 - client_module - INFO - SPOC name provided status: False
+2025-06-30 07:03:13,701 - client_module - INFO - Rendered LinkedIn profile tooltip
+2025-06-30 07:03:13,701 - client_module - INFO - LinkedIn profile selector in disabled state
+2025-06-30 07:03:13,701 - client_module - INFO - Created roles and priorities columns
+2025-06-30 07:03:13,701 - client_module - INFO - Rendered SPOC role tooltip
+2025-06-30 07:03:13,702 - client_module - INFO - Retrieved 10 default roles
+2025-06-30 07:03:13,702 - client_module - INFO - Role selector rendered with selection: Select a role...
+2025-06-30 07:03:13,702 - client_module - INFO - Cleared selected target role
+2025-06-30 07:03:13,702 - client_module - INFO - Rendered business priorities tooltip
+2025-06-30 07:03:13,702 - client_module - INFO - Using 3 business priorities
+2025-06-30 07:03:13,703 - client_module - INFO - Created additional requirements columns
+2025-06-30 07:03:13,703 - client_module - INFO - Rendered additional client requirements tooltip
+2025-06-30 07:03:13,704 - client_module - INFO - Additional requirements text area rendered with 0 characters
+2025-06-30 07:03:13,704 - client_module - INFO - Additional requirements provided status: False
+2025-06-30 07:03:13,704 - client_module - INFO - Rendered additional specifications tooltip
+2025-06-30 07:03:13,704 - client_module - INFO - Using default additional specs items
+2025-06-30 07:03:14,745 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:03:14,746 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:03:14,747 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:03:14,748 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:03:14,748 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:03:14,748 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:03:14,749 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:03:14,749 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:03:14,749 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:03:14,750 - client_module - INFO - Starting client_tab function
+2025-06-30 07:03:14,750 - client_module - DEBUG - Retrieved client data from dataclass manager
+2025-06-30 07:03:14,751 - client_module - DEBUG - CSS re-applied for persistence
+2025-06-30 07:03:14,751 - client_module - DEBUG - Creating top section with client name and URLs
+2025-06-30 07:03:14,752 - client_module - DEBUG - Processing client enterprise name section
+2025-06-30 07:03:14,753 - client_module - DEBUG - Find URLs button disabled: False
+2025-06-30 07:03:14,753 - client_module - DEBUG - Processing client website URL section
+2025-06-30 07:03:14,754 - client_module - DEBUG - Client name provided: True
+2025-06-30 07:03:14,754 - client_module - DEBUG - URL options count: 1
+2025-06-30 07:03:14,754 - client_module - DEBUG - Creating file upload and enterprise details section
+2025-06-30 07:03:14,755 - client_module - DEBUG - Processing file upload section
+2025-06-30 07:03:14,755 - client_module - DEBUG - Processing enterprise details section
+2025-06-30 07:03:14,756 - client_module - DEBUG - Creating client requirements and pain points section
+2025-06-30 07:03:14,756 - client_module - DEBUG - Processing client requirements section
+2025-06-30 07:03:14,757 - client_module - DEBUG - Updated client requirements content
+2025-06-30 07:03:14,757 - client_module - DEBUG - Client requirements provided: False
+2025-06-30 07:03:14,757 - client_module - INFO - Starting COL6 - Client Pain Points section rendering
+2025-06-30 07:03:14,757 - client_module - INFO - Using dummy pain points data as fallback
+2025-06-30 07:03:14,758 - client_module - DEBUG - Rendering 3 pain point items
+2025-06-30 07:03:14,758 - client_module - DEBUG - Processing pain point item 0: Revenue Challenges
+2025-06-30 07:03:14,759 - client_module - DEBUG - Pain point 'Revenue Challenges' selection status: False
+2025-06-30 07:03:14,761 - client_module - INFO - Pain point button clicked for 'Revenue Challenges', current selection: False
+2025-06-30 07:03:14,761 - client_module - INFO - Adding pain point 'Revenue Challenges' to requirements
+2025-06-30 07:03:14,761 - client_module - DEBUG - Current content length before add: 0
+2025-06-30 07:03:14,761 - client_module - DEBUG - New content length after add: 583
+2025-06-30 07:03:14,762 - client_module - INFO - Successfully added pain point 'Revenue Challenges'
+2025-06-30 07:03:14,922 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:03:14,923 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:03:14,923 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:03:14,924 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:03:14,924 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:03:14,925 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:03:14,925 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:03:14,926 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:03:14,926 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:03:14,926 - client_module - INFO - Starting client_tab function
+2025-06-30 07:03:14,927 - client_module - DEBUG - Retrieved client data from dataclass manager
+2025-06-30 07:03:14,927 - client_module - DEBUG - CSS re-applied for persistence
+2025-06-30 07:03:14,928 - client_module - DEBUG - Creating top section with client name and URLs
+2025-06-30 07:03:14,928 - client_module - DEBUG - Processing client enterprise name section
+2025-06-30 07:03:14,930 - client_module - DEBUG - Find URLs button disabled: False
+2025-06-30 07:03:14,930 - client_module - DEBUG - Processing client website URL section
+2025-06-30 07:03:14,931 - client_module - DEBUG - Client name provided: True
+2025-06-30 07:03:14,931 - client_module - DEBUG - URL options count: 1
+2025-06-30 07:03:14,933 - client_module - DEBUG - Creating file upload and enterprise details section
+2025-06-30 07:03:14,933 - client_module - DEBUG - Processing file upload section
+2025-06-30 07:03:14,934 - client_module - DEBUG - Processing enterprise details section
+2025-06-30 07:03:14,935 - client_module - DEBUG - Creating client requirements and pain points section
+2025-06-30 07:03:14,936 - client_module - DEBUG - Processing client requirements section
+2025-06-30 07:03:14,937 - client_module - DEBUG - Updated client requirements content
+2025-06-30 07:03:14,937 - client_module - DEBUG - Client requirements provided: True
+2025-06-30 07:03:14,937 - client_module - INFO - Starting COL6 - Client Pain Points section rendering
+2025-06-30 07:03:14,937 - client_module - INFO - Using dummy pain points data as fallback
+2025-06-30 07:03:14,937 - client_module - DEBUG - Rendering 3 pain point items
+2025-06-30 07:03:14,937 - client_module - DEBUG - Processing pain point item 0: Revenue Challenges
+2025-06-30 07:03:14,937 - client_module - DEBUG - Pain point 'Revenue Challenges' selection status: True
+2025-06-30 07:03:14,938 - client_module - DEBUG - Successfully rendered content box for 'Revenue Challenges'
+2025-06-30 07:03:14,938 - client_module - DEBUG - Processing pain point item 1: Cost and Margin Pressure
+2025-06-30 07:03:14,938 - client_module - DEBUG - Pain point 'Cost and Margin Pressure' selection status: False
+2025-06-30 07:03:14,939 - client_module - DEBUG - Successfully rendered content box for 'Cost and Margin Pressure'
+2025-06-30 07:03:14,939 - client_module - DEBUG - Processing pain point item 2: Market Expansion and Customer Acquisition
+2025-06-30 07:03:14,939 - client_module - DEBUG - Pain point 'Market Expansion and Customer Acquisition' selection status: False
+2025-06-30 07:03:14,940 - client_module - DEBUG - Successfully rendered content box for 'Market Expansion and Customer Acquisition'
+2025-06-30 07:03:14,941 - client_module - INFO - Rendered SPOC name tooltip
+2025-06-30 07:03:14,943 - client_module - INFO - SPOC name input rendered with value: 
+2025-06-30 07:03:14,943 - client_module - INFO - SPOC name provided status: False
+2025-06-30 07:03:14,944 - client_module - INFO - Rendered LinkedIn profile tooltip
+2025-06-30 07:03:14,945 - client_module - INFO - LinkedIn profile selector in disabled state
+2025-06-30 07:03:14,946 - client_module - INFO - Created roles and priorities columns
+2025-06-30 07:03:14,947 - client_module - INFO - Rendered SPOC role tooltip
+2025-06-30 07:03:14,947 - client_module - INFO - Retrieved 10 default roles
+2025-06-30 07:03:14,949 - client_module - INFO - Role selector rendered with selection: Select a role...
+2025-06-30 07:03:14,949 - client_module - INFO - Cleared selected target role
+2025-06-30 07:03:14,950 - client_module - INFO - Rendered business priorities tooltip
+2025-06-30 07:03:14,950 - client_module - INFO - Using 3 business priorities
+2025-06-30 07:03:14,952 - client_module - INFO - Created additional requirements columns
+2025-06-30 07:03:14,953 - client_module - INFO - Rendered additional client requirements tooltip
+2025-06-30 07:03:14,954 - client_module - INFO - Additional requirements text area rendered with 0 characters
+2025-06-30 07:03:14,954 - client_module - INFO - Additional requirements provided status: False
+2025-06-30 07:03:14,955 - client_module - INFO - Rendered additional specifications tooltip
+2025-06-30 07:03:14,955 - client_module - INFO - Using default additional specs items
+2025-06-30 07:03:15,595 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:03:15,595 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:03:15,596 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:03:15,597 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:03:15,597 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:03:15,598 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:03:15,598 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:03:15,599 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:03:15,599 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:03:15,599 - client_module - INFO - Starting client_tab function
+2025-06-30 07:03:15,600 - client_module - DEBUG - Retrieved client data from dataclass manager
+2025-06-30 07:03:15,601 - client_module - DEBUG - CSS re-applied for persistence
+2025-06-30 07:03:15,601 - client_module - DEBUG - Creating top section with client name and URLs
+2025-06-30 07:03:15,603 - client_module - DEBUG - Processing client enterprise name section
+2025-06-30 07:03:15,604 - client_module - DEBUG - Find URLs button disabled: False
+2025-06-30 07:03:15,605 - client_module - DEBUG - Processing client website URL section
+2025-06-30 07:03:15,606 - client_module - DEBUG - Client name provided: True
+2025-06-30 07:03:15,606 - client_module - DEBUG - URL options count: 1
+2025-06-30 07:03:15,608 - client_module - DEBUG - Creating file upload and enterprise details section
+2025-06-30 07:03:15,609 - client_module - DEBUG - Processing file upload section
+2025-06-30 07:03:15,609 - client_module - DEBUG - Processing enterprise details section
+2025-06-30 07:03:15,610 - client_module - DEBUG - Creating client requirements and pain points section
+2025-06-30 07:03:15,611 - client_module - DEBUG - Processing client requirements section
+2025-06-30 07:03:15,612 - client_module - DEBUG - Updated client requirements content
+2025-06-30 07:03:15,613 - client_module - DEBUG - Client requirements provided: True
+2025-06-30 07:03:15,613 - client_module - INFO - Starting COL6 - Client Pain Points section rendering
+2025-06-30 07:03:15,614 - client_module - INFO - Using dummy pain points data as fallback
+2025-06-30 07:03:15,615 - client_module - DEBUG - Rendering 3 pain point items
+2025-06-30 07:03:15,616 - client_module - DEBUG - Processing pain point item 0: Revenue Challenges
+2025-06-30 07:03:15,616 - client_module - DEBUG - Pain point 'Revenue Challenges' selection status: True
+2025-06-30 07:03:15,618 - client_module - DEBUG - Successfully rendered content box for 'Revenue Challenges'
+2025-06-30 07:03:15,618 - client_module - DEBUG - Processing pain point item 1: Cost and Margin Pressure
+2025-06-30 07:03:15,618 - client_module - DEBUG - Pain point 'Cost and Margin Pressure' selection status: False
+2025-06-30 07:03:15,620 - client_module - INFO - Pain point button clicked for 'Cost and Margin Pressure', current selection: False
+2025-06-30 07:03:15,620 - client_module - INFO - Adding pain point 'Cost and Margin Pressure' to requirements
+2025-06-30 07:03:15,620 - client_module - DEBUG - Current content length before add: 583
+2025-06-30 07:03:15,620 - client_module - DEBUG - New content length after add: 1178
+2025-06-30 07:03:15,621 - client_module - INFO - Successfully added pain point 'Cost and Margin Pressure'
+2025-06-30 07:03:15,783 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:03:15,784 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:03:15,784 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:03:15,785 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:03:15,785 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:03:15,785 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:03:15,785 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:03:15,786 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:03:15,786 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:03:15,787 - client_module - INFO - Starting client_tab function
+2025-06-30 07:03:15,787 - client_module - DEBUG - Retrieved client data from dataclass manager
+2025-06-30 07:03:15,788 - client_module - DEBUG - CSS re-applied for persistence
+2025-06-30 07:03:15,788 - client_module - DEBUG - Creating top section with client name and URLs
+2025-06-30 07:03:15,789 - client_module - DEBUG - Processing client enterprise name section
+2025-06-30 07:03:15,790 - client_module - DEBUG - Find URLs button disabled: False
+2025-06-30 07:03:15,791 - client_module - DEBUG - Processing client website URL section
+2025-06-30 07:03:15,792 - client_module - DEBUG - Client name provided: True
+2025-06-30 07:03:15,792 - client_module - DEBUG - URL options count: 1
+2025-06-30 07:03:15,793 - client_module - DEBUG - Creating file upload and enterprise details section
+2025-06-30 07:03:15,793 - client_module - DEBUG - Processing file upload section
+2025-06-30 07:03:15,794 - client_module - DEBUG - Processing enterprise details section
+2025-06-30 07:03:15,795 - client_module - DEBUG - Creating client requirements and pain points section
+2025-06-30 07:03:15,796 - client_module - DEBUG - Processing client requirements section
+2025-06-30 07:03:15,797 - client_module - DEBUG - Updated client requirements content
+2025-06-30 07:03:15,797 - client_module - DEBUG - Client requirements provided: True
+2025-06-30 07:03:15,797 - client_module - INFO - Starting COL6 - Client Pain Points section rendering
+2025-06-30 07:03:15,797 - client_module - INFO - Using dummy pain points data as fallback
+2025-06-30 07:03:15,798 - client_module - DEBUG - Rendering 3 pain point items
+2025-06-30 07:03:15,798 - client_module - DEBUG - Processing pain point item 0: Revenue Challenges
+2025-06-30 07:03:15,798 - client_module - DEBUG - Pain point 'Revenue Challenges' selection status: True
+2025-06-30 07:03:15,798 - client_module - DEBUG - Successfully rendered content box for 'Revenue Challenges'
+2025-06-30 07:03:15,799 - client_module - DEBUG - Processing pain point item 1: Cost and Margin Pressure
+2025-06-30 07:03:15,799 - client_module - DEBUG - Pain point 'Cost and Margin Pressure' selection status: True
+2025-06-30 07:03:15,800 - client_module - DEBUG - Successfully rendered content box for 'Cost and Margin Pressure'
+2025-06-30 07:03:15,800 - client_module - DEBUG - Processing pain point item 2: Market Expansion and Customer Acquisition
+2025-06-30 07:03:15,800 - client_module - DEBUG - Pain point 'Market Expansion and Customer Acquisition' selection status: False
+2025-06-30 07:03:15,801 - client_module - DEBUG - Successfully rendered content box for 'Market Expansion and Customer Acquisition'
+2025-06-30 07:03:15,801 - client_module - INFO - Rendered SPOC name tooltip
+2025-06-30 07:03:15,802 - client_module - INFO - SPOC name input rendered with value: 
+2025-06-30 07:03:15,802 - client_module - INFO - SPOC name provided status: False
+2025-06-30 07:03:15,802 - client_module - INFO - Rendered LinkedIn profile tooltip
+2025-06-30 07:03:15,802 - client_module - INFO - LinkedIn profile selector in disabled state
+2025-06-30 07:03:15,803 - client_module - INFO - Created roles and priorities columns
+2025-06-30 07:03:15,803 - client_module - INFO - Rendered SPOC role tooltip
+2025-06-30 07:03:15,803 - client_module - INFO - Retrieved 10 default roles
+2025-06-30 07:03:15,804 - client_module - INFO - Role selector rendered with selection: Select a role...
+2025-06-30 07:03:15,804 - client_module - INFO - Cleared selected target role
+2025-06-30 07:03:15,805 - client_module - INFO - Rendered business priorities tooltip
+2025-06-30 07:03:15,805 - client_module - INFO - Using 3 business priorities
+2025-06-30 07:03:15,806 - client_module - INFO - Created additional requirements columns
+2025-06-30 07:03:15,807 - client_module - INFO - Rendered additional client requirements tooltip
+2025-06-30 07:03:15,807 - client_module - INFO - Additional requirements text area rendered with 0 characters
+2025-06-30 07:03:15,807 - client_module - INFO - Additional requirements provided status: False
+2025-06-30 07:03:15,807 - client_module - INFO - Rendered additional specifications tooltip
+2025-06-30 07:03:15,807 - client_module - INFO - Using default additional specs items
+2025-06-30 07:03:16,798 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:03:16,799 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:03:16,799 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:03:16,800 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:03:16,803 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:03:16,803 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:03:16,805 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:03:16,806 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:03:16,806 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:03:16,807 - client_module - INFO - Starting client_tab function
+2025-06-30 07:03:16,808 - client_module - DEBUG - Retrieved client data from dataclass manager
+2025-06-30 07:03:16,808 - client_module - DEBUG - CSS re-applied for persistence
+2025-06-30 07:03:16,809 - client_module - DEBUG - Creating top section with client name and URLs
+2025-06-30 07:03:16,809 - client_module - DEBUG - Processing client enterprise name section
+2025-06-30 07:03:16,810 - client_module - DEBUG - Find URLs button disabled: False
+2025-06-30 07:03:16,811 - client_module - DEBUG - Processing client website URL section
+2025-06-30 07:03:16,812 - client_module - DEBUG - Client name provided: True
+2025-06-30 07:03:16,812 - client_module - DEBUG - URL options count: 1
+2025-06-30 07:03:16,814 - client_module - DEBUG - Creating file upload and enterprise details section
+2025-06-30 07:03:16,814 - client_module - DEBUG - Processing file upload section
+2025-06-30 07:03:16,814 - client_module - DEBUG - Processing enterprise details section
+2025-06-30 07:03:16,815 - client_module - DEBUG - Creating client requirements and pain points section
+2025-06-30 07:03:16,816 - client_module - DEBUG - Processing client requirements section
+2025-06-30 07:03:16,817 - client_module - DEBUG - Updated client requirements content
+2025-06-30 07:03:16,818 - client_module - DEBUG - Client requirements provided: True
+2025-06-30 07:03:16,818 - client_module - INFO - Starting COL6 - Client Pain Points section rendering
+2025-06-30 07:03:16,819 - client_module - INFO - Using dummy pain points data as fallback
+2025-06-30 07:03:16,820 - client_module - DEBUG - Rendering 3 pain point items
+2025-06-30 07:03:16,821 - client_module - DEBUG - Processing pain point item 0: Revenue Challenges
+2025-06-30 07:03:16,821 - client_module - DEBUG - Pain point 'Revenue Challenges' selection status: True
+2025-06-30 07:03:16,823 - client_module - DEBUG - Successfully rendered content box for 'Revenue Challenges'
+2025-06-30 07:03:16,823 - client_module - DEBUG - Processing pain point item 1: Cost and Margin Pressure
+2025-06-30 07:03:16,824 - client_module - DEBUG - Pain point 'Cost and Margin Pressure' selection status: True
+2025-06-30 07:03:16,826 - client_module - INFO - Pain point button clicked for 'Cost and Margin Pressure', current selection: True
+2025-06-30 07:03:16,826 - client_module - INFO - Removing pain point 'Cost and Margin Pressure' from requirements
+2025-06-30 07:03:16,826 - client_module - DEBUG - Current content length: 1178
+2025-06-30 07:03:16,826 - client_module - DEBUG - Original content to remove length: 593
+2025-06-30 07:03:16,826 - client_module - DEBUG - Removed pattern from content
+2025-06-30 07:03:16,827 - client_module - INFO - Successfully removed pain point 'Cost and Margin Pressure'
+2025-06-30 07:03:16,985 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:03:16,985 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:03:16,985 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:03:16,986 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:03:16,986 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:03:16,986 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:03:16,986 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:03:16,986 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:03:16,986 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:03:16,987 - client_module - INFO - Starting client_tab function
+2025-06-30 07:03:16,987 - client_module - DEBUG - Retrieved client data from dataclass manager
+2025-06-30 07:03:16,987 - client_module - DEBUG - CSS re-applied for persistence
+2025-06-30 07:03:16,987 - client_module - DEBUG - Creating top section with client name and URLs
+2025-06-30 07:03:16,988 - client_module - DEBUG - Processing client enterprise name section
+2025-06-30 07:03:16,988 - client_module - DEBUG - Find URLs button disabled: False
+2025-06-30 07:03:16,989 - client_module - DEBUG - Processing client website URL section
+2025-06-30 07:03:16,991 - client_module - DEBUG - Client name provided: True
+2025-06-30 07:03:16,991 - client_module - DEBUG - URL options count: 1
+2025-06-30 07:03:16,993 - client_module - DEBUG - Creating file upload and enterprise details section
+2025-06-30 07:03:16,993 - client_module - DEBUG - Processing file upload section
+2025-06-30 07:03:16,995 - client_module - DEBUG - Processing enterprise details section
+2025-06-30 07:03:16,995 - client_module - DEBUG - Creating client requirements and pain points section
+2025-06-30 07:03:16,996 - client_module - DEBUG - Processing client requirements section
+2025-06-30 07:03:16,997 - client_module - DEBUG - Updated client requirements content
+2025-06-30 07:03:16,997 - client_module - DEBUG - Client requirements provided: True
+2025-06-30 07:03:16,997 - client_module - INFO - Starting COL6 - Client Pain Points section rendering
+2025-06-30 07:03:16,998 - client_module - INFO - Using dummy pain points data as fallback
+2025-06-30 07:03:16,998 - client_module - DEBUG - Rendering 3 pain point items
+2025-06-30 07:03:16,998 - client_module - DEBUG - Processing pain point item 0: Revenue Challenges
+2025-06-30 07:03:16,998 - client_module - DEBUG - Pain point 'Revenue Challenges' selection status: True
+2025-06-30 07:03:16,999 - client_module - DEBUG - Successfully rendered content box for 'Revenue Challenges'
+2025-06-30 07:03:16,999 - client_module - DEBUG - Processing pain point item 1: Cost and Margin Pressure
+2025-06-30 07:03:16,999 - client_module - DEBUG - Pain point 'Cost and Margin Pressure' selection status: False
+2025-06-30 07:03:17,000 - client_module - DEBUG - Successfully rendered content box for 'Cost and Margin Pressure'
+2025-06-30 07:03:17,000 - client_module - DEBUG - Processing pain point item 2: Market Expansion and Customer Acquisition
+2025-06-30 07:03:17,000 - client_module - DEBUG - Pain point 'Market Expansion and Customer Acquisition' selection status: False
+2025-06-30 07:03:17,001 - client_module - DEBUG - Successfully rendered content box for 'Market Expansion and Customer Acquisition'
+2025-06-30 07:03:17,001 - client_module - INFO - Rendered SPOC name tooltip
+2025-06-30 07:03:17,002 - client_module - INFO - SPOC name input rendered with value: 
+2025-06-30 07:03:17,002 - client_module - INFO - SPOC name provided status: False
+2025-06-30 07:03:17,002 - client_module - INFO - Rendered LinkedIn profile tooltip
+2025-06-30 07:03:17,002 - client_module - INFO - LinkedIn profile selector in disabled state
+2025-06-30 07:03:17,003 - client_module - INFO - Created roles and priorities columns
+2025-06-30 07:03:17,003 - client_module - INFO - Rendered SPOC role tooltip
+2025-06-30 07:03:17,003 - client_module - INFO - Retrieved 10 default roles
+2025-06-30 07:03:17,004 - client_module - INFO - Role selector rendered with selection: Select a role...
+2025-06-30 07:03:17,004 - client_module - INFO - Cleared selected target role
+2025-06-30 07:03:17,004 - client_module - INFO - Rendered business priorities tooltip
+2025-06-30 07:03:17,004 - client_module - INFO - Using 3 business priorities
+2025-06-30 07:03:17,005 - client_module - INFO - Created additional requirements columns
+2025-06-30 07:03:17,005 - client_module - INFO - Rendered additional client requirements tooltip
+2025-06-30 07:03:17,005 - client_module - INFO - Additional requirements text area rendered with 0 characters
+2025-06-30 07:03:17,006 - client_module - INFO - Additional requirements provided status: False
+2025-06-30 07:03:17,006 - client_module - INFO - Rendered additional specifications tooltip
+2025-06-30 07:03:17,006 - client_module - INFO - Using default additional specs items
+2025-06-30 07:03:18,763 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:03:18,764 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:03:18,764 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:03:18,929 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:03:18,930 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:03:18,930 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:03:18,930 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:03:18,930 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:03:18,930 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:03:18,930 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:03:18,930 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:03:18,930 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:03:18,931 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:03:18,931 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:03:18,931 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:03:18,931 - Seller.seller - INFO - Seller tab function started
+2025-06-30 07:03:18,937 - Seller.seller - INFO - Seller tab function completed
+2025-06-30 07:03:20,714 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:03:20,717 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:03:20,717 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:03:20,720 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:03:20,722 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:03:20,722 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:03:20,724 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:03:20,725 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:03:20,725 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:03:20,727 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:03:20,727 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:03:20,728 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:03:20,728 - Seller.seller - INFO - Seller tab function started
+2025-06-30 07:03:20,737 - Seller.seller - ERROR - Error rendering seller services selector: 'dict' object has no attribute 'add'
+2025-06-30 07:03:20,738 - Seller.seller - ERROR - Traceback (most recent call last):
+  File "/home/shreyank/GS/GS_Sales_Proposal/Seller/seller.py", line 645, in seller_tab
+    seller_enterprise_details, seller_enterprise_details_provided = render_three_column_selector_unified(
+                                                                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        # Column configuration - Made wider to fill screen
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<39 lines>...
+        title_margin_bottom="10px"  # Reduced margin
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/shreyank/GS/GS_Sales_Proposal/t.py", line 307, in render_three_column_selector_unified
+    st.session_state[middle_selected_items_key].add(key)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'dict' object has no attribute 'add'
+
+2025-06-30 07:03:20,739 - Seller.seller - INFO - Seller tab function completed
+2025-06-30 07:03:24,417 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:03:24,417 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:03:24,417 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:03:24,417 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:03:24,418 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:03:24,418 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:03:24,418 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:03:24,419 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:03:24,419 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:03:24,419 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:03:24,419 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:03:24,419 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:03:24,419 - Seller.seller - INFO - Seller tab function started
+2025-06-30 07:03:24,427 - Seller.seller - INFO - Seller tab function completed
+2025-06-30 07:03:25,880 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:03:25,881 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:03:25,881 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:03:25,882 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:03:25,882 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:03:25,883 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:03:25,883 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:03:25,884 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:03:25,884 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:03:25,885 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:03:25,885 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:03:25,886 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:03:25,886 - Seller.seller - INFO - Seller tab function started
+2025-06-30 07:03:25,891 - Seller.seller - ERROR - Error rendering seller services selector: 'dict' object has no attribute 'add'
+2025-06-30 07:03:25,892 - Seller.seller - ERROR - Traceback (most recent call last):
+  File "/home/shreyank/GS/GS_Sales_Proposal/Seller/seller.py", line 645, in seller_tab
+    seller_enterprise_details, seller_enterprise_details_provided = render_three_column_selector_unified(
+                                                                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        # Column configuration - Made wider to fill screen
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<39 lines>...
+        title_margin_bottom="10px"  # Reduced margin
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/shreyank/GS/GS_Sales_Proposal/t.py", line 307, in render_three_column_selector_unified
+    st.session_state[middle_selected_items_key].add(key)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'dict' object has no attribute 'add'
+
+2025-06-30 07:03:25,892 - Seller.seller - INFO - Seller tab function completed
+2025-06-30 07:03:27,315 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:03:27,315 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:03:27,316 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:03:27,316 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:03:27,316 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:03:27,317 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:03:27,317 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:03:27,318 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:03:27,318 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:03:27,318 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:03:27,319 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:03:27,319 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:03:27,319 - Seller.seller - INFO - Seller tab function started
+2025-06-30 07:03:27,326 - Seller.seller - ERROR - Error rendering seller services selector: 'dict' object has no attribute 'add'
+2025-06-30 07:03:27,327 - Seller.seller - ERROR - Traceback (most recent call last):
+  File "/home/shreyank/GS/GS_Sales_Proposal/Seller/seller.py", line 645, in seller_tab
+    seller_enterprise_details, seller_enterprise_details_provided = render_three_column_selector_unified(
+                                                                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        # Column configuration - Made wider to fill screen
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<39 lines>...
+        title_margin_bottom="10px"  # Reduced margin
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/shreyank/GS/GS_Sales_Proposal/t.py", line 307, in render_three_column_selector_unified
+    st.session_state[middle_selected_items_key].add(key)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'dict' object has no attribute 'add'
+
+2025-06-30 07:03:27,329 - Seller.seller - INFO - Seller tab function completed
+2025-06-30 07:03:33,597 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:03:33,598 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:03:33,598 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:03:33,599 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:03:33,599 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:03:33,599 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:03:33,600 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:03:33,600 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:03:33,600 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:03:33,601 - client_module - INFO - Starting client_tab function
+2025-06-30 07:03:33,601 - client_module - DEBUG - Retrieved client data from dataclass manager
+2025-06-30 07:03:33,602 - client_module - DEBUG - CSS re-applied for persistence
+2025-06-30 07:03:33,602 - client_module - DEBUG - Creating top section with client name and URLs
+2025-06-30 07:03:33,603 - client_module - DEBUG - Processing client enterprise name section
+2025-06-30 07:03:33,604 - client_module - DEBUG - Find URLs button disabled: False
+2025-06-30 07:03:33,605 - client_module - DEBUG - Processing client website URL section
+2025-06-30 07:03:33,606 - client_module - DEBUG - Client name provided: True
+2025-06-30 07:03:33,606 - client_module - DEBUG - URL options count: 1
+2025-06-30 07:03:33,607 - client_module - DEBUG - Creating file upload and enterprise details section
+2025-06-30 07:03:33,608 - client_module - DEBUG - Processing file upload section
+2025-06-30 07:03:33,609 - client_module - DEBUG - Processing enterprise details section
+2025-06-30 07:03:33,610 - client_module - DEBUG - Creating client requirements and pain points section
+2025-06-30 07:03:33,610 - client_module - DEBUG - Processing client requirements section
+2025-06-30 07:03:33,611 - client_module - DEBUG - Updated client requirements content
+2025-06-30 07:03:33,611 - client_module - DEBUG - Client requirements provided: True
+2025-06-30 07:03:33,611 - client_module - INFO - Starting COL6 - Client Pain Points section rendering
+2025-06-30 07:03:33,611 - client_module - INFO - Using dummy pain points data as fallback
+2025-06-30 07:03:33,611 - client_module - DEBUG - Rendering 3 pain point items
+2025-06-30 07:03:33,611 - client_module - DEBUG - Processing pain point item 0: Revenue Challenges
+2025-06-30 07:03:33,611 - client_module - DEBUG - Pain point 'Revenue Challenges' selection status: True
+2025-06-30 07:03:33,612 - client_module - DEBUG - Successfully rendered content box for 'Revenue Challenges'
+2025-06-30 07:03:33,612 - client_module - DEBUG - Processing pain point item 1: Cost and Margin Pressure
+2025-06-30 07:03:33,613 - client_module - DEBUG - Pain point 'Cost and Margin Pressure' selection status: False
+2025-06-30 07:03:33,614 - client_module - DEBUG - Successfully rendered content box for 'Cost and Margin Pressure'
+2025-06-30 07:03:33,614 - client_module - DEBUG - Processing pain point item 2: Market Expansion and Customer Acquisition
+2025-06-30 07:03:33,614 - client_module - DEBUG - Pain point 'Market Expansion and Customer Acquisition' selection status: False
+2025-06-30 07:03:33,615 - client_module - DEBUG - Successfully rendered content box for 'Market Expansion and Customer Acquisition'
+2025-06-30 07:03:33,615 - client_module - INFO - Rendered SPOC name tooltip
+2025-06-30 07:03:33,616 - client_module - INFO - SPOC name input rendered with value: 
+2025-06-30 07:03:33,616 - client_module - INFO - SPOC name provided status: False
+2025-06-30 07:03:33,616 - client_module - INFO - Rendered LinkedIn profile tooltip
+2025-06-30 07:03:33,616 - client_module - INFO - LinkedIn profile selector in disabled state
+2025-06-30 07:03:33,617 - client_module - INFO - Created roles and priorities columns
+2025-06-30 07:03:33,617 - client_module - INFO - Rendered SPOC role tooltip
+2025-06-30 07:03:33,617 - client_module - INFO - Retrieved 10 default roles
+2025-06-30 07:03:33,618 - client_module - INFO - Role selector rendered with selection: Select a role...
+2025-06-30 07:03:33,618 - client_module - INFO - Cleared selected target role
+2025-06-30 07:03:33,618 - client_module - INFO - Rendered business priorities tooltip
+2025-06-30 07:03:33,618 - client_module - INFO - Using 3 business priorities
+2025-06-30 07:03:33,619 - client_module - INFO - Created additional requirements columns
+2025-06-30 07:03:33,619 - client_module - INFO - Rendered additional client requirements tooltip
+2025-06-30 07:03:33,620 - client_module - INFO - Additional requirements text area rendered with 0 characters
+2025-06-30 07:03:33,621 - client_module - INFO - Additional requirements provided status: False
+2025-06-30 07:03:33,622 - client_module - INFO - Rendered additional specifications tooltip
+2025-06-30 07:03:33,622 - client_module - INFO - Using default additional specs items
+2025-06-30 07:03:35,529 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:03:35,530 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:03:35,530 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:03:35,700 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:03:35,701 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:03:35,701 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:03:35,701 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:03:35,701 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:03:35,701 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:03:35,702 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:03:35,702 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:03:35,702 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:03:35,702 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:03:35,702 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:03:35,702 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:03:35,702 - Seller.seller - INFO - Seller tab function started
+2025-06-30 07:03:35,710 - Seller.seller - INFO - Seller tab function completed
+2025-06-30 07:03:39,702 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:03:39,702 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:03:39,702 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:03:39,703 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:03:39,703 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:03:39,704 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:03:39,704 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:03:39,704 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:03:39,704 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:03:39,705 - client_module - INFO - Starting client mandatory fields validation
+2025-06-30 07:03:39,705 - client_module - DEBUG - Retrieved client data for validation
+2025-06-30 07:03:39,705 - client_module - INFO - Validation bypassed - returning True
+2025-06-30 07:03:39,705 - Seller.seller - INFO - Seller tab function started
+2025-06-30 07:03:39,710 - Seller.seller - ERROR - Error rendering seller services selector: 'dict' object has no attribute 'add'
+2025-06-30 07:03:39,711 - Seller.seller - ERROR - Traceback (most recent call last):
+  File "/home/shreyank/GS/GS_Sales_Proposal/Seller/seller.py", line 645, in seller_tab
+    seller_enterprise_details, seller_enterprise_details_provided = render_three_column_selector_unified(
+                                                                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        # Column configuration - Made wider to fill screen
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<39 lines>...
+        title_margin_bottom="10px"  # Reduced margin
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/shreyank/GS/GS_Sales_Proposal/t.py", line 307, in render_three_column_selector_unified
+    st.session_state[middle_selected_items_key].add(key)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'dict' object has no attribute 'add'
+
+2025-06-30 07:03:39,712 - Seller.seller - INFO - Seller tab function completed

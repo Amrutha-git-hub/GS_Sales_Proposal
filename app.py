@@ -2,7 +2,8 @@ import streamlit as st
 import time
 from Client.client import client_tab,validate_client_mandatory_fields
 from Seller.seller import seller_tab
-
+from ProjectSpecification.project_spec import proj_specification_tab
+from Generate_proposal.proposal_generator import generate_tab
 def get_sample_extracted_text():
             return """Key Requirements Extracted:
 
@@ -205,27 +206,7 @@ elif st.session_state.active_tab == 2:
         show_validation_popup("Seller Information")
         st.rerun()
     else:
-        st.markdown('## 👥 Project Specifications')
-        st.markdown("Define your project requirements and specifications.")
-        
-        col1, col2, col3 = st.columns([2, 2, 2], gap="large")
-        
-        with col1:
-            st.markdown("""
-            **Recent Clients**
-            - Acme Corporation
-            - TechStart Inc
-            - Global Solutions Ltd
-            - Innovation Labs
-            - Digital Dynamics
-            - Future Systems Co
-            """)
-        
-        with col2:
-            st.metric("Total Proposals", "47", "+12%")
-            
-        with col3:
-            st.metric("Success Rate", "73%", "+5%")
+        proj_specification_tab()
 
 else:  # Generate Proposal Tab
     # Check all validations
@@ -242,32 +223,7 @@ else:  # Generate Proposal Tab
         show_validation_popup("Project Specifications")
         st.rerun()
     else:
-        st.markdown('## 📊 Generate Proposal')
-        st.markdown("Review and generate your final proposal.")
-        
-        # Metrics row
-        col1, col2, col3, col4 = st.columns(4, gap="large")
-        
-        with col1:
-            st.metric("This Month", "$125K", "+15%")
-        
-        with col2:
-            st.metric("Proposals Sent", "23", "+3")
-        
-        with col3:
-            st.metric("Conversion Rate", "68%", "+12%")
-            
-        with col4:
-            st.metric("Average Value", "$18.5K", "+8%")
-        
-        st.markdown("---")
-        
-        st.markdown("""
-        ### 📈 Performance Trends
-        Your proposal success rate has improved by 12% this quarter, with the highest performance in software development projects. The average deal size has increased significantly, and client satisfaction scores are at an all-time high.
-        
-        **Key insights:** Enterprise clients show 85% higher conversion rates, and proposals with detailed technical specifications convert 40% better than generic templates.
-        """)
+       generate_tab()
 
 col1, col2 = st.columns(2, gap="large")
 

@@ -48,6 +48,7 @@ def get_url_details(url:str):
     except Exception as e:
         print(f"Error: {e}")
         return None
+    
 
 def get_priority_suggestions() -> List[dict]:
     """
