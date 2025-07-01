@@ -1,0 +1,45 @@
+2025-07-01 08:16:15,173 - client_module - INFO - validate_client_mandatory_fields:105 - Starting client mandatory fields validation
+2025-07-01 08:16:15,173 - client_module - INFO - validate_client_mandatory_fields:105 - Starting client mandatory fields validation
+2025-07-01 08:16:15,174 - client_module - INFO - validate_client_mandatory_fields:105 - Starting client mandatory fields validation
+2025-07-01 08:16:15,175 - client_module - INFO - client_tab:126 - Starting client_tab function
+2025-07-01 08:16:15,175 - client_module - DEBUG - client_tab:131 - Retrieved client data from dataclass manager
+2025-07-01 08:16:15,175 - client_module - ERROR - client_tab:146 - Error applying CSS: 'NoneType' object has no attribute 'css_applied'
+2025-07-01 08:16:15,176 - client_module - DEBUG - client_tab:150 - Creating top section with client name and URLs
+2025-07-01 08:16:15,176 - client_module - DEBUG - client_tab:155 - Processing client enterprise name section
+2025-07-01 08:16:15,177 - client_module - ERROR - client_tab:238 - Error in client enterprise name column: 'NoneType' object has no attribute 'enterprise_name'
+2025-07-01 08:16:15,177 - client_module - DEBUG - client_tab:243 - Processing client website URL section
+2025-07-01 08:16:15,178 - client_module - ERROR - client_tab:297 - Error in URL selection: cannot access local variable 'client_enterprise_name' where it is not associated with a value
+2025-07-01 08:16:15,179 - client_module - ERROR - client_tab:387 - Error in scraping operation: 'NoneType' object has no attribute 'scraping_in_progress'
+2025-07-01 08:16:15,179 - client_module - DEBUG - client_tab:391 - Creating file upload and enterprise details section
+2025-07-01 08:16:15,180 - client_module - DEBUG - client_tab:396 - Processing file upload section
+2025-07-01 08:16:15,181 - client_module - DEBUG - client_tab:568 - Processing enterprise details section
+2025-07-01 08:16:15,181 - client_module - ERROR - client_tab:602 - Error in enterprise details column: cannot access local variable 'client_enterprise_name' where it is not associated with a value
+2025-07-01 08:16:15,181 - client_module - DEBUG - client_tab:606 - Creating client requirements and pain points section
+2025-07-01 08:16:15,181 - client_module - DEBUG - client_tab:611 - Processing client requirements section
+2025-07-01 08:16:15,182 - client_module - ERROR - client_tab:643 - Error creating client requirements textarea: cannot access local variable 'client_name_provided' where it is not associated with a value
+2025-07-01 08:16:15,182 - client_module - INFO - client_tab:655 - Starting COL6 - Client Pain Points section rendering
+2025-07-01 08:16:15,182 - client_module - ERROR - client_tab:682 - Error retrieving pain points data: cannot access local variable 'client_name_provided' where it is not associated with a value
+2025-07-01 08:16:15,182 - client_module - DEBUG - client_tab:689 - Rendering 0 pain point items
+2025-07-01 08:16:15,183 - client_module - INFO - client_tab:929 - Rendered SPOC name tooltip
+2025-07-01 08:16:15,183 - client_module - ERROR - client_tab:944 - Error creating SPOC name input: 'NoneType' object has no attribute 'spoc_name'
+2025-07-01 08:16:15,183 - client_module - ERROR - client_tab:953 - Error updating SPOC name: 'NoneType' object has no attribute 'spoc_name'
+2025-07-01 08:16:15,183 - client_module - INFO - client_tab:975 - SPOC name provided status: False
+2025-07-01 08:16:15,183 - client_module - INFO - client_tab:987 - Rendered LinkedIn profile tooltip
+2025-07-01 08:16:15,184 - client_module - INFO - client_tab:1043 - LinkedIn profile selector in disabled state
+2025-07-01 08:16:15,184 - client_module - INFO - client_tab:1124 - Created roles and priorities columns
+2025-07-01 08:16:15,184 - client_module - INFO - client_tab:1136 - Rendered SPOC role tooltip
+2025-07-01 08:16:15,184 - client_module - INFO - client_tab:1146 - Retrieved 10 default roles
+2025-07-01 08:16:15,185 - client_module - ERROR - client_tab:1207 - Error creating role selector: cannot access local variable 'client_name_provided' where it is not associated with a value
+2025-07-01 08:16:15,185 - client_module - ERROR - client_tab:1222 - Error updating selected target role: 'NoneType' object has no attribute 'selected_target_role' and no __dict__ for setting new attributes
+2025-07-01 08:16:15,185 - client_module - INFO - client_tab:1233 - Rendered business priorities tooltip
+2025-07-01 08:16:15,185 - client_module - INFO - client_tab:1262 - Using 3 business priorities
+2025-07-01 08:16:15,185 - client_module - ERROR - client_tab:1273 - Error initializing selected_business_priorities: 'NoneType' object has no attribute 'selected_business_priorities' and no __dict__ for setting new attributes
+2025-07-01 08:16:15,185 - client_module - ERROR - client_tab:1308 - Error handling business priorities checkboxes: 'NoneType' object has no attribute 'selected_business_priorities'
+2025-07-01 08:16:15,186 - client_module - INFO - client_tab:1312 - Created additional requirements columns
+2025-07-01 08:16:15,186 - client_module - INFO - client_tab:1324 - Rendered additional client requirements tooltip
+2025-07-01 08:16:15,186 - client_module - ERROR - client_tab:1341 - Error creating additional requirements text area: cannot access local variable 'client_name_provided' where it is not associated with a value
+2025-07-01 08:16:15,186 - client_module - ERROR - client_tab:1351 - Error updating additional client requirements: cannot access local variable 'client_name_provided' where it is not associated with a value
+2025-07-01 08:16:15,186 - client_module - ERROR - client_tab:1357 - Error checking additional requirements provided status: cannot access local variable 'client_name_provided' where it is not associated with a value
+2025-07-01 08:16:15,187 - client_module - INFO - client_tab:1369 - Rendered additional specifications tooltip
+2025-07-01 08:16:15,187 - client_module - ERROR - client_tab:1389 - Error preparing additional specs items: cannot access local variable 'client_name_provided' where it is not associated with a value
+2025-07-01 08:16:15,187 - client_module - ERROR - client_tab:1533 - Error handling validation: 'NoneType' object has no attribute 'show_validation'

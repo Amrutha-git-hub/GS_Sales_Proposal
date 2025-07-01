@@ -12,7 +12,7 @@ from Search.Linkedin.linkedin_agent_runner_unused import *
 from Recommendation.recommendation_utils import *
 from .client_css import *
 from .client_dataclass import ClientData, ClientDataManager
-
+from datetime import datetime 
 # Configure logging
 def setup_logging():
     """Setup logging configuration for client module"""
@@ -31,7 +31,7 @@ def setup_logging():
             logger.removeHandler(handler)
         
         # Create file handler
-        file_handler = logging.FileHandler(os.path.join(logs_dir, 'client_logs.log'))
+        file_handler = logging.FileHandler(os.path.join(logs_dir, 'client_logs'+datetime.now().strftime("%d_%m_%Y_%H_%M_%S")+'.log'))
         file_handler.setLevel(logging.DEBUG)
         
         # Create console handler
@@ -106,10 +106,10 @@ def validate_client_mandatory_fields():
     
     try:
         client_data = ClientDataManager.get_client_data()
-        logger.debug("Retrieved client data for validation")
+        # logger.debug("Retrieved client data for validation")
         
-        # Temporarily return True - validation disabled
-        logger.info("Validation bypassed - returning True")
+        # # Temporarily return True - validation disabled
+        # logger.info("Validation bypassed - returning True")
         return True
         
         # Uncomment below for actual validation
@@ -118,11 +118,11 @@ def validate_client_mandatory_fields():
         # return result
         
     except Exception as e:
-        logger.error(f"Error in validate_client_mandatory_fields: {str(e)}")
+       # logger.error(f"Error in validate_client_mandatory_fields: {str(e)}")
         return False
 
 
-def client_tab(st):
+def client_tab(st,logger):
     logger.info("Starting client_tab function")
     
     try:
@@ -1519,6 +1519,7 @@ def client_tab(st):
                                 logger.error(f"Error rendering content box for '{key}': {str(content_error)}")
                     except Exception as item_error:
                         logger.error(f"Error processing additional spec item '{key}': {str(item_error)}")
+
         except Exception as e:
             logger.error(f"Error displaying additional specs items: {str(e)}")
     
@@ -1530,3 +1531,4 @@ def client_tab(st):
             pass
     except Exception as e:
         logger.error(f"Error handling validation: {str(e)}")
+    return client_data

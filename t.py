@@ -46,11 +46,17 @@ def render_three_column_selector_unified(
     # Title styling - Made normal size like left title
     title_font_size: str = "18px",  # Same as other titles
     title_color: str = "#000000",
-    title_margin_bottom: str = "10px"  # Reduced margin
+    title_margin_bottom: str = "10px",  # Reduced margin
+    
+    # Custom tooltip icon configuration
+    tooltip_icon_url: str = "https://cdn-icons-png.flaticon.com/512/4616/4616895.png" ,
+    tooltip_icon_size: str = "25px",  # Size of the tooltip icon
+    tooltip_icon_alt: str = "Help"  # Alt text for accessibility
 ) -> Tuple[str, bool]:
     """
     Renders a three-column layout with text area on left, and a unified section on right 
     that spans both middle and right columns under one normal-sized title.
+    Now supports custom tooltip icons via URL.
     
     Returns:
         Tuple of (textarea_content, requirements_provided_bool)
@@ -80,7 +86,7 @@ def render_three_column_selector_unified(
     middle_data = dict(data_items[:middle_count])
     right_data = dict(data_items[middle_count:])
     
-    # Add CSS for styling
+    # Add CSS for styling with custom tooltip icon
     st.markdown(f"""
     <style>
     /* Full width container styling */
@@ -169,11 +175,24 @@ def render_three_column_selector_unified(
         opacity: 0 !important;
     }}
     
+    /* Custom tooltip icon styling */
     .tooltip-icon {{
+        position: relative;
         cursor: help;
-        font-size: 14px;
-        color: #888;
         margin-left: 8px;
+        display: inline-flex;
+        align-items: center;
+    }}
+    
+    .tooltip-icon img {{
+        width: {tooltip_icon_size};
+        height: {tooltip_icon_size};
+        object-fit: contain;
+        transition: opacity 0.2s ease;
+    }}
+    
+    .tooltip-icon:hover img {{
+        opacity: 0.7;
     }}
     
     .tooltip-icon:hover::after {{
@@ -186,10 +205,23 @@ def render_three_column_selector_unified(
         font-size: 12px;
         white-space: nowrap;
         z-index: 1000;
-        margin-top: 25px;
-        margin-left: -100px;
+        top: 25px;
+        right: 0;
         max-width: 250px;
         white-space: normal;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }}
+    
+    /* Tooltip arrow */
+    .tooltip-icon:hover::before {{
+        content: '';
+        position: absolute;
+        top: 20px;
+        right: 10px;
+        border-left: 5px solid transparent;
+        border-right: 5px solid transparent;
+        border-bottom: 5px solid #333;
+        z-index: 1001;
     }}
     </style>
     """, unsafe_allow_html=True)
@@ -211,12 +243,14 @@ def render_three_column_selector_unified(
     
     # LEFT COLUMN - Text Area
     with col_left:
-        # Title with tooltip and required indicator
+        # Title with custom tooltip icon and required indicator
         required_asterisk = ' <span style="color:red;">*</span>' if left_required else ''
         st.markdown(f'''
         <div class="section-tooltip">
             <span>{left_title}{required_asterisk}</span>
-            <div class="tooltip-icon" data-tooltip="{left_tooltip}">ⓘ</div>
+            <div class="tooltip-icon" data-tooltip="{left_tooltip}">
+                <img src="{tooltip_icon_url}" alt="{tooltip_icon_alt}" />
+            </div>
         </div>
         ''', unsafe_allow_html=True)
         
@@ -228,8 +262,7 @@ def render_three_column_selector_unified(
             key=textarea_widget_key,
             label_visibility="collapsed",
             disabled=not client_name_provided,
-            #placeholder=textarea_placeholder if not client_name_provided else ""
-            placeholder= "Enter the services to be provided or select from the suggestions provided "
+            placeholder= textarea_placeholder
         )
         
         # Update session state when text area changes
@@ -240,11 +273,13 @@ def render_three_column_selector_unified(
     
     # MIDDLE COLUMN - First half of items
     with col_middle:
-        # Show unified title only in middle column (spans conceptually)
+        # Show unified title only in middle column (spans conceptually) with custom icon
         st.markdown(f'''
         <div class="section-tooltip">
             <span>{unified_section_title}</span>
-            <div class="tooltip-icon" data-tooltip="{unified_section_tooltip}">ⓘ</div>
+            <div class="tooltip-icon" data-tooltip="{unified_section_tooltip}">
+                <img src="{tooltip_icon_url}" alt="{tooltip_icon_alt}" />
+            </div>
         </div>
         ''', unsafe_allow_html=True)
         
@@ -357,11 +392,13 @@ def render_three_column_selector_unified(
     
     # RIGHT COLUMN - Second half of items
     with col_right:
-        # Empty title space to align with middle column - use exact same height as title
+        # Empty title space to align with middle column - use exact same height as title with custom icon
         st.markdown(f'''
         <div class="section-tooltip" style="visibility: hidden;">
             <span>{unified_section_title}</span>
-            <div class="tooltip-icon">ⓘ</div>
+            <div class="tooltip-icon">
+                <img src="{tooltip_icon_url}" alt="{tooltip_icon_alt}" />
+            </div>
         </div>
         ''', unsafe_allow_html=True)
         
@@ -475,7 +512,6 @@ def render_three_column_selector_unified(
     
     return client_requirements, client_requirements_provided
 
-
 # Example usage
 def example_usage():
     """Example showing the fixed version"""
@@ -542,7 +578,8 @@ def render_two_column_selector(
     # Enable/disable conditions
     client_enabled_condition: bool = True,
     client_name_provided: bool = True,
-        # Styling configuration
+    
+    # Styling configuration
     button_column_width: float = 2.5,  # Button width within each column
     content_column_width: float = 6.5,   # Content area width within each column
     show_success_messages: bool = False,
@@ -555,12 +592,26 @@ def render_two_column_selector(
     # Title styling - Made normal size like left title
     title_font_size: str = "18px",  # Same as other titles
     title_color: str = "#000000",
-    title_margin_bottom: str = "10px"  # Reduced margin
-    # Styling configuration
-   
+    title_margin_bottom: str = "10px",  # Reduced margin
+    
+    # Tooltip image configuration
+    tooltip_image_url:str = "https://cdn-icons-png.flaticon.com/512/4616/4616895.png",  # URL or path to custom tooltip image
+    tooltip_image_width: str = "25px",  # Width of the tooltip image
+    tooltip_image_height: str = "25px",  # Height of the tooltip image
+    use_default_icon: bool = True,  # If True and no image_url provided, uses "ⓘ"
+    tooltip_image_alt: str = "Info",  # Alt text for the image
+    
 ) -> Tuple[str, bool]:
     """
     Renders a two-column layout with text area on left and suggestions on right.
+    Now supports custom images for tooltip icons.
+    
+    Args:
+        tooltip_image_url: URL or path to the custom tooltip image. If None, falls back to text icon.
+        tooltip_image_width: Width of the tooltip image (e.g., "16px", "1rem")
+        tooltip_image_height: Height of the tooltip image (e.g., "16px", "1rem") 
+        use_default_icon: Whether to show default "ⓘ" icon when no image is provided
+        tooltip_image_alt: Alt text for accessibility
     
     Returns:
         Tuple of (textarea_content, requirements_provided_bool)
@@ -574,8 +625,20 @@ def render_two_column_selector(
             "Cost and Margin Pressure": "**Cost and Margin Pressure** • Cost of Goods Sold increased by 12% due to supply chain disruptions\n• Labor costs rose 18% while productivity remained flat\n• Raw material prices up 25% with limited ability to pass costs to customers\n\n",
             
             "Market Expansion": "**Market Expansion and Customer Acquisition**\n• Win rate on new business opportunities dropped from 42% to 28%\n• Customer acquisition cost increased 35% while customer lifetime value declined\n• Expansion into new geographic markets yielding only 40% of projected results\n\n",
-            
-            }
+        }
+    
+    # Determine tooltip icon HTML
+    if tooltip_image_url:
+        tooltip_icon_html = f'''
+        <img src="{tooltip_image_url}" 
+             alt="{tooltip_image_alt}" 
+             class="tooltip-icon-image" 
+             style="width: {tooltip_image_width}; height: {tooltip_image_height}; cursor: help;" />
+        '''
+    elif use_default_icon:
+        tooltip_icon_html = '<span class="tooltip-icon" style="cursor: help; font-size: 14px; color: #888; margin-left: 8px;">ⓘ</span>'
+    else:
+        tooltip_icon_html = ''  # No icon at all
     
     # Add CSS for styling
     st.markdown(f"""
@@ -645,6 +708,7 @@ def render_two_column_selector(
         color: {title_color};
     }}
     
+    /* Text tooltip icon styling */
     .tooltip-icon {{
         cursor: help;
         font-size: 14px;
@@ -652,7 +716,20 @@ def render_two_column_selector(
         margin-left: 8px;
     }}
     
-    .tooltip-icon:hover::after {{
+    /* Image tooltip icon styling */
+    .tooltip-icon-image {{
+        cursor: help;
+        margin-left: 8px;
+        transition: opacity 0.2s ease;
+    }}
+    
+    .tooltip-icon-image:hover {{
+        opacity: 0.7;
+    }}
+    
+    /* Tooltip hover effect for both text and image icons */
+    .tooltip-icon:hover::after,
+    .tooltip-icon-image:hover::after {{
         content: attr(data-tooltip);
         position: absolute;
         background: #333;
@@ -666,6 +743,7 @@ def render_two_column_selector(
         margin-left: -100px;
         max-width: 250px;
         white-space: normal;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
     }}
     </style>
     """, unsafe_allow_html=True)
@@ -687,10 +765,19 @@ def render_two_column_selector(
     with col_left:
         # Title with tooltip and required indicator
         required_asterisk = ' <span style="color:red;">*</span>' if left_required else ''
+        
+        # Create tooltip icon HTML with data-tooltip attribute
+        if tooltip_image_url:
+            tooltip_display = f'<img src="{tooltip_image_url}" alt="{tooltip_image_alt}" class="tooltip-icon-image" data-tooltip="{left_tooltip}" style="width: {tooltip_image_width}; height: {tooltip_image_height}; cursor: help;" />'
+        elif use_default_icon:
+            tooltip_display = f'<div class="tooltip-icon" data-tooltip="{left_tooltip}">ⓘ</div>'
+        else:
+            tooltip_display = ''
+        
         st.markdown(f'''
         <div class="section-tooltip">
             <span>{left_title}{required_asterisk}</span>
-            <div class="tooltip-icon" data-tooltip="{left_tooltip}">ⓘ</div>
+            {tooltip_display}
         </div>
         ''', unsafe_allow_html=True)
         
@@ -714,10 +801,17 @@ def render_two_column_selector(
     # RIGHT COLUMN - Single suggestions column
     with col_right:
         # Title with tooltip
+        if tooltip_image_url:
+            right_tooltip_display = f'<img src="{tooltip_image_url}" alt="{tooltip_image_alt}" class="tooltip-icon-image" data-tooltip="{right_tooltip}" style="width: {tooltip_image_width}; height: {tooltip_image_height}; cursor: help;" />'
+        elif use_default_icon:
+            right_tooltip_display = f'<div class="tooltip-icon" data-tooltip="{right_tooltip}">ⓘ</div>'
+        else:
+            right_tooltip_display = ''
+        
         st.markdown(f'''
         <div class="section-tooltip">
             <span>{right_title}</span>
-            <div class="tooltip-icon" data-tooltip="{right_tooltip}">ⓘ</div>
+            {right_tooltip_display}
         </div>
         ''', unsafe_allow_html=True)
         

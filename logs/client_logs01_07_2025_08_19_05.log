@@ -1,0 +1,70 @@
+2025-07-01 08:19:05,446 - client_module - INFO - client_tab:126 - Starting client_tab function
+2025-07-01 08:19:05,446 - client_module - DEBUG - client_tab:131 - Retrieved client data from dataclass manager
+2025-07-01 08:19:05,448 - client_module - DEBUG - client_tab:143 - CSS re-applied for persistence
+2025-07-01 08:19:05,448 - client_module - DEBUG - client_tab:150 - Creating top section with client name and URLs
+2025-07-01 08:19:05,448 - client_module - DEBUG - client_tab:155 - Processing client enterprise name section
+2025-07-01 08:19:05,450 - client_module - INFO - client_tab:180 - Updated enterprise name: Growth sutra
+2025-07-01 08:19:05,450 - client_module - DEBUG - client_tab:188 - Find URLs button disabled: False
+2025-07-01 08:19:05,450 - client_module - DEBUG - client_tab:243 - Processing client website URL section
+2025-07-01 08:19:05,452 - client_module - DEBUG - client_tab:260 - Client name provided: True
+2025-07-01 08:19:05,452 - client_module - DEBUG - client_tab:267 - URL options count: 1
+2025-07-01 08:19:05,453 - client_module - DEBUG - client_tab:391 - Creating file upload and enterprise details section
+2025-07-01 08:19:05,454 - client_module - DEBUG - client_tab:396 - Processing file upload section
+2025-07-01 08:19:05,455 - client_module - DEBUG - client_tab:568 - Processing enterprise details section
+2025-07-01 08:19:05,456 - client_module - DEBUG - client_tab:606 - Creating client requirements and pain points section
+2025-07-01 08:19:05,456 - client_module - DEBUG - client_tab:611 - Processing client requirements section
+2025-07-01 08:19:05,457 - client_module - DEBUG - client_tab:635 - Updated client requirements content
+2025-07-01 08:19:05,457 - client_module - DEBUG - client_tab:640 - Client requirements provided: False
+2025-07-01 08:19:05,457 - client_module - INFO - client_tab:655 - Starting COL6 - Client Pain Points section rendering
+2025-07-01 08:19:05,458 - client_module - INFO - client_tab:679 - Using dummy pain points data as fallback
+2025-07-01 08:19:05,458 - client_module - DEBUG - client_tab:689 - Rendering 3 pain point items
+2025-07-01 08:19:05,458 - client_module - DEBUG - client_tab:694 - Processing pain point item 0: Revenue Challenges
+2025-07-01 08:19:05,458 - client_module - DEBUG - client_tab:699 - Pain point 'Revenue Challenges' selection status: False
+2025-07-01 08:19:05,460 - client_module - DEBUG - client_tab:898 - Successfully rendered content box for 'Revenue Challenges'
+2025-07-01 08:19:05,460 - client_module - DEBUG - client_tab:694 - Processing pain point item 1: Cost and Margin Pressure
+2025-07-01 08:19:05,460 - client_module - DEBUG - client_tab:699 - Pain point 'Cost and Margin Pressure' selection status: False
+2025-07-01 08:19:05,461 - client_module - DEBUG - client_tab:898 - Successfully rendered content box for 'Cost and Margin Pressure'
+2025-07-01 08:19:05,461 - client_module - DEBUG - client_tab:694 - Processing pain point item 2: Market Expansion and Customer Acquisition
+2025-07-01 08:19:05,462 - client_module - DEBUG - client_tab:699 - Pain point 'Market Expansion and Customer Acquisition' selection status: False
+2025-07-01 08:19:05,463 - client_module - DEBUG - client_tab:898 - Successfully rendered content box for 'Market Expansion and Customer Acquisition'
+2025-07-01 08:19:05,465 - client_module - INFO - client_tab:929 - Rendered SPOC name tooltip
+2025-07-01 08:19:05,465 - client_module - INFO - client_tab:942 - SPOC name input rendered with value: 
+2025-07-01 08:19:05,465 - client_module - INFO - client_tab:975 - SPOC name provided status: False
+2025-07-01 08:19:05,465 - client_module - INFO - client_tab:987 - Rendered LinkedIn profile tooltip
+2025-07-01 08:19:05,466 - client_module - INFO - client_tab:1043 - LinkedIn profile selector in disabled state
+2025-07-01 08:19:05,466 - client_module - INFO - client_tab:1124 - Created roles and priorities columns
+2025-07-01 08:19:05,467 - client_module - INFO - client_tab:1136 - Rendered SPOC role tooltip
+2025-07-01 08:19:05,467 - client_module - INFO - client_tab:1146 - Retrieved 10 default roles
+2025-07-01 08:19:05,467 - client_module - INFO - client_tab:1205 - Role selector rendered with selection: Select a role...
+2025-07-01 08:19:05,467 - client_module - INFO - client_tab:1220 - Cleared selected target role
+2025-07-01 08:19:05,468 - client_module - INFO - client_tab:1233 - Rendered business priorities tooltip
+2025-07-01 08:19:05,468 - client_module - INFO - client_tab:1262 - Using 3 business priorities
+2025-07-01 08:19:05,469 - client_module - INFO - client_tab:1312 - Created additional requirements columns
+2025-07-01 08:19:05,469 - client_module - INFO - client_tab:1324 - Rendered additional client requirements tooltip
+2025-07-01 08:19:05,469 - client_module - INFO - client_tab:1339 - Additional requirements text area rendered with 0 characters
+2025-07-01 08:19:05,470 - client_module - INFO - client_tab:1355 - Additional requirements provided status: False
+2025-07-01 08:19:05,470 - client_module - INFO - client_tab:1369 - Rendered additional specifications tooltip
+2025-07-01 08:19:05,470 - client_module - INFO - client_tab:1387 - Using default additional specs items
+2025-07-01 08:19:06,950 - client_module - INFO - validate_client_mandatory_fields:105 - Starting client mandatory fields validation
+2025-07-01 08:19:07,114 - client_module - INFO - validate_client_mandatory_fields:105 - Starting client mandatory fields validation
+2025-07-01 08:19:07,115 - client_module - INFO - validate_client_mandatory_fields:105 - Starting client mandatory fields validation
+2025-07-01 08:19:07,115 - client_module - INFO - validate_client_mandatory_fields:105 - Starting client mandatory fields validation
+2025-07-01 08:19:07,115 - client_module - INFO - validate_client_mandatory_fields:105 - Starting client mandatory fields validation
+2025-07-01 08:19:09,691 - client_module - INFO - validate_client_mandatory_fields:105 - Starting client mandatory fields validation
+2025-07-01 08:19:09,692 - client_module - INFO - validate_client_mandatory_fields:105 - Starting client mandatory fields validation
+2025-07-01 08:19:09,694 - client_module - INFO - validate_client_mandatory_fields:105 - Starting client mandatory fields validation
+2025-07-01 08:19:09,696 - client_module - INFO - validate_client_mandatory_fields:105 - Starting client mandatory fields validation
+2025-07-01 08:19:10,916 - client_module - INFO - validate_client_mandatory_fields:105 - Starting client mandatory fields validation
+2025-07-01 08:19:10,917 - client_module - INFO - validate_client_mandatory_fields:105 - Starting client mandatory fields validation
+2025-07-01 08:19:11,083 - client_module - INFO - validate_client_mandatory_fields:105 - Starting client mandatory fields validation
+2025-07-01 08:19:11,083 - client_module - INFO - validate_client_mandatory_fields:105 - Starting client mandatory fields validation
+2025-07-01 08:19:11,084 - client_module - INFO - validate_client_mandatory_fields:105 - Starting client mandatory fields validation
+2025-07-01 08:19:11,084 - client_module - INFO - validate_client_mandatory_fields:105 - Starting client mandatory fields validation
+2025-07-01 08:19:18,772 - client_module - INFO - validate_client_mandatory_fields:105 - Starting client mandatory fields validation
+2025-07-01 08:19:18,772 - client_module - INFO - validate_client_mandatory_fields:105 - Starting client mandatory fields validation
+2025-07-01 08:19:18,773 - client_module - INFO - validate_client_mandatory_fields:105 - Starting client mandatory fields validation
+2025-07-01 08:19:18,774 - client_module - INFO - validate_client_mandatory_fields:105 - Starting client mandatory fields validation
+2025-07-01 08:19:21,832 - client_module - INFO - validate_client_mandatory_fields:105 - Starting client mandatory fields validation
+2025-07-01 08:19:21,832 - client_module - INFO - validate_client_mandatory_fields:105 - Starting client mandatory fields validation
+2025-07-01 08:19:21,832 - client_module - INFO - validate_client_mandatory_fields:105 - Starting client mandatory fields validation
+2025-07-01 08:19:21,834 - client_module - INFO - validate_client_mandatory_fields:105 - Starting client mandatory fields validation

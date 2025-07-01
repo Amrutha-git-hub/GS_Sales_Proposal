@@ -4,6 +4,19 @@ from Client.client import client_tab,validate_client_mandatory_fields
 from Seller.seller import seller_tab
 from ProjectSpecification.project_spec import proj_specification_tab
 from Generate_proposal.proposal_generator import generate_tab
+from Client.client import setup_logging
+from Client.client_dataclass import ClientData
+from Seller.seller import SellerTabState
+
+if 'client_data_from_tab' not in st.session_state:
+    st.session_state.client_data_from_tab = None
+
+if 'seller_data_from_tab' not in st.session_state:
+    st.session_state.seller_data_from_tab = None
+
+if 'project_specs_from_tab' not in st.session_state:
+    st.session_state.project_specs_from_tab = None
+
 def get_sample_extracted_text():
             return """Key Requirements Extracted:
 
@@ -184,12 +197,16 @@ st.session_state.is_active = True
 
 # Content area with validation-aware tab switching
 if st.session_state.active_tab == 0:
-    client_tab(st)
+    logger = setup_logging()
+    st.session_state.client_data_from_tab = client_tab(st,logger)
+
+    
 
 elif st.session_state.active_tab == 1:
     # Double-check validation before showing seller tab
     if validate_client_mandatory_fields():
-        seller_tab()
+
+        st.session_state.seller_data_from_tab = seller_tab()
     else:
         st.session_state.active_tab = 0  # Force back to client tab
         show_validation_popup("Client Information")
@@ -206,7 +223,8 @@ elif st.session_state.active_tab == 2:
         show_validation_popup("Seller Information")
         st.rerun()
     else:
-        proj_specification_tab()
+        print(st.session_state.client_data_from_tab,st.session_state.seller_data_from_tab)
+        st.session_state.project_specs_from_tab=  proj_specification_tab(st.session_state.client_data_from_tab,st.session_state.seller_data_from_tab)
 
 else:  # Generate Proposal Tab
     # Check all validations
