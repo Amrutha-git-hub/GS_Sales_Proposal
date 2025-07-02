@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accelerating Brand & Revenue Growth for TCS: A GrowthSutra Proposal</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        @page {
+            size: A4;
+            margin: 0;
+        }
+
+        body {
+            font-family: 'Arial', 'Helvetica', sans-serif;
+            line-height: 1.5;
+            color: #333;
+            background: white;
+            font-size: 11pt;
+        }
+
+        /* FIXED COVER PAGE - FULL PAGE */
+        .cover-page {
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(135deg, #1e3a8a 0%, #059669 50%, #dc2626 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            page-break-after: always;
+            padding: 0;
+            margin: 0;
+        }
+
+        .cover-logos {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 60px;
+            margin-bottom: 60px;
+        }
+
+        .cover-logo {
+            width: 200px;
+            height: 120px;
+            background-color: white;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+            padding: 20px;
+            border: 3px solid rgba(255,255,255,0.8);
+        }
+
+        .cover-logo-1 {
+            background: white url('https://static.wixstatic.com/media/cb6b3d_5c8f2b020ebe48b69bc8c163cc480156~mv2.png/v1/fill/w_60,h_60,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/GrowthSutra%20Logo.png') no-repeat center;
+            background-size: 80%;
+        }
+
+        .cover-logo-2 {
+            background: white url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRMakCGZDIC1NnpHpIWfCXh7jvtULnbMNjPUQ&s') no-repeat center;
+            background-size: 80%;
+        }
+
+        .cover-title {
+            font-size: 48pt;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 30px;
+            text-shadow: 0 6px 25px rgba(0,0,0,0.6);
+            max-width: 90%;
+            line-height: 1.2;
+        }
+
+        .cover-subtitle {
+            font-size: 20pt;
+            color: rgba(255,255,255,0.95);
+            margin-bottom: 50px;
+            max-width: 80%;
+            font-weight: 300;
+        }
+
+        .cover-date {
+            font-size: 16pt;
+            color: rgba(255,255,255,0.9);
+            background: rgba(255,255,255,0.15);
+            padding: 15px 35px;
+            border-radius: 30px;
+            border: 2px solid rgba(255,255,255,0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        /* CONTENT PAGES - CLEAN LAYOUT WITH PROPER MARGINS */
+        .content-page {
+            page-break-before: always;
+            position: relative;
+            padding: 40px;
+            min-height: 100vh;
+        }
+
+        /* FIXED TOP LOGO FOR CONTENT PAGES - BETTER VISIBILITY */
+        .content-page::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 140px;
+            height: 70px;
+            background: white url('https://static.wixstatic.com/media/cb6b3d_5c8f2b020ebe48b69bc8c163cc480156~mv2.png/v1/fill/w_60,h_60,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/GrowthSutra%20Logo.png') no-repeat center;
+            background-size: 70%;
+            border-radius: 10px;
+            padding: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            border: 2px solid #f0f0f0;
+            z-index: 10;
+        }
+
+        .presentation-container {
+            max-width: 100%;
+            padding: 100px 0 40px 0;
+            background: white;
+            position: relative;
+        }
+
+        .main-title {
+            font-size: 28pt;
+            font-weight: bold;
+            color: #1e3a8a;
+            text-align: center;
+            margin-bottom: 50px;
+            padding-bottom: 20px;
+            border-bottom: 4px solid #1e3a8a;
+        }
+
+        .section {
+            margin-bottom: 35px;
+            padding: 30px;
+            border-left: 5px solid #1e3a8a;
+            background: #f8f9fa;
+            border-radius: 0 10px 10px 0;
+            page-break-inside: avoid;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .section-title {
+            font-size: 18pt;
+            font-weight: bold;
+            color: #059669;
+            margin-bottom: 18px;
+            border-bottom: 3px solid #1e3a8a;
+            padding-bottom: 10px;
+        }
+
+        .section-content {
+            font-size: 12pt;
+            line-height: 1.7;
+            color: #333;
+        }
+
+        .section-content p {
+            margin-bottom: 12px;
+        }
+
+        .section-content ul {
+            margin-left: 25px;
+            margin-top: 12px;
+        }
+
+        .section-content li {
+            margin-bottom: 8px;
+        }
+
+        .company-info {
+            background: linear-gradient(135deg, #059669 0%, #dc2626 100%);
+            color: white;
+            border-radius: 10px;
+            padding: 30px;
+            margin: 25px 0;
+            page-break-inside: avoid;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .company-title {
+            font-size: 18pt;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: white;
+        }
+
+        .company-content {
+            font-size: 12pt;
+            line-height: 1.6;
+            color: white;
+        }
+
+        .pricing-highlight {
+            background: linear-gradient(135deg, #e8f5e8 0%, #d4edda 100%);
+            border: 4px solid #7c3aed;
+            border-radius: 10px;
+            padding: 30px;
+            margin: 25px 0;
+            text-align: center;
+            page-break-inside: avoid;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+
+        .price-amount {
+            font-size: 32pt;
+            font-weight: bold;
+            color: #7c3aed;
+            margin-bottom: 12px;
+        }
+
+        .cta-section {
+            background: linear-gradient(135deg, #1e3a8a 0%, #059669 100%);
+            color: white;
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            margin-top: 30px;
+            page-break-inside: avoid;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        }
+
+        .cta-title {
+            font-size: 20pt;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 18px;
+        }
+
+        .cta-content {
+            font-size: 13pt;
+            line-height: 1.5;
+            color: white;
+        }
+
+        .phase-section {
+            background: white;
+            border: 3px solid #1e3a8a;
+            border-radius: 10px;
+            padding: 25px;
+            margin: 20px 0;
+            page-break-inside: avoid;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        .phase-title {
+            font-size: 16pt;
+            font-weight: bold;
+            color: #dc2626;
+            margin-bottom: 12px;
+        }
+
+        .timeline-item {
+            background: white;
+            border-left: 5px solid #7c3aed;
+            margin: 12px 0;
+            padding: 18px 25px;
+            border-radius: 0 10px 10px 0;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+            page-break-inside: avoid;
+        }
+
+        .timeline-week {
+            font-weight: bold;
+            color: #7c3aed;
+            font-size: 13pt;
+        }
+
+        /* PDF-SPECIFIC OPTIMIZATIONS */
+        @media print {
+            .cover-page {
+                width: 210mm !important;
+                height: 297mm !important;
+                page-break-after: always !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            
+            .content-page {
+                page-break-before: always !important;
+                margin: 20mm !important;
+                padding: 0 !important;
+                min-height: calc(297mm - 40mm) !important;
+            }
+            
+            .content-page::before {
+                top: -15mm !important;
+                left: -15mm !important;
+            }
+            
+            .presentation-container {
+                padding: 60px 0 20px 0 !important;
+            }
+            
+            .section,
+            .company-info,
+            .pricing-highlight,
+            .cta-section,
+            .phase-section,
+            .timeline-item {
+                page-break-inside: avoid !important;
+                orphans: 2 !important;
+                widows: 2 !important;
+            }
+        }
+        </style>
+</head>
+<body>
+    <!-- FIXED COVER PAGE - FULL PAGE -->
+    <div class="cover-page">
+        <div class="cover-logos">
+            <div class="cover-logo cover-logo-1"></div>
+            <div class="cover-logo cover-logo-2"></div>
+        </div>
+        <h1 class="cover-title">Accelerating Brand & Revenue Growth for TCS: A GrowthSutra Proposal</h1>
+        <p class="cover-subtitle">Professional Sales Proposal & Partnership Agreement</p>
+        <p class="cover-date">June 2025</p>
+    </div>
+    
+    <!-- CONTENT PAGES (WITH VISIBLE TOP LOGO) -->
+    <div class="content-page">
+        <div class="presentation-container">
+            <h1 class="main-title">Accelerating Brand & Revenue Growth for TCS: A GrowthSutra Proposal</h1>
+
+            <div class="section">
+                <h2 class="section-title">Title of the sales proposal</h2>
+                <div class="section-content">
+                    <p>Accelerating Brand & Revenue Growth for TCS: A GrowthSutra Proposal</p>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2 class="section-title">Executive Summary</h2>
+                <div class="section-content">
+                    
+                    <div class="pricing-highlight">
+                        <div class="price-amount">$4,000</div>
+                        <div><p>GrowthSutra proposes a two-week,  engagement to significantly enhance TCS's brand visibility and investor appeal within the technology sector. Leveraging our team's decades of experience in launching and scaling disruptive brands, we will deliver a targeted strategy focused on achieving measurable results within the stipulated timeframe. This proposal outlines a comprehensive plan encompassing strategic planning, brand messaging refinement, and targeted outreach to key stakeholders, ensuring alignment with TCS's overall objectives and investor expectations.</p></div>
+                    </div>
+                    
+                </div>
+            </div>
+
+            <div class="section">
+                <h2 class="section-title">Introduction</h2>
+                <div class="section-content">
+                    <p>TCS, a leader in collaborating with world-class investors, requires a rapid and impactful solution to amplify its brand presence and attract further investment. GrowthSutra understands this need and offers a tailored, results-driven approach designed to deliver tangible outcomes within a concise timeframe. Our proven methodologies and experienced team ensure efficient execution and maximize the return on investment.</p>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2 class="section-title">Proposed Solution</h2>
+                <div class="section-content">
+                    <p>Our proposed solution focuses on a rapid brand enhancement strategy tailored to TCS's specific needs and the two-week timeframe. This will involve a deep dive into TCS's current brand positioning, competitive landscape, and target investor profiles. We will refine key messaging, identify high-impact outreach channels, and develop a compelling narrative that resonates with investors and showcases TCS's value proposition effectively. This concentrated effort will maximize impact and demonstrably improve investor perception within the allotted time.</p>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2 class="section-title">Technology Stack</h2>
+                <div class="section-content">
+                    <p>While this engagement primarily focuses on strategic planning and brand messaging, our team will leverage various digital tools to enhance efficiency and analysis. This includes project management software (e.g., Asana, Monday.com), communication platforms (e.g., Slack), and data analytics tools to track progress and measure results against established KPIs. Specific tools will be selected based on TCS's preferences and existing infrastructure.</p>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2 class="section-title">Pricing & Payment Terms</h2>
+                <div class="section-content">
+                    
+                    <div class="pricing-highlight">
+                        <div class="price-amount">$4,000,</div>
+                        <div><p>The total project cost is  payable upon completion of the project and acceptance of the deliverables.  An invoice will be issued upon completion.</p></div>
+                    </div>
+                    
+                </div>
+            </div>
+
+            <div class="section">
+                <h2 class="section-title">References & Case Studies</h2>
+                <div class="section-content">
+                    <p>We are happy to provide references and case studies upon request, showcasing our successful track record in helping clients achieve significant growth and attract substantial investment.  These examples will demonstrate the effectiveness of our strategies and methodologies in similar contexts.</p>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2 class="section-title">Scope of Work / Project Breakdown</h2>
+                <div class="section-content">
+                    
+                    <div class="pricing-highlight">
+                        <div class="price-amount">$4000,</div>
+                        <div><p>This project, completed within two weeks for  will be delivered in two distinct phases:</p>
+<p><strong>Phase 1: Strategic Planning & Messaging (Week 1)</strong></p>
+<ul>
+<li>Conduct a kickoff meeting with the TCS team to define project goals, objectives, and key performance indicators (KPIs).</li>
+<li>Perform a comprehensive competitive analysis to identify key differentiators and opportunities for TCS.</li>
+<li>Develop a refined brand messaging framework highlighting TCS's unique value proposition and competitive advantages.</li>
+<li>Identify and prioritize target investor segments based on their investment criteria and TCS's alignment.</li>
+<li>Create a preliminary outreach strategy targeting key investors and outlining communication channels.</li>
+</ul>
+<p><strong>Phase 2:  Execution & Reporting (Week 2)</strong></p>
+<ul>
+<li>Develop compelling investor-facing materials (e.g., pitch deck summaries, one-pager summaries).</li>
+<li>Implement the outreach strategy, coordinating communication across identified channels.</li>
+<li>Monitor and analyze campaign performance against pre-defined KPIs.</li>
+<li>Prepare a comprehensive final report summarizing results and outlining recommendations for future initiatives.</li>
+<li>Conduct a final review meeting with the TCS team to present findings and answer any questions.</li>
+</ul></div>
+                    </div>
+                    
+                </div>
+            </div>
+
+            <div class="section">
+                <h2 class="section-title">Timeline & Milestones</h2>
+                <div class="section-content">
+                    <p><strong>Week 1:</strong> Strategic Planning & Messaging (Kickoff, Competitive Analysis, Messaging Framework, Target Investor Identification, Outreach Strategy)</p>
+<p><strong>Week 2:</strong> Execution & Reporting (Material Development, Outreach Implementation, Performance Monitoring, Final Report, Review Meeting)</p>
+                </div>
+            </div>
+
+            <div class="company-info">
+                <h3 class="company-title">Company Overview</h3>
+                <div class="company-content">
+                    <p>GrowthSutra is a leading growth consultancy specializing in accelerating brand and revenue growth for startups and SMBs. We bring Fortune 500-caliber strategic thinking and flawless execution to help clients gain market access, customer traction, and investor interest. Our team comprises seasoned marketing, communications, sales, and leadership executives with 20+ years of experience launching and scaling disruptive brands across various sectors.  We combine this unmatched experience with rigorous project governance and data-driven frameworks to deliver measurable results quickly.</p>
+                </div>
+            </div>
+
+            <div class="company-info">
+                <h3 class="company-title">Team & Expertise</h3>
+                <div class="company-content">
+                    <p>Our project team will comprise a seasoned strategist with 20+ years of experience in brand building and investor relations, and a senior marketing executive with proven success in executing high-impact campaigns.  Their combined expertise ensures a tailored and effective approach to achieving your goals.</p>
+                </div>
+            </div>
+
+            <div class="company-info">
+                <h3 class="company-title">Who We Are</h3>
+                <div class="company-content">
+                    <p>GrowthSutra is a results-oriented growth consultancy specializing in helping startups and SMBs achieve rapid and sustainable growth. We are dedicated to providing Fortune 500-caliber strategies and execution, empowering our clients to achieve their full potential.</p>
+                </div>
+            </div>
+
+            <div class="company-info">
+                <h3 class="company-title">What We Do</h3>
+                <div class="company-content">
+                    <p>We offer a comprehensive suite of growth services, including brand strategy, marketing, sales enablement, and investor relations. Our approach is tailored to each client's unique needs and objectives, ensuring measurable results and a strong return on investment.</p>
+                </div>
+            </div>
+
+            <div class="cta-section">
+                <h3 class="cta-title">Conclusion</h3>
+                <div class="cta-content">
+                    <p>GrowthSutra offers a highly effective and cost-efficient solution to significantly enhance TCS's brand visibility and investor appeal within a compressed timeframe. Our experienced team and proven methodologies guarantee measurable results, aligning perfectly with your immediate needs and long-term objectives. We are confident that our partnership will lead to a successful outcome.</p>
+                </div>
+            </div>
+
+            <div class="cta-section">
+                <h3 class="cta-title">Next Steps</h3>
+                <div class="cta-content">
+                    <p>We propose a brief introductory call to discuss your specific requirements in more detail and answer any questions you may have. Following this call, we can finalize the project scope and commence work immediately.</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</body>
+</html>

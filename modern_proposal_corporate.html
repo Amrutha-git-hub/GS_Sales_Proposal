@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>title of the sales proposal
+Text: Strategic Growth Partnership Proposal</title>
+    <meta name="description" content="Professional Sales Proposal - title of the sales proposal
+Text: Strategic Growth Partnership Proposal">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700&display=swap');
+        
+        :root {
+            --primary: #1a365d;
+            --secondary: #2d3748;
+            --accent: #3182ce;
+            --success: #38a169;
+            --background: #ffffff;
+            --surface: #f7fafc;
+            --text: #2d3748;
+            --text-light: #718096;
+            --border: #e2e8f0;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            --radius-sm: 0.375rem;
+            --radius-md: 0.5rem;
+            --radius-lg: 0.75rem;
+            --radius-xl: 1rem;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        @page {
+            size: A4;
+            margin: 0;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            line-height: 1.6;
+            color: var(--text);
+            background: var(--background);
+            font-size: 16px;
+            font-weight: 400;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* ENHANCED PREMIUM COVER PAGE WITH REDUCED TRANSPARENCY */
+        .cover-page {
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(135deg, 
+                #1a365df2 0%, 
+                #2d3748f2 50%, 
+                #3182cef2 100%),
+                radial-gradient(circle at center, rgba(255,255,255,0.1) 0%, transparent 70%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            page-break-after: always;
+            padding: 2rem;
+            overflow: hidden;
+        }
+
+        .cover-page::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 20%, rgba(255,255,255,0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255,255,255,0.03) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        /* ENHANCED LOGO SECTION */
+        .cover-logos {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 3rem;
+            margin-bottom: 3rem;
+            z-index: 10;
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+        }
+
+        .cover-logo {
+            width: 200px;
+            height: 200px;
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: var(--radius-xl);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            padding: 1.5rem;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cover-logo:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.25);
+        }
+
+        .cover-logo img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+        }
+
+        .cover-logo-1 {
+            background: rgba(255, 255, 255, 0.98) url('https://static.wixstatic.com/media/cb6b3d_5c8f2b020ebe48b69bc8c163cc480156~mv2.png/v1/fill/w_60,h_60,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/GrowthSutra%20Logo.png') no-repeat center;
+            background-size: contain;
+        }
+
+        .cover-logo-2 {
+            background: rgba(255, 255, 255, 0.98) url('https://benori.com/assets/web/images/Benori_Logo.svg') no-repeat center;
+            background-size: contain;
+        }
+
+        /* ENHANCED TITLE SECTION WITH BETTER VISIBILITY */
+        .cover-title {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(2rem, 4vw, 3.5rem);
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 0;
+            text-shadow: 
+                0 2px 4px rgba(0,0,0,0.5),
+                0 4px 8px rgba(0,0,0,0.3),
+                0 8px 16px rgba(0,0,0,0.2);
+            max-width: 90%;
+            line-height: 1.3;
+            letter-spacing: -0.025em;
+            z-index: 10;
+            position: relative;
+            text-align: center;
+            background: linear-gradient(135deg, #ffffff 0%, #f0f8ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+        }
+
+        /* MODERN CONTENT PAGES */
+        .content-page {
+            page-break-before: always;
+            position: relative;
+            padding: 3rem;
+            min-height: 100vh;
+            background: var(--background);
+        }
+
+        .presentation-container {
+            max-width: 100%;
+            padding: 0;
+            background: var(--background);
+            position: relative;
+        }
+
+        .main-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-align: center;
+            margin-bottom: 3rem;
+            padding-bottom: 1rem;
+            position: relative;
+        }
+
+        .main-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent), var(--success));
+            border-radius: 2px;
+        }
+
+        .section {
+            margin-bottom: 2.5rem;
+            padding: 2rem;
+            background: var(--surface);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-sm);
+            page-break-inside: avoid;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(180deg, var(--accent), var(--success));
+        }
+
+        .section-title {
+            font-family: 'Inter', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 1rem;
+            letter-spacing: -0.025em;
+        }
+
+        .section-content {
+            font-size: 1rem;
+            line-height: 1.7;
+            color: var(--text);
+        }
+
+        .section-content p {
+            margin-bottom: 1rem;
+        }
+
+        .section-content p:last-child {
+            margin-bottom: 0;
+        }
+
+        .section-content ul {
+            margin-left: 1.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .section-content li {
+            margin-bottom: 0.5rem;
+            position: relative;
+        }
+
+        .section-content li::marker {
+            color: var(--accent);
+        }
+
+        .company-info {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 2.5rem;
+            margin: 2rem 0;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            page-break-inside: avoid;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .company-info::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            border-radius: 50%;
+            transform: translate(50%, -50%);
+        }
+
+        .company-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.75rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: white;
+            position: relative;
+            z-index: 10;
+        }
+
+        .company-content {
+            font-size: 1rem;
+            line-height: 1.6;
+            color: rgba(255,255,255,0.95);
+            position: relative;
+            z-index: 10;
+        }
+
+        .pricing-highlight {
+            background: linear-gradient(135deg, var(--surface) 0%, white 100%);
+            border: 2px solid var(--success);
+            padding: 2.5rem;
+            margin: 2rem 0;
+            text-align: center;
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-lg);
+            page-break-inside: avoid;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .pricing-highlight::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--success), var(--accent));
+        }
+
+        .price-amount {
+            font-family: 'Inter', sans-serif;
+            font-size: 3rem;
+            font-weight: 800;
+            color: var(--success);
+            margin-bottom: 1rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .cta-section {
+            background: linear-gradient(135deg, var(--accent) 0%, var(--primary) 100%);
+            color: white;
+            padding: 2.5rem;
+            text-align: center;
+            margin-top: 2.5rem;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            page-break-inside: avoid;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(255,255,255,0.1) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(255,255,255,0.05) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        .cta-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 1rem;
+            position: relative;
+            z-index: 10;
+        }
+
+        .cta-content {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: rgba(255,255,255,0.95);
+            position: relative;
+            z-index: 10;
+        }
+
+        .phase-section {
+            background: white;
+            border: 2px solid var(--border);
+            padding: 2rem;
+            margin: 1.5rem 0;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+            page-break-inside: avoid;
+            transition: box-shadow 0.3s ease;
+        }
+
+        .phase-section:hover {
+            box-shadow: var(--shadow-md);
+        }
+
+        .phase-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .phase-title::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: var(--accent);
+            border-radius: 50%;
+        }
+
+        .timeline-item {
+            background: white;
+            border-left: 4px solid var(--success);
+            margin: 1rem 0;
+            padding: 1.5rem;
+            border-radius: 0 var(--radius-md) var(--radius-md) 0;
+            box-shadow: var(--shadow-sm);
+            page-break-inside: avoid;
+            position: relative;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -8px;
+            top: 1.5rem;
+            width: 12px;
+            height: 12px;
+            background: var(--success);
+            border-radius: 50%;
+            border: 3px solid white;
+        }
+
+        .timeline-week {
+            font-weight: 600;
+            color: var(--success);
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        /* ENHANCED TYPOGRAPHY */
+        h1, h2, h3, h4, h5, h6 {
+            font-weight: 600;
+            line-height: 1.2;
+            margin-bottom: 0.5rem;
+        }
+
+        strong {
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        em {
+            font-style: italic;
+            color: var(--accent);
+        }
+
+        /* RESPONSIVE DESIGN */
+        @media (max-width: 768px) {
+            .cover-logos {
+                flex-direction: column;
+                gap: 2rem;
+                margin-bottom: 2rem;
+            }
+            
+            .cover-logo {
+                width: 160px;
+                height: 160px;
+            }
+            
+            .cover-title {
+                font-size: clamp(1.5rem, 4vw, 2.5rem);
+            }
+            
+            .content-page {
+                padding: 2rem;
+            }
+            
+            .section {
+                padding: 1.5rem;
+            }
+        }
+
+        /* PDF PRINT OPTIMIZATION */
+        @media print {
+            .cover-page {
+                width: 210mm !important;
+                height: 297mm !important;
+                page-break-after: always !important;
+                margin: 0 !important;
+                padding: 15mm !important;
+                display: flex !important;
+                flex-direction: column !important;
+                justify-content: center !important;
+                align-items: center !important;
+                background: linear-gradient(135deg, 
+                    #1a365df2 0%, 
+                    #2d3748f2 50%, 
+                    #3182cef2 100%) !important;
+                print-color-adjust: exact !important;
+                -webkit-print-color-adjust: exact !important;
+            }
+            
+            .cover-logos {
+                margin-bottom: 20mm !important;
+            }
+            
+            .cover-logo {
+                width: 80mm !important;
+                height: 80mm !important;
+                print-color-adjust: exact !important;
+                -webkit-print-color-adjust: exact !important;
+                background-color: rgba(255, 255, 255, 0.98) !important;
+            }
+            
+            .cover-title {
+                font-size: 24pt !important;
+                line-height: 1.2 !important;
+                color: white !important;
+                print-color-adjust: exact !important;
+                -webkit-print-color-adjust: exact !important;
+                text-shadow: 0 2px 4px rgba(0,0,0,0.5) !important;
+                -webkit-text-fill-color: white !important;
+                background: none !important;
+            }
+            
+            .content-page {
+                page-break-before: always !important;
+                margin: 15mm !important;
+                padding: 0 !important;
+                min-height: calc(297mm - 30mm) !important;
+            }
+            
+            .presentation-container {
+                padding: 0 !important;
+            }
+            
+            .section,
+            .company-info,
+            .pricing-highlight,
+            .cta-section,
+            .phase-section,
+            .timeline-item {
+                page-break-inside: avoid !important;
+                orphans: 2 !important;
+                widows: 2 !important;
+            }
+            
+            .cover-logo:hover {
+                transform: none !important;
+            }
+        }
+        </style>
+</head>
+<body>
+    <!-- ENHANCED PREMIUM COVER PAGE WITH PROPER TITLE -->
+    <div class="cover-page">
+        <div class="cover-logos">
+            <div class="cover-logo cover-logo-1"></div>
+            <div class="cover-logo cover-logo-2"></div>
+        </div>
+        <h1 class="cover-title">title of the sales proposal
+Text: Strategic Growth Partnership Proposal</h1>
+    </div>
+    
+    <!-- MODERN CONTENT PAGES -->
+    <div class="content-page">
+        <div class="presentation-container">
+
+            <div class="company-info">
+                <h3 class="company-title">Scope of Work / Project Breakdown
+Text: **Phase 1: Discovery & Planning (Week 1-2)**
+- **Kick-off Meeting:** Conduct a comprehensive kickoff meeting with key stakeholders to establish project goals, timelines, and communication protocols.
+- **Requirements Gathering:** Conduct detailed interviews and workshops to gather specific business requirements, pain points, and desired outcomes.
+- **Market Analysis:** Perform a thorough analysis of the competitive landscape, industry trends, and market opportunities.
+- **Stakeholder Mapping:** Identify and analyze key stakeholders to ensure alignment and effective communication throughout the project.
+- **KPI Definition:** Define key performance indicators (KPIs) to measure the success of the project and track progress towards achieving business objectives.</h3>
+                <div class="company-content">
+                    <p><strong>Phase 2: Strategy & Solution Design (Week 3-4)</strong></p>
+<ul>
+<li><strong>Solution Conceptualization:</strong> Develop innovative solutions that address the identified business challenges and leverage industry best practices.</li>
+<li><strong>Strategy Development:</strong> Create a comprehensive growth strategy that aligns with your business goals and market opportunities.</li>
+<li><strong>Technology Assessment:</strong> Evaluate existing technology infrastructure and identify potential areas for improvement or integration.</li>
+<li><strong>Roadmap Creation:</strong> Develop a detailed roadmap outlining the key milestones, activities, and resources required to implement the proposed solution.</li>
+<li><strong>Risk Assessment:</strong> Identify potential risks and develop mitigation strategies to ensure project success.</li>
+</ul>
+<p><strong>Phase 3: Implementation & Execution (Week 5-8)</strong></p>
+<ul>
+<li><strong>Project Management:</strong> Utilize agile project management methodologies to ensure efficient execution and timely delivery of project milestones.</li>
+<li><strong>Team Coordination:</strong> Coordinate internal and external teams to ensure seamless collaboration and effective communication.</li>
+<li><strong>Change Management:</strong> Implement change management strategies to minimize disruption and ensure smooth adoption of the new solution.</li>
+<li><strong>Training & Support:</strong> Provide comprehensive training and support to your team to ensure they are equipped to effectively utilize the new solution.</li>
+<li><strong>Performance Monitoring:</strong> Continuously monitor performance against defined KPIs and make necessary adjustments to optimize results.</li>
+</ul>
+<p><strong>Phase 4: Optimization & Reporting (Week 9-12)</strong></p>
+<ul>
+<li><strong>Data Analysis:</strong> Analyze data to identify areas for improvement and optimize the performance of the implemented solution.</li>
+<li><strong>Reporting & Communication:</strong> Provide regular reports and updates to stakeholders on project progress and performance.</li>
+<li><strong>Continuous Improvement:</strong> Continuously identify and implement improvements to ensure the solution remains aligned with evolving business needs.</li>
+<li><strong>Knowledge Transfer:</strong> Transfer knowledge and best practices to your team to ensure long-term sustainability of the solution.</li>
+<li><strong>Post-Implementation Review:</strong> Conduct a post-implementation review to assess the overall success of the project and identify lessons learned.</li>
+</ul>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</body>
+</html>

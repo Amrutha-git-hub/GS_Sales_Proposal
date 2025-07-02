@@ -102,7 +102,7 @@ def format_enterprise_details(details_obj: User):
 Description: {details_obj.description}
 Services:
 - {'\n- '.join(details_obj.services)}
-"""
+""",details_obj.logo
 
 async def get_data(url:str):
 

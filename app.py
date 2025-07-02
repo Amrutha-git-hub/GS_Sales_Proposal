@@ -1,7 +1,24 @@
 import streamlit as st
+from streamlit_extras.stylable_container import stylable_container
 import time
 from Client.client import client_tab,validate_client_mandatory_fields
 from Seller.seller import seller_tab
+from ProjectSpecification.project_spec import proj_specification_tab
+from Generate_proposal.proposal_generator import generate_tab
+from Client.client import setup_logging
+from Client.client_dataclass import ClientData
+from Seller.seller import SellerTabState
+
+if 'client_data_from_tab' not in st.session_state:
+    st.session_state.client_data_from_tab = None
+
+if 'seller_data_from_tab' not in st.session_state:
+    st.session_state.seller_data_from_tab = None
+
+if 'project_specs_from_tab' not in st.session_state:
+    st.session_state.project_specs_from_tab = None
+
+
 
 def get_sample_extracted_text():
             return """Key Requirements Extracted:
@@ -129,10 +146,12 @@ st.markdown(app_css, unsafe_allow_html=True)
 if 'active_tab' not in st.session_state:
     st.session_state.active_tab = 0
 
+st.info("START OF THE PROJECT")
+
 # Tab buttons
 tab_names = ["Client Information", "Seller Information", "Project Specifications", "Generate Proposal"]
 
-# Create tab buttons with full width
+# Create tab buttons with stylable containers for green active state
 cols = st.columns(4, gap="large")
 for i, tab_name in enumerate(tab_names):
     with cols[i]:
@@ -147,48 +166,83 @@ for i, tab_name in enumerate(tab_names):
         elif i == 3 and (not validate_client_mandatory_fields() or not validate_seller_mandatory_fields() or not validate_project_mandatory_fields()):
             tab_enabled = False
         
-        if tab_enabled:
-            if st.button(tab_name, key=f"tab_{i}", use_container_width=True, type="primary" if is_active else "secondary"):
-                st.session_state.active_tab = i
-                st.rerun()
+        # Use stylable_container to make active tab green
+        if is_active and tab_enabled:
+            with stylable_container(
+                f"active_tab_{i}",
+                css_styles="""
+                button {
+                    background-color: #28a745 !important;
+                    color: white !important;
+                    border: 2px solid #1e7e34 !important;
+                    font-weight: bold !important;
+                    transition: all 0.3s ease !important;
+                    box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3) !important;
+                }
+                button:hover {
+                    background-color: #218838 !important;
+                    color: white !important;
+                    transform: translateY(-2px) !important;
+                    box-shadow: 0 6px 12px rgba(40, 167, 69, 0.4) !important;
+                }
+                button:focus {
+                    background-color: #1e7e34 !important;
+                    color: white !important;
+                    outline: none !important;
+                }
+                """,
+            ):
+                if st.button(tab_name, key=f"tab_{i}", use_container_width=True):
+                    st.session_state.active_tab = i
+                    st.rerun()
+        elif tab_enabled:
+            with stylable_container(
+                f"inactive_tab_{i}",
+                css_styles="""
+                button {
+                    background-color: #6c757d !important;
+                    color: white !important;
+                    border: 1px solid #5a6268 !important;
+                    transition: all 0.3s ease !important;
+                }
+                button:hover {
+                    background-color: #5a6268 !important;
+                    color: white !important;
+                    transform: translateY(-1px) !important;
+                }
+                """,
+            ):
+                if st.button(tab_name, key=f"tab_{i}", use_container_width=True):
+                    st.session_state.active_tab = i
+                    st.rerun()
         else:
-            st.button(tab_name, key=f"tab_{i}", use_container_width=True, disabled=True)
-
-# Force active tab to stay highlighted
-# Force active tab to stay highlighted with blue color
-# Force active tab (Client or any valid tab) to stay blue
-tab_highlight_css = f"""
-<style>
-/* Apply blue style to the active tab */
-div[data-testid="column"]:nth-child({st.session_state.active_tab + 1}) button {{
-    background-color: #1976d2 !important;
-    color: white !important;
-    border: 2px solid #115293 !important;
-    font-weight: bold !important;
-    transition: 0.3s ease;
-}}
-
-/* Keep it blue on hover/focus */
-div[data-testid="column"]:nth-child({st.session_state.active_tab + 1}) button:hover,
-div[data-testid="column"]:nth-child({st.session_state.active_tab + 1}) button:focus {{
-    background-color: #1565c0 !important;
-    color: white !important;
-}}
-</style>
-"""
-st.markdown(tab_highlight_css, unsafe_allow_html=True)
+            # Disabled tab styling
+            with stylable_container(
+                f"disabled_tab_{i}",
+                css_styles="""
+                button {
+                    background-color: #e9ecef !important;
+                    color: #6c757d !important;
+                    border: 1px solid #dee2e6 !important;
+                    cursor: not-allowed !important;
+                    opacity: 0.6 !important;
+                }
+                """,
+            ):
+                st.button(tab_name, key=f"tab_{i}", use_container_width=True, disabled=True)
 
 # Set is_active flag for current tab
 st.session_state.is_active = True
 
 # Content area with validation-aware tab switching
 if st.session_state.active_tab == 0:
-    client_tab(st)
+    logger = setup_logging()
+    st.session_state.client_data_from_tab = client_tab(st,logger)
 
 elif st.session_state.active_tab == 1:
     # Double-check validation before showing seller tab
     if validate_client_mandatory_fields():
-        seller_tab()
+        st.session_state.seller_data_from_tab = seller_tab()
     else:
         st.session_state.active_tab = 0  # Force back to client tab
         show_validation_popup("Client Information")
@@ -205,27 +259,8 @@ elif st.session_state.active_tab == 2:
         show_validation_popup("Seller Information")
         st.rerun()
     else:
-        st.markdown('## 👥 Project Specifications')
-        st.markdown("Define your project requirements and specifications.")
-        
-        col1, col2, col3 = st.columns([2, 2, 2], gap="large")
-        
-        with col1:
-            st.markdown("""
-            **Recent Clients**
-            - Acme Corporation
-            - TechStart Inc
-            - Global Solutions Ltd
-            - Innovation Labs
-            - Digital Dynamics
-            - Future Systems Co
-            """)
-        
-        with col2:
-            st.metric("Total Proposals", "47", "+12%")
-            
-        with col3:
-            st.metric("Success Rate", "73%", "+5%")
+        print(st.session_state.client_data_from_tab,st.session_state.seller_data_from_tab)
+        st.session_state.project_specs_from_tab=  proj_specification_tab(st.session_state.client_data_from_tab,st.session_state.seller_data_from_tab)
 
 else:  # Generate Proposal Tab
     # Check all validations
@@ -242,39 +277,51 @@ else:  # Generate Proposal Tab
         show_validation_popup("Project Specifications")
         st.rerun()
     else:
-        st.markdown('## 📊 Generate Proposal')
-        st.markdown("Review and generate your final proposal.")
-        
-        # Metrics row
-        col1, col2, col3, col4 = st.columns(4, gap="large")
-        
-        with col1:
-            st.metric("This Month", "$125K", "+15%")
-        
-        with col2:
-            st.metric("Proposals Sent", "23", "+3")
-        
-        with col3:
-            st.metric("Conversion Rate", "68%", "+12%")
-            
-        with col4:
-            st.metric("Average Value", "$18.5K", "+8%")
-        
-        st.markdown("---")
-        
-        st.markdown("""
-        ### 📈 Performance Trends
-        Your proposal success rate has improved by 12% this quarter, with the highest performance in software development projects. The average deal size has increased significantly, and client satisfaction scores are at an all-time high.
-        
-        **Key insights:** Enterprise clients show 85% higher conversion rates, and proposals with detailed technical specifications convert 40% better than generic templates.
-        """)
+       generate_tab(st.session_state.client_data_from_tab,st.session_state.seller_data_from_tab,st.session_state.project_specs_from_tab)
 
+# Bottom action buttons with enhanced styling
 col1, col2 = st.columns(2, gap="large")
 
 with col1:
-    if st.button("🔄 Refresh All Data", key="refresh_btn", use_container_width=True):
-        refresh_all_data()
+    with stylable_container(
+        "refresh_button",
+        css_styles="""
+        button {
+            background-color: #17a2b8 !important;
+            color: white !important;
+            border: 2px solid #138496 !important;
+            font-weight: bold !important;
+            transition: all 0.3s ease !important;
+        }
+        button:hover {
+            background-color: #138496 !important;
+            color: white !important;
+            transform: translateY(-2px) !important;
+            box-shadow: 0 4px 8px rgba(23, 162, 184, 0.3) !important;
+        }
+        """,
+    ):
+        if st.button("🔄 Refresh All Data", key="refresh_btn", use_container_width=True):
+            refresh_all_data()
 
 with col2:
-    if st.button("📊 Generate Presentation", key="generate_btn", use_container_width=True):
-        generate_presentation()
+    with stylable_container(
+        "generate_button",
+        css_styles="""
+        button {
+            background-color: #dc3545 !important;
+            color: white !important;
+            border: 2px solid #c82333 !important;
+            font-weight: bold !important;
+            transition: all 0.3s ease !important;
+        }
+        button:hover {
+            background-color: #c82333 !important;
+            color: white !important;
+            transform: translateY(-2px) !important;
+            box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3) !important;
+        }
+        """,
+    ):
+        if st.button("📊 Generate Presentation", key="generate_btn", use_container_width=True):
+            generate_presentation()

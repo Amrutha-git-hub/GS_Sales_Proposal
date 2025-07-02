@@ -7,7 +7,7 @@ from google.adk.runners import Runner
 from google.genai import types
 import ast 
 import re
-from Search.LinkedIN.linkedin_agent_unused import *
+from Search.Linkedin.linkedin_agent_unused import *
 
 
 # Setup session and runner
@@ -40,7 +40,7 @@ def extract_list_from_string(s):
 
 
 import json
-async def get_linkedin(user_name: str, runner=runner, user_id=USER_ID, session_id=SESSION_ID):
+async def get_linkedin_p(user_name: str, runner=runner, user_id=USER_ID, session_id=SESSION_ID):
     content = types.Content(role='user', parts=[types.Part(text=user_name)])
     final_msg = ""
     
@@ -64,3 +64,16 @@ async def get_linkedin(user_name: str, runner=runner, user_id=USER_ID, session_i
     print(final_msg)
     return json.loads(final_msg)
 
+
+import asyncio
+
+def get_linkedin(user_name):
+    try:
+        # Run the async function synchronously
+        linkedin_profiles = asyncio.run(get_linkedin_p(user_name))
+        return linkedin_profiles
+    except Exception as e:
+        print(f"Error: {e}")
+        return None
+
+                 

@@ -5,7 +5,7 @@ import os
 
 from WebsiteUrl_Agent.agent_runner import get_urls
 import asyncio 
-from Document_Upload_Vectordb.pain_points_extractor import *
+from Utils.pain_points_extractor import *
 from WebScraper.scrape import get_data
 
 
@@ -32,8 +32,8 @@ def get_url_details(url:str):
     """Use this if you want to run async function synchronously"""
     try:
         # Run the async function synchronously
-        website_details = asyncio.run(get_data(url))
-        return website_details
+        website_details,logo = asyncio.run(get_data(url))
+        return website_details,logo
     except Exception as e:
         print(f"Error: {e}")
         return None

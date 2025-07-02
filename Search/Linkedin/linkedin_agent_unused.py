@@ -38,10 +38,9 @@ Given the name of a person, your task is to find and return **exactly 5 people**
 
 📌 Response format MUST be a Python-style list of JSON objects like this:
 
-[
-  {
+{
+  "https://www.linkedin.com/in/shreyankisiri/": {
     "name": "Shreyank Isiri",
-    "linkedin_url": "https://www.linkedin.com/in/shreyankisiri/",
     "role": "Solutions Architect at XYZ Corp",
     "top_3_priorities": [
       "Understanding client infrastructure needs",
@@ -50,7 +49,8 @@ Given the name of a person, your task is to find and return **exactly 5 people**
     ]
   },
   ...
-]
+}
+
 
 IMPORTANT:
 - Use temperature = 0
