@@ -95,6 +95,7 @@ def save_uploaded_file_and_get_path(uploaded_file,logger):
             return None
             
     except Exception as e:
+        st.error(e)
         logger.error(f"Unexpected error in save_uploaded_file_and_get_path: {str(e)}")
         raise
 
@@ -224,6 +225,7 @@ def client_tab(st,logger):
                         )
                 except Exception as e:
                     logger.error(f"Error clearing URLs when company name cleared: {str(e)}")
+                    st.error(e)
                 
                 # Show validation warning if triggered and field is empty
                 try:
