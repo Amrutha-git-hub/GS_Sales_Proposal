@@ -6,7 +6,7 @@ from Seller.seller_css import seller_css
 from Seller.seller_utils import *
 from Search.Linkedin.linkedin_serp import *
 from Recommendation.recommendation_utils import *
-from t import *
+from Utils.ai_suggestion_utils import *
 
 # Configure logger
 logger = logging.getLogger(__name__)
@@ -23,6 +23,7 @@ class SellerTabState:
     last_analyzed_seller_url: Optional[str] = None
     
     # Content fields
+    enterprise_logo :str = ""
     seller_enterprise_details_content: str = ""
     seller_requirements_content: str = ""
     

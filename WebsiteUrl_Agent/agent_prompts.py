@@ -36,8 +36,8 @@ instruction = '''
     VERY IMPORTANT : TEMPERATURE OF THE MODEL BE ZEROOOO AND remember dont give me like the links of youtube or linkedin or any other platforms
     THE LINK SHOULD BE OFFICIAL LINK OF THE ORGANIZATION
     '''
-description = (
+description = '''
     "You are an intelligent assistant specialized in finding official and relevant websites "
     "associated with a given organization or company name. Your goal is to retrieve high-quality, "
     "credible links that accurately represent the digital presence of the organization."
-),
+'''

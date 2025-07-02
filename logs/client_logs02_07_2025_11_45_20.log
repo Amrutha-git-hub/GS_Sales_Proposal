@@ -1,0 +1,28 @@
+2025-07-02 11:45:20,961 - client_module - INFO - client_tab:125 - Starting client_tab function
+2025-07-02 11:45:20,961 - client_module - DEBUG - client_tab:130 - Retrieved client data from dataclass manager
+2025-07-02 11:45:20,962 - client_module - DEBUG - client_tab:142 - CSS re-applied for persistence
+2025-07-02 11:45:20,962 - client_module - DEBUG - client_tab:149 - Creating top section with client name and URLs
+2025-07-02 11:45:20,963 - client_module - DEBUG - client_tab:154 - Processing client enterprise name section
+2025-07-02 11:45:20,964 - client_module - DEBUG - client_tab:187 - Find URLs button disabled: False
+2025-07-02 11:45:20,964 - client_module - DEBUG - client_tab:242 - Processing client website URL section
+2025-07-02 11:45:20,966 - client_module - DEBUG - client_tab:259 - Client name provided: True
+2025-07-02 11:45:20,966 - client_module - DEBUG - client_tab:266 - URL options count: 8
+2025-07-02 11:45:20,967 - client_module - DEBUG - client_tab:391 - Creating file upload and enterprise details section
+2025-07-02 11:45:20,968 - client_module - DEBUG - client_tab:396 - Processing file upload section
+2025-07-02 11:45:20,969 - client_module - INFO - client_tab:445 - File uploaded: modern_proposal_corporate.pdf
+2025-07-02 11:45:20,970 - client_module - DEBUG - client_tab:456 - File size: 37.7KB
+2025-07-02 11:45:20,971 - client_module - DEBUG - client_tab:568 - Processing enterprise details section
+2025-07-02 11:45:20,972 - client_module - DEBUG - client_tab:606 - Creating client requirements and pain points section
+2025-07-02 11:45:20,972 - client_module - DEBUG - client_tab:611 - Processing client requirements section
+2025-07-02 11:45:20,973 - client_module - DEBUG - client_tab:635 - Updated client requirements content
+2025-07-02 11:45:20,973 - client_module - DEBUG - client_tab:640 - Client requirements provided: False
+2025-07-02 11:45:20,973 - client_module - INFO - client_tab:655 - Starting COL6 - Client Pain Points section rendering
+2025-07-02 11:45:20,973 - client_module - INFO - client_tab:679 - Using dummy pain points data as fallback
+2025-07-02 11:45:20,973 - client_module - DEBUG - client_tab:689 - Rendering 3 pain point items
+2025-07-02 11:45:20,973 - client_module - DEBUG - client_tab:694 - Processing pain point item 0: Revenue Challenges
+2025-07-02 11:45:20,973 - client_module - DEBUG - client_tab:699 - Pain point 'Revenue Challenges' selection status: False
+2025-07-02 11:45:20,974 - client_module - INFO - client_tab:774 - Pain point button clicked for 'Revenue Challenges', current selection: False
+2025-07-02 11:45:20,974 - client_module - INFO - client_tab:826 - Adding pain point 'Revenue Challenges' to requirements
+2025-07-02 11:45:20,974 - client_module - DEBUG - client_tab:831 - Current content length before add: 0
+2025-07-02 11:45:20,974 - client_module - DEBUG - client_tab:835 - New content length after add: 583
+2025-07-02 11:45:20,974 - client_module - INFO - client_tab:847 - Successfully added pain point 'Revenue Challenges'

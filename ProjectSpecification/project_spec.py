@@ -4,7 +4,7 @@ from typing import Tuple, Dict, Optional
 from concurrent.futures import ThreadPoolExecutor
 import time
 from ProjectSpecification.proj_spec_css import proj_spec_css
-from t import render_two_column_selector
+from Utils.ai_suggestion_utils import render_two_column_selector
 from Recommendation.recommendation_utils import get_ai_proj_sepc_recommendations
 from Recommendation.prompts import *
 
@@ -17,6 +17,16 @@ def init_async_session_state():
         st.session_state.ai_recommendations_ready = {}
     if 'ai_recommendation_data' not in st.session_state:
         st.session_state.ai_recommendation_data = {}
+    if 'loading_progress' not in st.session_state:
+        st.session_state.loading_progress = 0
+    if 'current_analysis_step' not in st.session_state:
+        st.session_state.current_analysis_step = ""
+    if 'current_step' not in st.session_state:
+        st.session_state.current_step = 0
+    if 'ai_processing_started' not in st.session_state:
+        st.session_state.ai_processing_started = False
+    if 'analysis_complete' not in st.session_state:
+        st.session_state.analysis_complete = False
 
 def get_ai_recommendations_async(section_name, prompt, client_data, seller_data, default_data):
     """
@@ -32,11 +42,33 @@ def get_ai_recommendations_async(section_name, prompt, client_data, seller_data,
         # Log the error if needed
         return default_data
 
+def update_progress(step, progress_value, analysis_text):
+    """Update the progress bar and analysis text"""
+    st.session_state.loading_progress = progress_value
+    st.session_state.current_analysis_step = analysis_text
+    # Force UI update
+    time.sleep(0.1)
+
+# Global variable to store AI processing results (accessible from threads)
+ai_processing_results = {}
+
 def start_async_recommendations(client_data, seller_data):
     """
-    Start async loading of all AI recommendations
+    Start async loading of all AI recommendations with progress tracking
     """
     if st.session_state.ai_recommendations_loading:
+        
+        # Analysis steps with corresponding messages
+        analysis_steps = [
+            "🔍 Analyzing client requirements and business context...",
+            "🏢 Processing seller capabilities and expertise...", 
+            "📋 Generating intelligent scope recommendations...",
+            "⏱️ Creating optimized timeline structure...",
+            "💪 Calculating effort estimations and resource needs...",
+            "👥 Designing optimal team composition...",
+            "💰 Formulating competitive pricing strategies...",
+            "✨ Finalizing AI-enhanced recommendations..."
+        ]
         
         # Default data definitions
         default_data_map = {
@@ -81,119 +113,181 @@ def start_async_recommendations(client_data, seller_data):
                 st.session_state.ai_recommendation_data[section] = default_data_map[section]
                 st.session_state.ai_recommendations_ready[section] = False
         
-        # Start async loading
-        with ThreadPoolExecutor(max_workers=5) as executor:
-            futures = {}
-            for section_name, prompt in prompt_map.items():
-                future = executor.submit(
-                    get_ai_recommendations_async,
-                    section_name,
-                    prompt,
-                    client_data,
-                    seller_data,
-                    default_data_map[section_name]
-                )
-                futures[section_name] = future
-            
-            # Process results as they complete
-            for section_name, future in futures.items():
-                try:
-                    result = future.result(timeout=30)  # 30 second timeout per section
-                    st.session_state.ai_recommendation_data[section_name] = result
-                    st.session_state.ai_recommendations_ready[section_name] = True
-                except Exception as e:
-                    # Keep default data if AI fails
-                    st.session_state.ai_recommendations_ready[section_name] = True
+        # Simulate progress for the first few steps
+        current_step = st.session_state.get('current_step', 0)
         
-        st.session_state.ai_recommendations_loading = False
-        st.rerun()
+        if current_step < len(analysis_steps):
+            progress = min(95, 10 + (current_step * 12))
+            update_progress(current_step, progress, analysis_steps[current_step])
+            st.session_state.current_step = current_step + 1
+            
+            # If we're at the processing steps, start AI calls
+            if current_step >= 2 and not st.session_state.get('ai_processing_started', False):
+                st.session_state.ai_processing_started = True
+                
+                # Start AI processing in background using ThreadPoolExecutor
+                with ThreadPoolExecutor(max_workers=5) as executor:
+                    futures = {}
+                    for section_name, prompt in prompt_map.items():
+                        future = executor.submit(
+                            get_ai_recommendations_async,
+                            section_name,
+                            prompt,
+                            client_data,
+                            seller_data,
+                            default_data_map[section_name]
+                        )
+                        futures[section_name] = future
+                    
+                    # Store futures in session state for later processing
+                    st.session_state.ai_futures = futures
+            
+            # Check if AI processing is complete
+            if hasattr(st.session_state, 'ai_futures') and current_step >= len(analysis_steps) - 1:
+                all_complete = True
+                for section_name, future in st.session_state.ai_futures.items():
+                    if future.done():
+                        try:
+                            result = future.result()
+                            st.session_state.ai_recommendation_data[section_name] = result
+                            st.session_state.ai_recommendations_ready[section_name] = True
+                        except Exception as e:
+                            # Keep default data if AI fails
+                            st.session_state.ai_recommendations_ready[section_name] = True
+                    else:
+                        all_complete = False
+                
+                if all_complete:
+                    # Final completion - set both flags to False to stop loading
+                    update_progress(len(analysis_steps), 100, "🎉 Analysis complete! Loading your personalized recommendations...")
+                    st.session_state.ai_recommendations_loading = False
+                    st.session_state.analysis_complete = True
+
+def show_loading_screen():
+    """Display the loading screen with progress bar and analysis steps"""
+    st.markdown("""
+        <div style="text-align: center; padding: 2rem;">
+            <h2>🤖 AI-Powered Project Analysis</h2>
+            <p style="color: #666; margin-bottom: 2rem;">
+                Our AI is analyzing your requirements to create personalized recommendations
+            </p>
+        </div>
+    """, unsafe_allow_html=True)
+    
+    # Progress bar
+    progress_bar = st.progress(st.session_state.loading_progress / 100)
+    
+    # Current analysis step
+    if st.session_state.current_analysis_step:
+        st.markdown(f"""
+            <div style="text-align: center; padding: 1rem; background-color: #f8f9fa; 
+                        border-radius: 8px; margin: 1rem 0;">
+                <p style="margin: 0; font-weight: 500; color: #2c3e50;">
+                    {st.session_state.current_analysis_step}
+                </p>
+            </div>
+        """, unsafe_allow_html=True)
+    
+    # Show estimated time remaining
+    if st.session_state.loading_progress < 100:
+        estimated_time = max(1, int((100 - st.session_state.loading_progress) / 10))
+        st.markdown(f"""
+            <div style="text-align: center; margin-top: 1rem;">
+                <small style="color: #666;">
+                    Estimated time remaining: ~{estimated_time} seconds
+                </small>
+            </div>
+        """, unsafe_allow_html=True)
+    
+    return progress_bar
 
 def get_section_data(section_name):
-    """Get data for a specific section with loading indicator"""
+    """Get data for a specific section"""
     if section_name in st.session_state.ai_recommendation_data:
         return st.session_state.ai_recommendation_data[section_name]
     else:
-        # Return empty dict if not ready
         return {}
 
-def show_loading_indicator(section_name):
-    """Show loading indicator if AI recommendations are still loading"""
-    if not st.session_state.ai_recommendations_ready.get(section_name, False):
-        return st.empty().info(f"🤖 AI is enhancing {section_name} recommendations in the background...")
-    return None
-
 def proj_specification_tab(client_data, seller_data):
-    st.markdown(proj_spec_css, unsafe_allow_html=True)
-    st.markdown("""
-                                        <style>
-                                        /* Force override all button styling */
-                                        button[kind="secondary"] {
-                                            height: 48px !important;
-                                            border: 2.2px solid #618f8f !important;
-                                            border-radius: 4px !important;
-                                            margin-top: 5px !important;  /* Move button up */
-                                            transform: translateY(0px) !important;  /* Additional upward adjustment */
-                                            background-color: #4a4a4a !important;  /* Dark greyish background */
-                                            color: white !important;  /* White text */
-                                        }
-                                        
-                                        button[kind="secondary"]:hover {
-                                            border: 2.2px solid #618f8f !important;
-                                            transform: translateY(0px) !important;  /* Keep position on hover */
-                                            background-color: #5a5a5a !important;  /* Slightly lighter on hover */
-                                            color: white !important;  /* Keep white text on hover */
-                                        }
-                                        
-                                        button[kind="secondary"]:focus {
-                                            border: 2.2px solid #618f8f !important;
-                                            outline: 2px solid #618f8f !important;
-                                            transform: translateY(0px) !important;  /* Keep position on focus */
-                                            background-color: #4a4a4a !important;  /* Keep dark background on focus */
-                                            color: white !important;  /* Keep white text on focus */
-                                        }
-                                        
-                                        /* Try targeting by data attributes */
-                                        [data-testid] button {
-                                            border: 2.2px solid #618f8f !important;
-                                            height: 48px !important;
-                                            margin-top: 5px !important;  /* Move button up */
-                                            transform: translateY(0px) !important;  /* Additional upward adjustment */
-                                            background-color: #4a4a4a !important;  /* Dark greyish background */
-                                            color: white !important;  /* White text */
-                                        }
-                                        
-                                        /* Additional targeting for button text specifically */
-                                        button[kind="secondary"] p,
-                                        button[kind="secondary"] span,
-                                        button[kind="secondary"] div {
-                                            color: white !important;
-                                        }
-                                        
-                                        [data-testid] button p,
-                                        [data-testid] button span,
-                                        [data-testid] button div {
-                                            color: white !important;
-                                        }
-                                        </style>
-                                        """, unsafe_allow_html=True)
-    
     # Initialize async session state
     init_async_session_state()
     
-    # Start async loading if not already started
+    # Show loading screen if still loading
     if st.session_state.ai_recommendations_loading:
+        show_loading_screen()
+        
+        # Start async loading if not already started
         start_async_recommendations(client_data, seller_data)
+        
+        # Auto-refresh every 1 second during loading
+        time.sleep(1)
+        st.rerun()
+        return None  # Don't render the main content yet
+    
+    # Main content - only shown after loading is complete
+    st.markdown(proj_spec_css, unsafe_allow_html=True)
+    st.markdown("""
+        <style>
+        /* Force override all button styling */
+        button[kind="secondary"] {
+            height: 48px !important;
+            border: 2.2px solid #618f8f !important;
+            border-radius: 4px !important;
+            margin-top: 5px !important;
+            transform: translateY(0px) !important;
+            background-color: #4a4a4a !important;
+            color: white !important;
+        }
+        
+        button[kind="secondary"]:hover {
+            border: 2.2px solid #618f8f !important;
+            transform: translateY(0px) !important;
+            background-color: #5a5a5a !important;
+            color: white !important;
+        }
+        
+        button[kind="secondary"]:focus {
+            border: 2.2px solid #618f8f !important;
+            outline: 2px solid #618f8f !important;
+            transform: translateY(0px) !important;
+            background-color: #4a4a4a !important;
+            color: white !important;
+        }
+        
+        [data-testid] button {
+            border: 2.2px solid #618f8f !important;
+            height: 48px !important;
+            margin-top: 5px !important;
+            transform: translateY(0px) !important;
+            background-color: #4a4a4a !important;
+            color: white !important;
+        }
+        
+        button[kind="secondary"] p,
+        button[kind="secondary"] span,
+        button[kind="secondary"] div {
+            color: white !important;
+        }
+        
+        [data-testid] button p,
+        [data-testid] button span,
+        [data-testid] button div {
+            color: white !important;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+    
+    # Success message
+    st.success("✅ AI Analysis Complete! Your personalized project specification is ready.")
     
     # Section 1: Scope of Work
-    scope_loading_placeholder = show_loading_indicator('scope')
     scope_data = get_section_data('scope')
-    
     scope_content, scope_provided = render_two_column_selector(
         left_title="Scope of Work",
         left_tooltip="Define the detailed scope of work including all tasks, deliverables, and project boundaries.",
         textarea_session_key="scope_content",
         textarea_widget_key="scope_textarea",
-        textarea_placeholder="Click/Enter to get the AI suggested Project Scope"
+        textarea_placeholder="Click/Enter to get the AI suggested Project Scope",
         selected_items_key="scope_selected",
         content_map_key="scope_content_map",
         default_data=scope_data,
@@ -201,16 +295,10 @@ def proj_specification_tab(client_data, seller_data):
         right_tooltip="Select scope elements to include in your project definition.",
     )
     
-    # Clear loading indicator when ready
-    if st.session_state.ai_recommendations_ready.get('scope', False) and scope_loading_placeholder:
-        scope_loading_placeholder.empty()
-    
     st.markdown("---")
     
     # Section 2: Timeline
-    timeline_loading_placeholder = show_loading_indicator('timeline')
     timeline_data = get_section_data('timeline')
-    
     timeline_content, timeline_provided = render_two_column_selector(
         left_title="Project Timeline",
         left_tooltip="Outline the project phases, key milestones, and delivery dates.",
@@ -225,15 +313,10 @@ def proj_specification_tab(client_data, seller_data):
         selected_color="#8f00ff"
     )
     
-    if st.session_state.ai_recommendations_ready.get('timeline', False) and timeline_loading_placeholder:
-        timeline_loading_placeholder.empty()
-    
     st.markdown("---")
     
     # Section 3: Effort Estimation
-    effort_loading_placeholder = show_loading_indicator('effort')
     effort_data = get_section_data('effort')
-    
     effort_content, effort_provided = render_two_column_selector(
         left_title="Effort Breakdown",
         left_tooltip="Detail the estimated effort required for each work stream and activity.",
@@ -249,15 +332,10 @@ def proj_specification_tab(client_data, seller_data):
         selected_border_color="#4a90e2"
     )
     
-    if st.session_state.ai_recommendations_ready.get('effort', False) and effort_loading_placeholder:
-        effort_loading_placeholder.empty()
-    
     st.markdown("---")
     
     # Section 4: Team Size
-    team_loading_placeholder = show_loading_indicator('team')
     team_data = get_section_data('team')
-    
     team_content, team_provided = render_two_column_selector(
         left_title="Team Structure",
         left_tooltip="Define the team composition, roles, and responsibilities for the project.",
@@ -273,23 +351,17 @@ def proj_specification_tab(client_data, seller_data):
         selected_border_color="#ffb366"
     )
     
-    if st.session_state.ai_recommendations_ready.get('team', False) and team_loading_placeholder:
-        team_loading_placeholder.empty()
-    
     st.markdown("---")
     
     # Section 5: Pricing & Commercial
-    pricing_loading_placeholder = show_loading_indicator('pricing')
     pricing_data = get_section_data('pricing')
-    
     pricing_content, pricing_provided = render_two_column_selector(
         left_title="Commercial Proposal",
         left_tooltip="Outline pricing models, payment terms, and commercial arrangements.",
         textarea_session_key="pricing_content",
         textarea_widget_key="pricing_textarea",
         selected_items_key="pricing_selected",
-
-        textarea_placeholder="Click/Enter to get the AI suggested Pricing"
+        textarea_placeholder="Click/Enter to get the AI suggested Pricing",
         content_map_key="pricing_content_map",
         default_data=pricing_data,
         right_title="Pricing Models",
@@ -297,9 +369,6 @@ def proj_specification_tab(client_data, seller_data):
         selected_color="#ff4f58",
         selected_border_color="#ff6b6b"
     )
-    
-    if st.session_state.ai_recommendations_ready.get('pricing', False) and pricing_loading_placeholder:
-        pricing_loading_placeholder.empty()
     
     st.markdown("---")
     
@@ -312,13 +381,6 @@ def proj_specification_tab(client_data, seller_data):
         placeholder="Enter any additional notes, special requirements, assumptions, or comments here...",
         key="additional_notes_textarea"
     )
-    
-    # Show overall loading status
-    if any(not ready for ready in st.session_state.ai_recommendations_ready.values()):
-        st.info("🤖 AI recommendations are being generated in the background to enhance your proposal...")
-    elif all(st.session_state.ai_recommendations_ready.values()):
-        st.success("✅ All AI recommendations have been loaded and integrated!")
-        
     
     st.markdown("---")
     return [scope_content, effort_content, timeline_content, team_content, pricing_content]

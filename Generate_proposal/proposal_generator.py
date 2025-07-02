@@ -1,149 +1,108 @@
 import streamlit as st
 import time
 from datetime import datetime
+import os
 from Generate_proposal.generate_proposal_css import *
+from PresentationWriting.src.main import get_presentation
 
-def render_preview_tab():
+def render_preview_tab(client_data, seller_data, project_specs):
     """
-    Renders the professional proposal format preview and generation interface
+    Renders the editable details overview and proposal generation interface
     """
-
     
-    # Create columns for format previews
+    st.header("📝 Generate Proposal")
+    st.markdown("Review and edit the details below, then generate your professional proposal.")
+    
+    # Details Overview Section - Editable
+    st.subheader("📋 Project Details Overview")
+    
+    # Create two columns for client and seller details
     col1, col2 = st.columns(2)
     
     with col1:
-        # Modern Professional Format
+        st.markdown("#### 👤 Client Information")
         with st.container():
-            st.markdown("### 🎨 Modern Professional")
-            st.caption("Clean, minimalist design with bold typography and subtle gradients")
-            
-            modern_preview = """
-            <div style="background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); 
-                        padding: 20px; border-radius: 12px; border: 1px solid #e5e7eb; margin: 15px 0;
-                        box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                        <div style="width: 50px; height: 50px; background: #2563eb; border-radius: 6px; display: flex; align-items: center; justify-content: center;">
-                            <span style="color: white; font-weight: bold; font-size: 18px;">A</span>
-                        </div>
-                        <div style="color: #6b7280; font-size: 12px; font-weight: 600;">PROPOSAL #2024-001</div>
-                    </div>
-                    <div style="height: 10px; background: #2563eb; border-radius: 5px; margin-bottom: 15px;"></div>
-                    <div style="margin-bottom: 20px;">
-                        <div style="height: 6px; background: #e5e7eb; border-radius: 3px; margin: 3px 0;"></div>
-                        <div style="height: 6px; background: #e5e7eb; border-radius: 3px; width: 80%; margin: 3px 0;"></div>
-                        <div style="height: 6px; background: #e5e7eb; border-radius: 3px; width: 65%; margin: 3px 0;"></div>
-                        <div style="height: 6px; background: #e5e7eb; border-radius: 3px; width: 45%; margin: 3px 0;"></div>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 15px; border-top: 1px solid #f3f4f6;">
-                        <div style="color: #2563eb; font-weight: bold; font-size: 18px;">Proposal</div>
-                        <div style="background: #2563eb; color: white; padding: 8px 16px; border-radius: 6px; font-size: 12px; font-weight: 600;">ACCEPT PROPOSAL</div>
-                    </div>
-                </div>
-            </div>
-            """
-            st.markdown(modern_preview, unsafe_allow_html=True)
-        
-        # Creative Bold Format
-        with st.container():
-            st.markdown("### 🌈 Creative Bold")
-            st.caption("Eye-catching design with vibrant colors and modern elements")
-            
-            creative_preview = """
-            <div style="background: linear-gradient(135deg, #fdf4ff 0%, #fce7f3 100%); 
-                        padding: 20px; border-radius: 12px; border: 1px solid #e5e7eb; margin: 15px 0;
-                        box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                <div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                    <div style="display: flex; align-items: center; margin-bottom: 20px;">
-                        <div style="width: 40px; height: 40px; background: linear-gradient(45deg, #a855f7, #ec4899); 
-                                    border-radius: 50%; margin-right: 15px; display: flex; align-items: center; justify-content: center;">
-                            <span style="color: white; font-weight: bold;">✨</span>
-                        </div>
-                        <div style="flex: 1;">
-                            <div style="height: 10px; background: linear-gradient(45deg, #a855f7, #ec4899); 
-                                        border-radius: 5px; width: 70%;"></div>
-                        </div>
-                    </div>
-                    <div style="margin-bottom: 20px;">
-                        <div style="height: 6px; background: #f3f4f6; border-radius: 3px; margin: 3px 0;"></div>
-                        <div style="height: 6px; background: #f3f4f6; border-radius: 3px; width: 85%; margin: 3px 0;"></div>
-                        <div style="height: 6px; background: #f3f4f6; border-radius: 3px; width: 60%; margin: 3px 0;"></div>
-                    </div>
-                    <div style="background: linear-gradient(45deg, #a855f7, #ec4899); color: white; 
-                                padding: 12px; border-radius: 8px; text-align: center; font-size: 14px; font-weight: bold;
-                                box-shadow: 0 2px 4px rgba(168, 85, 247, 0.3);">
-                     Proposal
-                    </div>
-                </div>
-            </div>
-            """
-            st.markdown(creative_preview, unsafe_allow_html=True)
+            client_name = st.text_input("Client Name", value="Growth Sutra", key="client_name")
+            client_contact = st.text_input("Contact Person", value="Vishwendra Verma", key="client_contact")
+            client_title = st.text_input("Contact Title", value="CEO", key="client_title")
+            client_email = st.text_input("Email", value="xyz@gmail.com", key="client_email")
+            client_phone = st.text_input("Phone", value="9999999999", key="client_phone")
+            client_industry = st.text_input("Industry", value="Technology Solutions", key="client_industry")
     
     with col2:
-        # Classic Business Format
+        st.markdown("#### 🏢 Seller Information")
         with st.container():
-            st.markdown("### 📊 Classic Business")
-            st.caption("Traditional corporate layout with professional styling")
-            
-            classic_preview = """
-            <div style="background: #f8fafc; padding: 20px; border-radius: 8px; border: 2px solid #e2e8f0; margin: 15px 0;">
-                <div style="background: white; padding: 20px; border-radius: 4px; border: 1px solid #cbd5e1;">
-                    <div style="border-bottom: 2px solid #e2e8f0; padding-bottom: 15px; margin-bottom: 20px;">
-                        <div style="height: 16px; background: #1e293b; border-radius: 2px; width: 120px; margin-bottom: 8px;"></div>
-                        <div style="height: 10px; background: #64748b; border-radius: 2px; width: 90px;"></div>
-                    </div>
-                    <div style="margin-bottom: 20px;">
-                        <div style="height: 5px; background: #cbd5e1; border-radius: 2px; margin: 5px 0;"></div>
-                        <div style="height: 5px; background: #cbd5e1; border-radius: 2px; width: 85%; margin: 5px 0;"></div>
-                        <div style="height: 5px; background: #cbd5e1; border-radius: 2px; width: 70%; margin: 5px 0;"></div>
-                        <div style="height: 5px; background: #cbd5e1; border-radius: 2px; width: 55%; margin: 5px 0;"></div>
-                    </div>
-                    <div style="border-top: 2px solid #e2e8f0; padding-top: 15px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <span style="color: #475569; font-size: 14px; font-weight: 600;">TOTAL AMOUNT:</span>
-                            <div style="color: #1e293b; font-weight: bold; font-size: 18px;">$12,500.00</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            """
-            st.markdown(classic_preview, unsafe_allow_html=True)
-        
-        # Minimal Clean Format
-        with st.container():
-            st.markdown("### ⚪ Minimal Clean")
-            st.caption("Ultra-clean design focusing on content with maximum readability")
-            
-            minimal_preview = """
-            <div style="background: white; padding: 25px; border-radius: 8px; border: 2px solid #f1f5f9; margin: 15px 0;
-                        box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-                <div style="padding: 15px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
-                        <div style="width: 12px; height: 12px; background: #0f172a; border-radius: 50%;"></div>
-                        <div style="color: #94a3b8; font-size: 11px; letter-spacing: 2px; font-weight: 600;">PROPOSAL</div>
-                    </div>
-                    <div style="margin-bottom: 25px;">
-                        <div style="height: 6px; background: #0f172a; border-radius: 1px; width: 45%; margin-bottom: 15px;"></div>
-                        <div style="height: 1px; background: #e2e8f0; margin: 6px 0;"></div>
-                        <div style="height: 1px; background: #e2e8f0; width: 90%; margin: 6px 0;"></div>
-                        <div style="height: 1px; background: #e2e8f0; width: 75%; margin: 6px 0;"></div>
-                        <div style="height: 1px; background: #e2e8f0; width: 60%; margin: 6px 0;"></div>
-                    </div>
-                    <div style="text-align: right; border-top: 1px solid #f1f5f9; padding-top: 15px;">
-                        <div style="font-family: 'Courier New', monospace; font-size: 16px; color: #0f172a; font-weight: 600;">
-                            $12,500.00
-                        </div>
-                    </div>
-                </div>
-            </div>
-            """
-            st.markdown(minimal_preview, unsafe_allow_html=True)
+            seller_name = st.text_input("Your Company", value="Your Company Name", key="seller_name")
+            seller_contact = st.text_input("Your Name", value="Your Name", key="seller_contact")
+            seller_title = st.text_input("Your Title", value="Project Manager", key="seller_title")
+            seller_email = st.text_input("Your Email", value="your.email@company.com", key="seller_email")
+            seller_phone = st.text_input("Your Phone", value="+1 (555) 123-4567", key="seller_phone")
+            seller_website = st.text_input("Website", value="www.yourcompany.com", key="seller_website")
+    
+    # Project Details Section
+    st.divider()
+    st.markdown("#### 📊 Project Specifications")
+    
+    proj_col1, proj_col2 = st.columns(2)
+    
+    with proj_col1:
+        service_type = st.selectbox(
+            "Service Category",
+            ["Web Development", "Mobile App Development", "UI/UX Design", "Digital Marketing", "Consulting", "Other"],
+            index=0
+        )
+        project_value = st.number_input("Project Value ($)", min_value=0, value=12500, step=100)
+        timeline = st.text_input("Delivery Timeline", value="8-10 weeks")
+    
+    with proj_col2:
+        payment_terms = st.selectbox(
+            "Payment Structure",
+            ["50% upfront, 50% completion", "30% upfront, 70% completion", "Monthly payments", "Custom terms"],
+            index=0
+        )
+        support_period = st.text_input("Support Period", value="6 months")
+        technology_stack = st.text_input("Technology/Tools", value="React, Node.js, MongoDB")
+    
+    # Project Description
+    st.markdown("#### 📝 Project Description")
+    project_description = st.text_area(
+        "Detailed Project Description",
+        value="Custom web development solution with modern design, responsive layout, and advanced functionality. Includes SEO optimization, content management system, and post-launch support.",
+        height=100
+    )
+    
+    # Key Deliverables
+    st.markdown("#### 🎯 Key Deliverables")
+    deliverables = st.text_area(
+        "List of Deliverables (one per line)",
+        value="• Custom responsive website\n• Content Management System\n• SEO optimization\n• Mobile optimization\n• 6 months support\n• Training documentation",
+        height=120
+    )
+    
+    # Summary Section
+    st.divider()
+    st.subheader("📊 Proposal Summary")
+    
+    # Display current values in a nice format
+    summary_col1, summary_col2, summary_col3, summary_col4 = st.columns(4)
+    
+    with summary_col1:
+        st.metric("Client", client_name)
+    
+    with summary_col2:
+        st.metric("Service", service_type)
+    
+    with summary_col3:
+        st.metric("Value", f"${project_value:,}")
+    
+    with summary_col4:
+        st.metric("Timeline", timeline)
+    
+    # Generate Proposal Button Section
+    st.divider()
+    st.markdown("### 🚀 Generate Proposal")
     
     # Format selection
-    st.divider()
-    st.subheader("🎯 Select Your Preferred Format")
-    
     format_options = [
         "🎨 Modern Professional", 
         "📊 Classic Business", 
@@ -151,76 +110,13 @@ def render_preview_tab():
         "⚪ Minimal Clean"
     ]
     
-    selected_format = st.radio(
-        "Choose the format that best suits your brand:",
+    selected_format = st.selectbox(
+        "Select Proposal Format:",
         options=format_options,
-        index=0,
-        horizontal=True
+        index=0
     )
     
-    # Proposal Summary Section
-    st.divider()
-    st.subheader("📊 Proposal Overview")
-    
-    # Create professional metrics display
-    col1, col2, col3, col4 = st.columns(4)
-    
-    with col1:
-        st.metric(
-            label="Client Organization",
-            value="Growth sutra",
-            help="Target client company"
-        )
-    
-    with col2:
-        st.metric(
-            label="Service Category",
-            value="Web Development",
-            help="Primary service offering"
-        )
-    
-    with col3:
-        st.metric(
-            label="Project Value",
-            value="$12,500",
-            help="Total proposal amount"
-        )
-    
-    with col4:
-        st.metric(
-            label="Delivery Timeline",
-            value="8-10 weeks",
-            help="Estimated completion time"
-        )
-    
-    # Enhanced details section
-    with st.expander("📋 Comprehensive Project Summary", expanded=False):
-        detail_col1, detail_col2 = st.columns(2)
-        
-        with detail_col1:
-            st.markdown("**Client Information**")
-            st.write("• **Organization:** Growth sutra")
-            st.write("• **Primary Contact:** Vishwendra verma, CEO")
-            st.write("• **Email:** xyz@gmail.com")
-            st.write("• **Phone:** 9999999999")
-            st.write("• **Industry:** Technology Solutions")
-            
-        with detail_col2:
-            st.markdown("**Project Specifications**")
-            st.write("• **Service Package:** Premium Web Development")
-            st.write("• **Payment Structure:** 50% upfront, 50% at completion")
-            st.write("• **Post-Launch Support:** 6 months included")
-            st.write("• **Key Deliverables:** Custom website, SEO optimization")
-            st.write("• **Technology Stack:** React, Node.js, MongoDB")
-    
-    # Professional Generate Proposal Section
-    st.divider()
-   
-    
-    # Professional generate button section
-    st.markdown("---")
-    
-    # Center column for generate button
+    # Center the generate button
     gen_col1, gen_col2, gen_col3 = st.columns([1, 2, 1])
     
     with gen_col2:
@@ -230,8 +126,8 @@ def render_preview_tab():
             <h4 style="color: #334155; margin-bottom: 10px;">Ready to Generate</h4>
             <p style="color: #64748b; font-size: 14px; margin-bottom: 20px;">
                 Format: <strong>{selected_format}</strong><br>
-                Client: <strong>Growth sutra</strong><br>
-                Value: <strong>$12,500</strong>
+                Client: <strong>{client_name}</strong><br>
+                Value: <strong>${project_value:,}</strong>
             </p>
         </div>
         """, unsafe_allow_html=True)
@@ -243,174 +139,172 @@ def render_preview_tab():
             help=f"Generate comprehensive proposal using {selected_format} format"
         )
     
-    # Enhanced generation process
+    # Handle proposal generation
     if generate_clicked:
-        # Professional loading interface
         with st.container():
             st.markdown("### 🔄 Generating Your Professional Proposal")
             
-            # Progress tracking
-            progress_container = st.container()
-            with progress_container:
-                progress_bar = st.progress(0)
-                status_container = st.empty()
-                detail_container = st.empty()
+            # Progress bar and status
+            progress_bar = st.progress(0)
+            status_text = st.empty()
+            
+            # Progress stages with actual timing
+            stages = [
+                ("🔍 Validating project details...", 0.2),
+                (f"🎨 Applying {selected_format} template...", 0.4),
+                ("📝 Generating proposal content...", 0.6),
+                ("⚖️ Adding terms and conditions...", 0.8),
+                ("✨ Final review and formatting...", 1.0)
+            ]
+            
+            output_file = None
+            
+            try:
+                for i, (stage_text, progress) in enumerate(stages):
+                    status_text.text(stage_text)
+                    progress_bar.progress(progress)
+                    
+                    # Add realistic delay for user experience
+                    time.sleep(0.5)
+                    
+                    # Generate the actual file during the content generation stage
+                    if i == 2:  # During "Generating proposal content..."
+                        # Update the client_data, seller_data, project_specs with current form values
+                        updated_client_data = {
+                            'name': client_name,
+                            'contact': client_contact,
+                            'title': client_title,
+                            'email': client_email,
+                            'phone': client_phone,
+                            'industry': client_industry
+                        }
+                        
+                        updated_seller_data = {
+                            'name': seller_name,
+                            'contact': seller_contact,
+                            'title': seller_title,
+                            'email': seller_email,
+                            'phone': seller_phone,
+                            'website': seller_website
+                        }
+                        
+                        updated_project_specs = {
+                            'service_type': service_type,
+                            'project_value': project_value,
+                            'timeline': timeline,
+                            'payment_terms': payment_terms,
+                            'support_period': support_period,
+                            'technology_stack': technology_stack,
+                            'project_description': project_description,
+                            'deliverables': deliverables,
+                            'selected_format': selected_format
+                        }
+                        
+                        # Generate the presentation file
+                        output_file = get_presentation(
+                            client=updated_client_data,
+                            seller=updated_seller_data,
+                            project_specs=updated_project_specs
+                        )
                 
-                # Stage 1: Data Validation
-                with status_container:
-                    st.info("🔍 **Stage 1/5:** Validating client data and project requirements...")
-                with detail_container:
-                    st.caption("Verifying client information, project scope, and pricing structure")
-                time.sleep(1.2)
-                progress_bar.progress(20)
-                
-                # Stage 2: Template Processing
-                with status_container:
-                    st.info(f"🎨 **Stage 2/5:** Applying {selected_format} template...")
-                with detail_container:
-                    st.caption("Customizing design elements, branding, and layout structure")
-                time.sleep(1.0)
-                progress_bar.progress(40)
-                
-                # Stage 3: Content Generation
-                with status_container:
-                    st.info("📝 **Stage 3/5:** Generating proposal content...")
-                with detail_container:
-                    st.caption("Creating executive summary, project details, and pricing breakdown")
-                time.sleep(1.3)
-                progress_bar.progress(60)
-                
-                # Stage 4: Legal & Compliance
-                with status_container:
-                    st.info("⚖️ **Stage 4/5:** Adding legal terms and compliance sections...")
-                with detail_container:
-                    st.caption("Incorporating terms of service, privacy policy, and contract clauses")
-                time.sleep(1.0)
-                progress_bar.progress(80)
-                
-                # Stage 5: Final Review
-                with status_container:
-                    st.info("✨ **Stage 5/5:** Final review and optimization...")
-                with detail_container:
-                    st.caption("Quality assurance, formatting verification, and deliverable preparation")
-                time.sleep(1.0)
-                progress_bar.progress(100)
+                # Complete the progress
+                progress_bar.progress(1.0)
+                status_text.text("✅ Proposal generation completed!")
+                time.sleep(0.5)
                 
                 # Clear progress indicators
-                time.sleep(0.5)
                 progress_bar.empty()
-                status_container.empty()
-                detail_container.empty()
+                status_text.empty()
+                
+                # Store the output file path in session state for download
+                if output_file and os.path.exists(output_file):
+                    st.session_state.generated_file = output_file
+                    st.session_state.generation_success = True
+                    st.session_state.client_name = client_name
+                    st.session_state.project_value = project_value
+                    st.session_state.selected_format = selected_format
+                    st.session_state.client_email = client_email
+                else:
+                    st.error("❌ Error generating proposal file. Please try again.")
+                    return
+                    
+            except Exception as e:
+                progress_bar.empty()
+                status_text.empty()
+                st.error(f"❌ Error during proposal generation: {str(e)}")
+                return
+    
+    # Display success section if generation was successful
+    if st.session_state.get('generation_success', False):
+        # Success message
+        st.success("✅ **Proposal Generated Successfully!**")
         
-        # Professional success display
-        st.success("✅ **Proposal Generation Complete**")
-        
-        
-        # Generation summary
+        # Current time for generation timestamp
         current_time = datetime.now().strftime('%B %d, %Y at %I:%M %p')
         
-        success_container = st.container()
-        with success_container:
-            st.markdown(f"""
-            <div style="background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); 
-                        padding: 25px; border-radius: 12px; border: 1px solid #10b981; margin: 20px 0;">
-                <h3 style="color: #065f46; margin-bottom: 15px;">📋 Proposal Successfully Generated</h3>
-                <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 15px;">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                        <div>
-                            <strong style="color: #374151;">Template:</strong><br>
-                            <span style="color: #6b7280;">{selected_format}</span>
-                        </div>
-                        <div>
-                            <strong style="color: #374151;">Client:</strong><br>
-                            <span style="color: #6b7280;">Growth sutra</span>
-                        </div>
-                        <div>
-                            <strong style="color: #374151;">Project Value:</strong><br>
-                            <span style="color: #6b7280;">$12,500.00</span>
-                        </div>
-                        <div>
-                            <strong style="color: #374151;">Generated:</strong><br>
-                            <span style="color: #6b7280;">{current_time}</span>
-                        </div>
-                    </div>
-                </div>
-                <div style="background: #f0fdf4; padding: 15px; border-radius: 6px; border-left: 4px solid #10b981;">
-                    <strong style="color: #166534;">📄 Document Details:</strong><br>
-                    <span style="color: #166534;">15 pages • Professional format • Terms included • Ready for delivery</span>
+        # Success summary
+        st.markdown(f"""
+        <div style="background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); 
+                    padding: 25px; border-radius: 12px; border: 1px solid #10b981; margin: 20px 0;">
+            <h3 style="color: #065f46; margin-bottom: 15px;">📋 Proposal Ready</h3>
+            <div style="background: white; padding: 20px; border-radius: 8px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div><strong>Client:</strong> {st.session_state.get('client_name', 'N/A')}</div>
+                    <div><strong>Format:</strong> {st.session_state.get('selected_format', 'N/A')}</div>
+                    <div><strong>Value:</strong> ${st.session_state.get('project_value', 0):,}</div>
+                    <div><strong>Generated:</strong> {current_time}</div>
                 </div>
             </div>
-            """, unsafe_allow_html=True)
+        </div>
+        """, unsafe_allow_html=True)
         
-        # Professional action buttons
-        st.subheader("📤 Proposal Management")
-        
-        action_col1, action_col2, action_col3, action_col4 = st.columns(4)
+        # Action buttons
+        action_col1, action_col2, action_col3 = st.columns(3)
         
         with action_col1:
-            if st.button("📧 Send Proposal", use_container_width=True, type="primary"):
-                st.success("✅ Proposal sent to john.smith@acme.com")
-                st.info("📬 Delivery confirmation and tracking enabled")
+            # Download button with actual file download
+            if st.session_state.get('generated_file') and os.path.exists(st.session_state.generated_file):
+                with open(st.session_state.generated_file, "rb") as file:
+                    file_data = file.read()
+                    
+                # Create filename with timestamp
+                timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+                filename = f"Proposal_{st.session_state.get('client_name', 'Client').replace(' ', '_')}_{timestamp}.pdf"
+                
+                st.download_button(
+                    label="📥 Download PDF",
+                    data=file_data,
+                    file_name=filename,
+                    mime="application/pdf",
+                    use_container_width=True,
+                    type="primary"
+                )
+            else:
+                st.error("❌ File not found. Please regenerate the proposal.")
                 
         with action_col2:
-            if st.button("📥 Download PDF", use_container_width=True):
-                st.success("📥 Professional PDF ready for download")
-                st.info("📊 15-page document with all attachments")
+            if st.button("📧 Send to Client", use_container_width=True):
+                # Here you would implement email sending functionality
+                st.success(f"📧 Proposal sent to {st.session_state.get('client_email', 'client')}")
                 
         with action_col3:
-            if st.button("👀 Preview Document", use_container_width=True):
-                st.success("👀 Opening interactive preview...")
-                st.info("🔍 Full document preview with navigation")
+            if st.button("👀 Preview", use_container_width=True):
+                # Here you would implement preview functionality
+                st.success("👀 Opening preview...")
                 
-        with action_col4:
-            if st.button("📊 Generate Report", use_container_width=True):
-                st.success("📊 Proposal analytics generated")
-                st.info("📈 Performance metrics and insights available")
-        
-        # Additional professional features
-        st.markdown("---")
-        st.subheader("🔧 Advanced Options")
-        
-        advanced_col1, advanced_col2 = st.columns(2)
-        
-        with advanced_col1:
-            st.markdown("**Client Interaction**")
-            if st.button("📅 Schedule Presentation", use_container_width=True):
-                st.info("📅 Meeting scheduler opened for client presentation")
-            if st.button("💬 Send Follow-up", use_container_width=True):
-                st.info("💬 Automated follow-up sequence initiated")
-                
-        with advanced_col2:
-            st.markdown("**Document Management**")
-            if st.button("📋 Create Variations", use_container_width=True):
-                st.info("📋 Alternative proposal versions created")
-            if st.button("🔄 Version Control", use_container_width=True):
-                st.info("🔄 Document versioning and history available")
+        # Add option to generate new proposal
+        st.divider()
+        if st.button("🔄 Generate New Proposal", use_container_width=True):
+            # Clear session state to allow new generation
+            st.session_state.generation_success = False
+            if 'generated_file' in st.session_state:
+                del st.session_state.generated_file
+            st.rerun()
 
-# Professional main function
-def generate_tab():
-    """
-    Professional Streamlit app configuration and execution
-    """
-    st.markdown(proposal_css,unsafe_allow_html=True)
-    
-    # Custom CSS for professional styling (optional)
-    st.markdown("""
-        <style>
-        .main > div {
-            padding: 2rem 3rem;
-        }
-        .stButton > button {
-            border-radius: 6px;
-            border: 1px solid #e5e7eb;
-            transition: all 0.2s;
-        }
-        .stButton > button:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
-        </style>
-    """, unsafe_allow_html=True)
-    
-    render_preview_tab()
 
+def generate_tab(client_data, seller_data, additional_specs):
+    """
+    Main function for the generate proposal tab
+    """
+    st.markdown(proposal_css, unsafe_allow_html=True)
+    render_preview_tab(client_data, seller_data, additional_specs)

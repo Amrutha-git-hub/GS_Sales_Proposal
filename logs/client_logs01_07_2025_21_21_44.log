@@ -1,0 +1,58 @@
+2025-07-01 21:21:44,635 - client_module - INFO - client_tab:125 - Starting client_tab function
+2025-07-01 21:21:44,635 - client_module - DEBUG - client_tab:130 - Retrieved client data from dataclass manager
+2025-07-01 21:21:44,637 - client_module - DEBUG - client_tab:142 - CSS re-applied for persistence
+2025-07-01 21:21:44,637 - client_module - DEBUG - client_tab:149 - Creating top section with client name and URLs
+2025-07-01 21:21:44,638 - client_module - DEBUG - client_tab:154 - Processing client enterprise name section
+2025-07-01 21:21:44,640 - client_module - DEBUG - client_tab:187 - Find URLs button disabled: False
+2025-07-01 21:21:44,641 - client_module - DEBUG - client_tab:242 - Processing client website URL section
+2025-07-01 21:21:44,643 - client_module - DEBUG - client_tab:259 - Client name provided: True
+2025-07-01 21:21:44,644 - client_module - DEBUG - client_tab:266 - URL options count: 1
+2025-07-01 21:21:44,645 - client_module - INFO - client_tab:323 - Scrape button clicked for URL: https://growthsutras.com
+2025-07-01 21:21:44,904 - client_module - INFO - client_tab:125 - Starting client_tab function
+2025-07-01 21:21:44,905 - client_module - DEBUG - client_tab:130 - Retrieved client data from dataclass manager
+2025-07-01 21:21:44,907 - client_module - DEBUG - client_tab:142 - CSS re-applied for persistence
+2025-07-01 21:21:44,907 - client_module - DEBUG - client_tab:149 - Creating top section with client name and URLs
+2025-07-01 21:21:44,908 - client_module - DEBUG - client_tab:154 - Processing client enterprise name section
+2025-07-01 21:21:44,911 - client_module - DEBUG - client_tab:187 - Find URLs button disabled: False
+2025-07-01 21:21:44,911 - client_module - DEBUG - client_tab:242 - Processing client website URL section
+2025-07-01 21:21:44,913 - client_module - DEBUG - client_tab:259 - Client name provided: True
+2025-07-01 21:21:44,913 - client_module - DEBUG - client_tab:266 - URL options count: 1
+2025-07-01 21:21:44,914 - client_module - INFO - client_tab:350 - Starting website scraping for: https://growthsutras.com
+2025-07-01 21:22:17,653 - client_module - ERROR - client_tab:378 - Error scraping website https://growthsutras.com: too many values to unpack (expected 2)
+2025-07-01 21:22:17,654 - client_module - DEBUG - client_tab:391 - Creating file upload and enterprise details section
+2025-07-01 21:22:17,655 - client_module - DEBUG - client_tab:396 - Processing file upload section
+2025-07-01 21:22:17,655 - client_module - DEBUG - client_tab:568 - Processing enterprise details section
+2025-07-01 21:22:17,656 - client_module - DEBUG - client_tab:606 - Creating client requirements and pain points section
+2025-07-01 21:22:17,657 - client_module - DEBUG - client_tab:611 - Processing client requirements section
+2025-07-01 21:22:17,658 - client_module - DEBUG - client_tab:635 - Updated client requirements content
+2025-07-01 21:22:17,658 - client_module - DEBUG - client_tab:640 - Client requirements provided: False
+2025-07-01 21:22:17,658 - client_module - INFO - client_tab:655 - Starting COL6 - Client Pain Points section rendering
+2025-07-01 21:22:17,658 - client_module - INFO - client_tab:679 - Using dummy pain points data as fallback
+2025-07-01 21:22:17,659 - client_module - DEBUG - client_tab:689 - Rendering 3 pain point items
+2025-07-01 21:22:17,659 - client_module - DEBUG - client_tab:694 - Processing pain point item 0: Revenue Challenges
+2025-07-01 21:22:17,659 - client_module - DEBUG - client_tab:699 - Pain point 'Revenue Challenges' selection status: False
+2025-07-01 21:22:17,662 - client_module - DEBUG - client_tab:898 - Successfully rendered content box for 'Revenue Challenges'
+2025-07-01 21:22:17,663 - client_module - DEBUG - client_tab:694 - Processing pain point item 1: Cost and Margin Pressure
+2025-07-01 21:22:17,663 - client_module - DEBUG - client_tab:699 - Pain point 'Cost and Margin Pressure' selection status: False
+2025-07-01 21:22:17,663 - client_module - DEBUG - client_tab:898 - Successfully rendered content box for 'Cost and Margin Pressure'
+2025-07-01 21:22:17,664 - client_module - DEBUG - client_tab:694 - Processing pain point item 2: Market Expansion and Customer Acquisition
+2025-07-01 21:22:17,664 - client_module - DEBUG - client_tab:699 - Pain point 'Market Expansion and Customer Acquisition' selection status: False
+2025-07-01 21:22:17,665 - client_module - DEBUG - client_tab:898 - Successfully rendered content box for 'Market Expansion and Customer Acquisition'
+2025-07-01 21:22:17,665 - client_module - INFO - client_tab:929 - Rendered SPOC name tooltip
+2025-07-01 21:22:17,666 - client_module - INFO - client_tab:942 - SPOC name input rendered with value: 
+2025-07-01 21:22:17,667 - client_module - INFO - client_tab:975 - SPOC name provided status: False
+2025-07-01 21:22:17,667 - client_module - INFO - client_tab:987 - Rendered LinkedIn profile tooltip
+2025-07-01 21:22:17,667 - client_module - INFO - client_tab:1043 - LinkedIn profile selector in disabled state
+2025-07-01 21:22:17,668 - client_module - INFO - client_tab:1124 - Created roles and priorities columns
+2025-07-01 21:22:17,668 - client_module - INFO - client_tab:1136 - Rendered SPOC role tooltip
+2025-07-01 21:22:17,668 - client_module - INFO - client_tab:1146 - Retrieved 10 default roles
+2025-07-01 21:22:17,668 - client_module - INFO - client_tab:1205 - Role selector rendered with selection: Select a role...
+2025-07-01 21:22:17,669 - client_module - INFO - client_tab:1220 - Cleared selected target role
+2025-07-01 21:22:17,669 - client_module - INFO - client_tab:1233 - Rendered business priorities tooltip
+2025-07-01 21:22:17,669 - client_module - INFO - client_tab:1262 - Using 3 business priorities
+2025-07-01 21:22:17,670 - client_module - INFO - client_tab:1312 - Created additional requirements columns
+2025-07-01 21:22:17,670 - client_module - INFO - client_tab:1324 - Rendered additional client requirements tooltip
+2025-07-01 21:22:17,670 - client_module - INFO - client_tab:1339 - Additional requirements text area rendered with 0 characters
+2025-07-01 21:22:17,671 - client_module - INFO - client_tab:1355 - Additional requirements provided status: False
+2025-07-01 21:22:17,672 - client_module - INFO - client_tab:1369 - Rendered additional specifications tooltip
+2025-07-01 21:22:17,672 - client_module - INFO - client_tab:1387 - Using default additional specs items

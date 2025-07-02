@@ -51,13 +51,12 @@ def setup_logging():
         
         return logger
     except Exception as e:
-        print(f"Error setting up logging: {str(e)}")
+        st.error(f"Error setting up logging: {str(e)}")
         return logging.getLogger('client_module')
 
-# Initialize logger
-logger = setup_logging()
 
-def save_uploaded_file_and_get_path(uploaded_file):
+
+def save_uploaded_file_and_get_path(uploaded_file,logger):
     """Save uploaded file to a temporary directory and return the file path"""
     logger.info(f"Starting file upload process for file: {uploaded_file.name if uploaded_file else 'None'}")
     
@@ -102,7 +101,7 @@ def save_uploaded_file_and_get_path(uploaded_file):
 
 def validate_client_mandatory_fields():
     """Validate client mandatory fields using dataclass"""
-    logger.info("Starting client mandatory fields validation")
+    
     
     try:
         client_data = ClientDataManager.get_client_data()
@@ -351,7 +350,8 @@ def client_tab(st,logger):
                         logger.info(f"Starting website scraping for: {client_data.pending_scrape_url}")
                         with st.spinner(f"Scraping website details from {client_data.pending_scrape_url}..."):
                             try:
-                                website_details = get_url_details(client_data.pending_scrape_url)
+                                website_details,logo = get_url_details(client_data.pending_scrape_url)
+                                client_data.logo=logo
                                 
                                 # Check if scraping returned empty or no data
                                 if not website_details or len(website_details.strip()) == 0:
@@ -524,7 +524,7 @@ def client_tab(st,logger):
                                 # Perform the actual processing
                                 try:
                                     logger.info("Starting RFI document processing")
-                                    file_path = save_uploaded_file_and_get_path(rfi_document_upload)
+                                    file_path = save_uploaded_file_and_get_path(rfi_document_upload,logger)
                                     
                                     if file_path and client_enterprise_name:
                                         logger.info(f"Processing RFI file: {file_path}")

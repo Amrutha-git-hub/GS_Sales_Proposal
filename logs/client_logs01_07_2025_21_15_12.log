@@ -1,0 +1,47 @@
+2025-07-01 21:15:12,046 - client_module - INFO - client_tab:125 - Starting client_tab function
+2025-07-01 21:15:12,047 - client_module - DEBUG - client_tab:130 - Retrieved client data from dataclass manager
+2025-07-01 21:15:12,047 - client_module - DEBUG - client_tab:135 - Applying CSS for the first time
+2025-07-01 21:15:12,048 - client_module - INFO - client_tab:138 - CSS applied and updated in client data
+2025-07-01 21:15:12,049 - client_module - DEBUG - client_tab:142 - CSS re-applied for persistence
+2025-07-01 21:15:12,050 - client_module - DEBUG - client_tab:149 - Creating top section with client name and URLs
+2025-07-01 21:15:12,051 - client_module - DEBUG - client_tab:154 - Processing client enterprise name section
+2025-07-01 21:15:12,053 - client_module - DEBUG - client_tab:187 - Find URLs button disabled: True
+2025-07-01 21:15:12,053 - client_module - DEBUG - client_tab:242 - Processing client website URL section
+2025-07-01 21:15:12,054 - client_module - DEBUG - client_tab:259 - Client name provided: False
+2025-07-01 21:15:12,054 - client_module - DEBUG - client_tab:266 - URL options count: 1
+2025-07-01 21:15:12,056 - client_module - DEBUG - client_tab:390 - Creating file upload and enterprise details section
+2025-07-01 21:15:12,057 - client_module - DEBUG - client_tab:395 - Processing file upload section
+2025-07-01 21:15:12,059 - client_module - DEBUG - client_tab:567 - Processing enterprise details section
+2025-07-01 21:15:12,061 - client_module - DEBUG - client_tab:605 - Creating client requirements and pain points section
+2025-07-01 21:15:12,062 - client_module - DEBUG - client_tab:610 - Processing client requirements section
+2025-07-01 21:15:12,063 - client_module - DEBUG - client_tab:639 - Client requirements provided: False
+2025-07-01 21:15:12,064 - client_module - INFO - client_tab:654 - Starting COL6 - Client Pain Points section rendering
+2025-07-01 21:15:12,064 - client_module - INFO - client_tab:678 - Using dummy pain points data as fallback
+2025-07-01 21:15:12,065 - client_module - DEBUG - client_tab:688 - Rendering 3 pain point items
+2025-07-01 21:15:12,065 - client_module - DEBUG - client_tab:693 - Processing pain point item 0: Revenue Challenges
+2025-07-01 21:15:12,065 - client_module - DEBUG - client_tab:698 - Pain point 'Revenue Challenges' selection status: False
+2025-07-01 21:15:12,067 - client_module - DEBUG - client_tab:897 - Successfully rendered content box for 'Revenue Challenges'
+2025-07-01 21:15:12,068 - client_module - DEBUG - client_tab:693 - Processing pain point item 1: Cost and Margin Pressure
+2025-07-01 21:15:12,068 - client_module - DEBUG - client_tab:698 - Pain point 'Cost and Margin Pressure' selection status: False
+2025-07-01 21:15:12,070 - client_module - DEBUG - client_tab:897 - Successfully rendered content box for 'Cost and Margin Pressure'
+2025-07-01 21:15:12,071 - client_module - DEBUG - client_tab:693 - Processing pain point item 2: Market Expansion and Customer Acquisition
+2025-07-01 21:15:12,071 - client_module - DEBUG - client_tab:698 - Pain point 'Market Expansion and Customer Acquisition' selection status: False
+2025-07-01 21:15:12,077 - client_module - DEBUG - client_tab:897 - Successfully rendered content box for 'Market Expansion and Customer Acquisition'
+2025-07-01 21:15:12,079 - client_module - INFO - client_tab:928 - Rendered SPOC name tooltip
+2025-07-01 21:15:12,082 - client_module - INFO - client_tab:941 - SPOC name input rendered with value: 
+2025-07-01 21:15:12,083 - client_module - INFO - client_tab:974 - SPOC name provided status: False
+2025-07-01 21:15:12,084 - client_module - INFO - client_tab:986 - Rendered LinkedIn profile tooltip
+2025-07-01 21:15:12,089 - client_module - INFO - client_tab:1042 - LinkedIn profile selector in disabled state
+2025-07-01 21:15:12,094 - client_module - INFO - client_tab:1123 - Created roles and priorities columns
+2025-07-01 21:15:12,098 - client_module - INFO - client_tab:1135 - Rendered SPOC role tooltip
+2025-07-01 21:15:12,098 - client_module - INFO - client_tab:1145 - Retrieved 10 default roles
+2025-07-01 21:15:12,100 - client_module - INFO - client_tab:1204 - Role selector rendered with selection: Select a role...
+2025-07-01 21:15:12,102 - client_module - INFO - client_tab:1219 - Cleared selected target role
+2025-07-01 21:15:12,105 - client_module - INFO - client_tab:1232 - Rendered business priorities tooltip
+2025-07-01 21:15:12,105 - client_module - INFO - client_tab:1261 - Using 3 business priorities
+2025-07-01 21:15:12,109 - client_module - INFO - client_tab:1311 - Created additional requirements columns
+2025-07-01 21:15:12,112 - client_module - INFO - client_tab:1323 - Rendered additional client requirements tooltip
+2025-07-01 21:15:12,117 - client_module - INFO - client_tab:1338 - Additional requirements text area rendered with 0 characters
+2025-07-01 21:15:12,117 - client_module - INFO - client_tab:1354 - Additional requirements provided status: False
+2025-07-01 21:15:12,119 - client_module - INFO - client_tab:1368 - Rendered additional specifications tooltip
+2025-07-01 21:15:12,120 - client_module - INFO - client_tab:1386 - Using default additional specs items

@@ -1,0 +1,21 @@
+2025-07-02 11:37:31,344 - client_module - INFO - client_tab:125 - Starting client_tab function
+2025-07-02 11:37:31,345 - client_module - DEBUG - client_tab:130 - Retrieved client data from dataclass manager
+2025-07-02 11:37:31,349 - client_module - DEBUG - client_tab:142 - CSS re-applied for persistence
+2025-07-02 11:37:31,349 - client_module - DEBUG - client_tab:149 - Creating top section with client name and URLs
+2025-07-02 11:37:31,351 - client_module - DEBUG - client_tab:154 - Processing client enterprise name section
+2025-07-02 11:37:31,355 - client_module - DEBUG - client_tab:187 - Find URLs button disabled: False
+2025-07-02 11:37:31,356 - client_module - DEBUG - client_tab:242 - Processing client website URL section
+2025-07-02 11:37:31,358 - client_module - DEBUG - client_tab:259 - Client name provided: True
+2025-07-02 11:37:31,358 - client_module - DEBUG - client_tab:266 - URL options count: 6
+2025-07-02 11:37:31,360 - client_module - INFO - client_tab:323 - Scrape button clicked for URL: https://growthsutras.com/
+2025-07-02 11:37:31,654 - client_module - INFO - client_tab:125 - Starting client_tab function
+2025-07-02 11:37:31,655 - client_module - DEBUG - client_tab:130 - Retrieved client data from dataclass manager
+2025-07-02 11:37:31,657 - client_module - DEBUG - client_tab:142 - CSS re-applied for persistence
+2025-07-02 11:37:31,657 - client_module - DEBUG - client_tab:149 - Creating top section with client name and URLs
+2025-07-02 11:37:31,660 - client_module - DEBUG - client_tab:154 - Processing client enterprise name section
+2025-07-02 11:37:31,663 - client_module - DEBUG - client_tab:187 - Find URLs button disabled: False
+2025-07-02 11:37:31,664 - client_module - DEBUG - client_tab:242 - Processing client website URL section
+2025-07-02 11:37:31,667 - client_module - DEBUG - client_tab:259 - Client name provided: True
+2025-07-02 11:37:31,667 - client_module - DEBUG - client_tab:266 - URL options count: 6
+2025-07-02 11:37:31,673 - client_module - INFO - client_tab:350 - Starting website scraping for: https://growthsutras.com/
+2025-07-02 11:37:59,299 - client_module - INFO - client_tab:367 - Successfully scraped website details, length: 930
