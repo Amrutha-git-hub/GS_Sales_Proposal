@@ -21,6 +21,7 @@ def setup_logging():
         logs_dir = "logs"
         if not os.path.exists(logs_dir):
             os.makedirs(logs_dir)
+        st.info("Log file created")
             
         # Configure logger
         logger = logging.getLogger('client_module')

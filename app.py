@@ -18,6 +18,8 @@ if 'seller_data_from_tab' not in st.session_state:
 if 'project_specs_from_tab' not in st.session_state:
     st.session_state.project_specs_from_tab = None
 
+
+
 def get_sample_extracted_text():
             return """Key Requirements Extracted:
 
@@ -143,6 +145,8 @@ st.markdown(app_css, unsafe_allow_html=True)
 # Initialize session state for active tab - ENSURE CLIENT TAB IS DEFAULT
 if 'active_tab' not in st.session_state:
     st.session_state.active_tab = 0
+
+st.info("START OF THE PROJECT")
 
 # Tab buttons
 tab_names = ["Client Information", "Seller Information", "Project Specifications", "Generate Proposal"]
