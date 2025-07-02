@@ -1,585 +1,4 @@
-import streamlit as st
-import pandas as pd
-import os
-from typing import List
-from .client_utils import *
-import threading
-import time
-from Search.Linkedin.linkedin_serp import *
-from Recommendation.recommendation_utils import *
-from .client_css import *
-from .client_dataclass import ClientData, ClientDataManager
 
-
-def save_uploaded_file_and_get_path(uploaded_file):
-    """Save uploaded file to a temporary directory and return the file path"""
-    if uploaded_file is not None:
-        # Create uploads directory if it doesn't exist
-        upload_dir =os.getenv("FILE_SAVE_PATH")
-        if not os.path.exists(upload_dir):
-            os.makedirs(upload_dir)
-        
-        # Create file path
-        file_path = os.path.join(upload_dir, uploaded_file.name)
-        
-        # Save the file
-        with open(file_path, "wb") as f:
-            f.write(uploaded_file.getbuffer())
-        
-        return file_path
-    return None
-
-
-def validate_client_mandatory_fields():
-    """Validate client mandatory fields using dataclass"""
-    client_data = ClientDataManager.get_client_data()
-    return True
-    return client_data.validate_mandatory_fields()
-
-
-def client_tab(st):
-    # Get client data from dataclass manager
-    client_data = ClientDataManager.get_client_data()
-    
-    # Apply CSS only once
-    if not client_data.css_applied:
-        st.markdown(client_css, unsafe_allow_html=True)
-        #st.markdown(focus_styles,unsafe_allow_html = True)
-        ClientDataManager.update_client_data(css_applied=True)
-    
-    # Re-apply CSS after every rerun to ensure persistence
-    st.markdown(client_css, unsafe_allow_html=True)
-    
-    # Top section with client name and URLs
-    col1, col2 = st.columns([1, 1])
-    
-    with col1:
-        st.markdown("""
-            <div class="tooltip-label">
-                Client Enterprise Name <span style="color:red;">*</span>
-                <div class="tooltip-icon" data-tooltip="Enter the full legal name of the client organization. This is the primary identifier for the client in all documentation and communications. This field is mandatory for creating the client profile.">ⓘ</div>
-            </div>
-        """, unsafe_allow_html=True)
-        
-        # Create a sub-column layout for name input and find URLs button
-        name_col, button_col = st.columns([3, 1])
-        
-        with name_col:
-            client_enterprise_name = st.text_input(
-                label="Client Enterprise Name", 
-                value=client_data.enterprise_name,
-                placeholder="Enter client enterprise name...", 
-                key="client_enterprise_name_input",
-                label_visibility="collapsed",
-                
-            )
-            # Update dataclass when input changes
-            if client_enterprise_name != client_data.enterprise_name:
-                ClientDataManager.update_client_data(enterprise_name=client_enterprise_name)
-        
-        with button_col:
-            # Find URLs button - only enabled when client name has more than 2 characters
-            find_urls_disabled = not (client_enterprise_name and len(client_enterprise_name.strip()) > 2)
-            
-            if st.button("🔍 Find Website",
-                        disabled=find_urls_disabled,
-                        help="Find website URLs for this company",
-                        key="find_urls_button",
-                        type = "secondary"):
-                # Add spinner while fetching URLs
-                with st.spinner(f"Finding Websites for '{client_enterprise_name.strip()}'..."):
-                    try:
-                        urls_list = get_urls_list(client_enterprise_name.strip())
-                        ClientDataManager.update_client_data(
-                            website_urls_list=urls_list,
-                            enterprise_name=client_enterprise_name  # Update last company name
-                        )
-                    except Exception as e:
-                        ClientDataManager.update_client_data(website_urls_list=[])
-                        st.error(f"Error finding URLs: {str(e)}")
-        
-        # Clear URLs if company name is cleared
-        if not client_enterprise_name and client_data.enterprise_name:
-            ClientDataManager.update_client_data(
-                website_urls_list=[],
-                enterprise_name=""
-            )
-        
-        # Show validation warning if triggered and field is empty
-        if client_data.show_validation and check_field_validation("Client Enterprise Name", client_enterprise_name, True):
-            show_field_warning("Client Enterprise Name")
-    
-    with col2:
-        # Label row with inline emoji and tooltip
-        st.markdown('''
-        <div class="tooltip-label" style="display: flex; align-items: center; gap: 8px;">
-            <span>Client Website URL</span>
-            <div class="tooltip-icon" data-tooltip="Enter or select the client's official website URL. The system will automatically analyze the website to extract company information, services, and business details to help customize your proposal.">ⓘ</div>
-        </div>
-        ''', unsafe_allow_html=True)
-        
-        # Create columns for dropdown and buttons
-        url_col, btn1_col, btn2_col, btn3_col = st.columns([7, 1, 1, 1])
-        
-        with url_col:
-            # URL selection logic
-            client_name_provided = bool(client_enterprise_name and client_enterprise_name.strip())
-            
-            if not client_data.website_urls_list:
-                url_options = ["Select client website URL"]
-            else:
-                url_options = ["Select client website URL"] + client_data.website_urls_list
-            
-            # Set default selection
-            default_index = 0
-            if client_data.website_url and client_data.website_url in url_options:
-                default_index = url_options.index(client_data.website_url)
-            
-            client_website_url = st.selectbox(
-                label="Client Website URL",
-                options=url_options,
-                index=default_index,
-                key="client_website_url_selector",
-                label_visibility="collapsed",
-                disabled=not client_name_provided,
-                accept_new_options=True
-            )
-            
-            # Reset to empty string if default option is selected
-            if client_website_url == "Select client website URL":
-                client_website_url = ""
-            
-            # Update dataclass when URL changes
-            if client_website_url != client_data.website_url:
-                ClientDataManager.update_client_data(website_url=client_website_url)
-        
-        # Buttons for website actions
-        with btn1_col:
-            if client_website_url:
-                st.link_button("🌐", client_website_url, help="Visit website", use_container_width=True)
-            else:
-                st.button("🌐", help="Visit website", disabled=True, use_container_width=True)
-        
-        with btn2_col:
-            refresh_clicked = st.button("🔄", help="Refresh website URLs list", key="refresh_urls_btn", 
-                                      use_container_width=True, disabled=not client_website_url)
-        
-        with btn3_col:
-            scrape_clicked = st.button("📑", help="Get enterprise details", key="scrape_website_btn", 
-                                      use_container_width=True, disabled=not client_website_url)
-            
-            if scrape_clicked and client_website_url:
-                ClientDataManager.update_client_data(
-                    pending_scrape_url=client_website_url,
-                    scraping_in_progress=True
-                )
-                st.rerun()
-
-        # Handle refresh action
-        if refresh_clicked and client_name_provided:
-            try:
-                with st.spinner("Refreshing website URLs..."):
-                    urls_list = get_urls_list(client_enterprise_name)
-                    ClientDataManager.update_client_data(website_urls_list=urls_list)
-                    st.success("Website URLs refreshed!")
-                    st.rerun()
-            except Exception as e:
-                st.error(f"Error refreshing URLs: {str(e)}")
-
-        # Handle pending scraping operation
-        if client_data.scraping_in_progress and client_data.pending_scrape_url:
-            with st.spinner(f"Scraping website details from {client_data.pending_scrape_url}..."):
-                try:
-                    website_details = get_url_details(client_data.pending_scrape_url)
-                    ClientDataManager.update_client_data(
-                        enterprise_details_content=website_details,
-                        last_analyzed_url=client_data.pending_scrape_url,
-                        scraping_in_progress=False,
-                        pending_scrape_url=None
-                    )
-                    st.success("Website details extracted successfully!")
-                    st.rerun()
-                except Exception as e:
-                    ClientDataManager.update_client_data(
-                        scraping_in_progress=False,
-                        pending_scrape_url=None
-                    )
-                    st.error(f"Error scraping website: {str(e)}")
-
-    # Show validation warning for URL field
-    if client_data.show_validation and check_field_validation("Client Website URL", client_website_url, False):
-        show_field_warning("Client Website URL")
-    
-    # File upload and enterprise details section
-    col3, col4 = st.columns([1, 1])
-    
-    with col3:
-        st.markdown('''
-        <div class="tooltip-label">
-            Upload RFI Document
-            <div class="tooltip-icon" data-tooltip="Upload the Request for Information (RFI) document in PDF, DOCX, TXT, or CSV format. The system will automatically analyze and extract key pain points, requirements, and business objectives to help tailor your proposal.">ⓘ</div>
-        </div>
-        ''', unsafe_allow_html=True)
-        
-        # Add custom CSS for file uploader
-        st.markdown("""
-        <style>
-        .stFileUploader > div > div > div {
-            padding: 0.5rem !important;
-            min-height: 2rem !important;
-        }
-        .processing-file {
-            animation: pulse 1.5s ease-in-out infinite;
-            background: linear-gradient(90deg, #e3f2fd, #bbdefb, #e3f2fd);
-            background-size: 200% 100%;
-            animation: shimmer 2s linear infinite;
-            border-radius: 4px;
-        }
-        @keyframes pulse {
-            0% { opacity: 0.6; }
-            50% { opacity: 1; }
-            100% { opacity: 0.6; }
-        }
-        @keyframes shimmer {
-            0% { background-position: -200% 0; }
-            100% { background-position: 200% 0; }
-        }
-        .analyzing-text {
-            color: #1976d2;
-            font-weight: 500;
-        }
-        </style>
-        """, unsafe_allow_html=True)
-        
-        # FILE UPLOAD
-        rfi_document_upload = st.file_uploader(
-            label="Upload RFI Document", 
-            type=['pdf', 'docx', 'txt', 'csv', 'png', 'jpg', 'jpeg'], 
-            key="rfi_document_uploader",
-            label_visibility="collapsed"
-        )
-        
-        # Show file info and analyze button
-        if rfi_document_upload is not None:
-            file_size_kb = round(rfi_document_upload.size / 1024, 1)
-            file_size_display = f"{file_size_kb}KB" if file_size_kb < 1024 else f"{round(file_size_kb/1024, 1)}MB"
-            
-            # Single compact row
-            col_info, col_btn = st.columns([2.5, 1])
-            
-            with col_info:
-                if client_data.processing_rfi:
-                    st.markdown(f"""
-                    <div class="processing-file">
-                        <span style='font-size:0.8em' class="analyzing-text">
-                            🔄 {rfi_document_upload.name[:20]}{'...' if len(rfi_document_upload.name) > 20 else ''} (Analyzing...)
-                        </span>
-                    </div>
-                    """, unsafe_allow_html=True)
-                else:
-                    st.markdown(f"<span style='font-size:0.8em'>📄 {rfi_document_upload.name[:25]}{'...' if len(rfi_document_upload.name) > 25 else ''} ({file_size_display})</span>", 
-                               unsafe_allow_html=True)
-            
-            with col_btn:
-                button_color = "#FF6B6B" if client_data.processing_rfi else "#4CAF50"
-                st.markdown(f"""
-                <style>
-                div.stButton > button:first-child {{
-                    background-color: {button_color};
-                    color: white;
-                    border: none;
-                }}
-                </style>
-                """, unsafe_allow_html=True)
-
-                analyze_clicked = st.button(
-                    "Analyzing..." if client_data.processing_rfi else "Get pain points",
-                    key="analyze_rfi_document_btn",
-                    help="Process RFI document" if not client_data.processing_rfi else "Processing in progress...",
-                    type="secondary",
-                    disabled=client_data.processing_rfi,
-                    use_container_width=True
-                )
-            
-            # Handle analyze button click
-            if analyze_clicked and not client_data.processing_rfi:
-                if not client_enterprise_name:
-                    st.error("❌ Please enter the Client Enterprise Name first")
-                else:
-                    ClientDataManager.update_client_data(processing_rfi=True)
-                    st.rerun()
-            
-            # Show processing indicator
-            if client_data.processing_rfi:
-                with st.container():
-                    col_spinner, col_text = st.columns([0.5, 4])
-                    with col_spinner:
-                        with st.spinner(''):
-                            pass
-                    with col_text:
-                        st.markdown("**🔍 Analyzing RFI document and extracting key insights...**")
-                
-                # Perform the actual processing
-                try:
-                    file_path = save_uploaded_file_and_get_path(rfi_document_upload)
-                    if file_path and client_enterprise_name:
-                        pain_points_data = get_pain_points(file_path, client_enterprise_name)
-                        ClientDataManager.update_client_data(
-                            uploaded_file_path=file_path,
-                            rfi_pain_points_items=pain_points_data,
-                            document_analyzed=True,
-                            processing_rfi=False
-                        )
-                        st.success("✅ RFI document analyzed successfully!")
-                        st.rerun()
-                    else:
-                        st.error("❌ Error saving the uploaded file")
-                        ClientDataManager.update_client_data(processing_rfi=False)
-                except Exception as e:
-                    st.error(f"❌ Error analyzing RFI document: {str(e)}")
-                    ClientDataManager.update_client_data(
-                        rfi_pain_points_items={},
-                        document_analyzed=False,
-                        processing_rfi=False
-                    )
-
-    with col4:
-        st.markdown('''
-        <div class="tooltip-label">
-            Client Enterprise Details
-            <div class="tooltip-icon" data-tooltip="This area displays extracted pain points from RFI documents or website analysis. You can also manually enter client's business challenges, current pain points, and organizational details that will help customize your proposal.">ⓘ</div>
-        </div>
-        ''', unsafe_allow_html=True)
-        
-        client_name_provided = bool(client_enterprise_name and client_enterprise_name.strip())
-        
-        enterprise_details = st.text_area(
-            label="Client Enterprise Details", 
-            value=client_data.enterprise_details_content if client_name_provided else "",
-            placeholder="Enter client name first to enable this field" if not client_name_provided else "Select/Enter the client website URL to fetch enterprise details", 
-            height=150, 
-            key="enterprise_details_textarea",
-            label_visibility="collapsed",
-            disabled=not client_name_provided
-        )
-        
-        # Update dataclass when text area changes
-        if client_name_provided and enterprise_details != client_data.enterprise_details_content:
-            ClientDataManager.update_client_data(enterprise_details_content=enterprise_details)
-
-    # Client Requirements and Pain Points Row
-    col5, col6 = st.columns([1, 1])
-
-    with col5:
-        st.markdown('''
-        <div class="tooltip-label">
-            Client Requirements <span style="color:red;">*</span>
-            <div class="tooltip-icon" data-tooltip="Define the core client requirements, technical specifications, project scope, deliverables, and expected outcomes. This forms the foundation of your proposal and helps ensure all client needs are addressed.">ⓘ</div>
-        </div>
-        ''', unsafe_allow_html=True)
-        
-        client_requirements = st.text_area(
-            label="Client Requirements", 
-            value=client_data.client_requirements_content if client_name_provided else "", 
-            height=200, 
-            key="client_requirements_textarea",
-            label_visibility="collapsed",
-            disabled=not client_name_provided,
-            placeholder="Enter client name first to enable this field" if not client_name_provided else "Add your client requirements here youmay take suggestions from AI in the right as well"
-        )
-        
-        # Update the client data when the text area changes (only if enabled)
-        if client_name_provided:
-            ClientDataManager.update_client_data(client_requirements_content=client_requirements)
-        
-        client_requirements_provided = bool(client_name_provided and client_requirements.strip())
-        
-    with col6:
-        # Title with tooltip only (no buttons)
-        st.markdown('''
-        <div class="tooltip-label">
-            Client Pain Points
-            <div class="tooltip-icon" data-tooltip="This area displays extracted pain points from RFI documents or website analysis. You can also manually enter client's business challenges, current pain points, and organizational details that will help customize your proposal.">ⓘ</div>
-        </div>
-        ''', unsafe_allow_html=True)
-        
-        # Get RFI pain points items from client data or use dummy data
-        if client_name_provided and client_data.rfi_pain_points_items:
-            rfi_pain_points_items = client_data.rfi_pain_points_items
-        else:
-            # Dummy data when no client name or no file uploaded
-            rfi_pain_points_items = {
-                "Revenue Challenges": "**Revenue Challenges** • Sales declined by 15% year-over-year despite market growth\n• Missed quarterly revenue targets by $2.3M for three consecutive quarters\n• Average deal size decreased by 22% due to increased price competition\n• Customer churn rate increased to 18%, up from 12% previous year\n• Revenue per customer dropped 8% as clients downgraded service tiers\n• New product launches generated only 60% of projected revenue\n• Seasonal revenue fluctuations creating 40% variance between peak and low periods\n• Pipeline conversion rates fell from 35% to 24% over past 12 months\n\n",
-                
-                "Cost and Margin Pressure": "**Cost and Margin Pressure** • Cost of Goods Sold increased by 12% due to supply chain disruptions\n• Labor costs rose 18% while productivity remained flat\n• Raw material prices up 25% with limited ability to pass costs to customers\n• Operational efficiency decreased by 14% due to outdated processes\n• Procurement costs increased 20% from supplier consolidation issues\n• Technology infrastructure costs grew 30% without proportional business benefits\n• Regulatory compliance expenses added $1.8M in unexpected annual costs\n• Facility and overhead costs up 16% while revenue remained stagnant\n\n",
-                
-                "Market Expansion and Customer Acquisition": "**Market Expansion and Customer Acquisition**\n\n • Win rate on new business opportunities dropped from 42% to 28%\n• Customer acquisition cost increased 35% while customer lifetime value declined\n• Expansion into new geographic markets yielding only 40% of projected results\n• Lack of local market knowledge resulting in 60% longer sales cycles\n• Digital marketing campaigns generating 50% fewer qualified leads\n• Competition from new market entrants capturing 25% of target customer segment\n• Limited brand recognition in new markets requiring 3x marketing investment\n• Difficulty penetrating enterprise accounts with average sales cycle extending to 18 months\n\n"
-            }
-
-        # Use a single container for all pain points items
-        with st.container():
-            # Display pain points items with add/remove buttons
-            for i, (key, value) in enumerate(rfi_pain_points_items.items()):
-                # Check if this item is selected
-                is_selected = key in client_data.selected_pain_points
-                
-                # Create a box container with +/- button and content on same horizontal level
-                col_add, col_content = st.columns([0.5, 9], gap="medium")
-                
-                with col_add:
-                    # Style the button to align vertically with the content box
-                    st.markdown("""
-                    <style>
-                    /* Force override all button styling */
-                    button[kind="secondary"] {
-                        height: 48px !important;
-                        border: 2.2px solid #618f8f !important;
-                        border-radius: 4px !important;
-                        margin-top: -5px !important;  /* Move button up */
-                        transform: translateY(-3px) !important;  /* Additional upward adjustment */
-                        background-color: #4a4a4a !important;  /* Dark greyish background */
-                        color: white !important;  /* White text */
-                    }
-                     
-                    button[kind="secondary"]:hover {
-                        border: 2.2px solid #618f8f !important;
-                        transform: translateY(-3px) !important;  /* Keep position on hover */
-                        background-color: #5a5a5a !important;  /* Slightly lighter on hover */
-                        color: white !important;  /* Keep white text on hover */
-                    }
-                     
-                    button[kind="secondary"]:focus {
-                        border: 2.2px solid #618f8f !important;
-                        outline: 2px solid #618f8f !important;
-                        transform: translateY(-3px) !important;  /* Keep position on focus */
-                        background-color: #4a4a4a !important;  /* Keep dark background on focus */
-                        color: white !important;  /* Keep white text on focus */
-                    }
-                     
-                    /* Try targeting by data attributes */
-                    [data-testid] button {
-                        border: 2.2px solid #618f8f !important;
-                        height: 48px !important;
-                        margin-top: -5px !important;  /* Move button up */
-                        transform: translateY(-2.5px) !important;  /* Additional upward adjustment */
-                        background-color: #4a4a4a !important;  /* Dark greyish background */
-                        color: white !important;  /* White text */
-                    }
-                    
-                    /* Additional targeting for button text specifically */
-                    button[kind="secondary"] p,
-                    button[kind="secondary"] span,
-                    button[kind="secondary"] div {
-                        color: white !important;
-                    }
-                    
-                    [data-testid] button p,
-                    [data-testid] button span,
-                    [data-testid] button div {
-                        color: white !important;
-                    }
-                    </style>
-                    """, unsafe_allow_html=True)
-                    
-                    # Change button appearance based on selection state
-                    button_text = "❌" if is_selected else "➕"
-                    button_help = f"Remove '{key}' from client requirements" if is_selected else f"Add '{key}' to client requirements section"
-                    button_type = "secondary" 
-                    
-                    if st.button(button_text, 
-                            key=f"toggle_rfi_pain_point_item_{i}", 
-                            help=button_help,
-                            type=button_type,
-                            disabled=not client_name_provided):
-                        
-                        if is_selected:
-                            # REMOVE FUNCTIONALITY
-                            # Get current content from the client data
-                            current_content = client_data.client_requirements_content
-                            
-                            # Get the original content that was added for this key
-                            original_content = client_data.pain_point_content_map.get(key, value)
-                            
-                            # Remove this specific pain point section from content
-                            patterns_to_remove = [
-                                f"\n\n{original_content}",
-                                f"{original_content}\n\n",
-                                original_content
-                            ]
-                            
-                            updated_content = current_content
-                            for pattern in patterns_to_remove:
-                                updated_content = updated_content.replace(pattern, "")
-                            
-                            # Clean up any excessive newlines
-                            updated_content = '\n\n'.join([section.strip() for section in updated_content.split('\n\n') if section.strip()])
-                            
-                            # Update client data
-                            client_data.selected_pain_points.discard(key)
-                            if key in client_data.pain_point_content_map:
-                                del client_data.pain_point_content_map[key]
-                            
-                            ClientDataManager.update_client_data(
-                                client_requirements_content=updated_content,
-                                selected_pain_points=client_data.selected_pain_points,
-                                pain_point_content_map=client_data.pain_point_content_map
-                            )
-                            
-                        else:
-                            # ADD FUNCTIONALITY
-                            # Get current content from client data
-                            current_content = client_data.client_requirements_content
-                            
-                            # Append the value to the content
-                            new_content = current_content + f"\n\n{value}" if current_content else value
-                            
-                            # Update client data
-                            client_data.selected_pain_points.add(key)
-                            client_data.pain_point_content_map[key] = value
-                            
-                            ClientDataManager.update_client_data(
-                                client_requirements_content=new_content,
-                                selected_pain_points=client_data.selected_pain_points,
-                                pain_point_content_map=client_data.pain_point_content_map
-                            )
-                        
-                        st.rerun()
-
-                with col_content:
-                    # Style the content box based on selection state
-                    if is_selected:
-                        background_color = "#2e7d32"
-                        border_color = "#5a9f9f"
-                        text_color = "#ffffff"
-                        icon = "✅"
-                        box_shadow = "0 2px 8px rgba(76, 175, 80, 0.3)"
-                    else:
-                        background_color = "#f5f5f5"
-                        border_color = "#5a9f9f"
-                        text_color = "#000000"
-                        icon = "📋"
-                        box_shadow = "0 2px 4px rgba(0,0,0,0.1)"
-                    
-                    st.markdown(f"""
-                    <div style="
-                        padding: 12px;
-                        border-radius: 6px;
-                        margin: 5px 0;
-                        background-color: {background_color};
-                        border: 2px solid {border_color};
-                        color: {text_color};
-                        font-weight: 500;
-                        box-shadow: {box_shadow};
-                        min-height: 24px;
-                        display: flex;
-                        align-items: center;
-                        transition: all 0.3s ease;
-                    ">
-                        {icon} {key}
-                    </div>
-                    """, unsafe_allow_html=True)
-                            
-    # SPOC Row
 import streamlit as st
 import pandas as pd
 import os
@@ -589,10 +8,11 @@ from .client_utils import *
 import threading
 import time
 from Search.Linkedin.linkedin_serp import *
+from Search.Linkedin.linkedin_agent_runner_unused import *
 from Recommendation.recommendation_utils import *
 from .client_css import *
 from .client_dataclass import ClientData, ClientDataManager
-
+from datetime import datetime 
 # Configure logging
 def setup_logging():
     """Setup logging configuration for client module"""
@@ -601,6 +21,7 @@ def setup_logging():
         logs_dir = "logs"
         if not os.path.exists(logs_dir):
             os.makedirs(logs_dir)
+        st.info("Log file created")
             
         # Configure logger
         logger = logging.getLogger('client_module')
@@ -611,7 +32,7 @@ def setup_logging():
             logger.removeHandler(handler)
         
         # Create file handler
-        file_handler = logging.FileHandler(os.path.join(logs_dir, 'client_logs.log'))
+        file_handler = logging.FileHandler(os.path.join(logs_dir, 'client_logs'+datetime.now().strftime("%d_%m_%Y_%H_%M_%S")+'.log'))
         file_handler.setLevel(logging.DEBUG)
         
         # Create console handler
@@ -631,13 +52,12 @@ def setup_logging():
         
         return logger
     except Exception as e:
-        print(f"Error setting up logging: {str(e)}")
+        st.error(f"Error setting up logging: {str(e)}")
         return logging.getLogger('client_module')
 
-# Initialize logger
-logger = setup_logging()
 
-def save_uploaded_file_and_get_path(uploaded_file):
+
+def save_uploaded_file_and_get_path(uploaded_file,logger):
     """Save uploaded file to a temporary directory and return the file path"""
     logger.info(f"Starting file upload process for file: {uploaded_file.name if uploaded_file else 'None'}")
     
@@ -676,20 +96,21 @@ def save_uploaded_file_and_get_path(uploaded_file):
             return None
             
     except Exception as e:
+        st.error(e)
         logger.error(f"Unexpected error in save_uploaded_file_and_get_path: {str(e)}")
         raise
 
 
 def validate_client_mandatory_fields():
     """Validate client mandatory fields using dataclass"""
-    logger.info("Starting client mandatory fields validation")
+    
     
     try:
         client_data = ClientDataManager.get_client_data()
-        logger.debug("Retrieved client data for validation")
+        # logger.debug("Retrieved client data for validation")
         
-        # Temporarily return True - validation disabled
-        logger.info("Validation bypassed - returning True")
+        # # Temporarily return True - validation disabled
+        # logger.info("Validation bypassed - returning True")
         return True
         
         # Uncomment below for actual validation
@@ -698,11 +119,11 @@ def validate_client_mandatory_fields():
         # return result
         
     except Exception as e:
-        logger.error(f"Error in validate_client_mandatory_fields: {str(e)}")
+       # logger.error(f"Error in validate_client_mandatory_fields: {str(e)}")
         return False
 
 
-def client_tab(st):
+def client_tab(st,logger):
     logger.info("Starting client_tab function")
     
     try:
@@ -805,6 +226,7 @@ def client_tab(st):
                         )
                 except Exception as e:
                     logger.error(f"Error clearing URLs when company name cleared: {str(e)}")
+                    st.error(e)
                 
                 # Show validation warning if triggered and field is empty
                 try:
@@ -931,7 +353,8 @@ def client_tab(st):
                         logger.info(f"Starting website scraping for: {client_data.pending_scrape_url}")
                         with st.spinner(f"Scraping website details from {client_data.pending_scrape_url}..."):
                             try:
-                                website_details = get_url_details(client_data.pending_scrape_url)
+                                website_details,logo = get_url_details(client_data.pending_scrape_url)
+                                client_data.logo=logo
                                 
                                 # Check if scraping returned empty or no data
                                 if not website_details or len(website_details.strip()) == 0:
@@ -1104,7 +527,7 @@ def client_tab(st):
                                 # Perform the actual processing
                                 try:
                                     logger.info("Starting RFI document processing")
-                                    file_path = save_uploaded_file_and_get_path(rfi_document_upload)
+                                    file_path = save_uploaded_file_and_get_path(rfi_document_upload,logger)
                                     
                                     if file_path and client_enterprise_name:
                                         logger.info(f"Processing RFI file: {file_path}")
@@ -1537,7 +960,8 @@ def client_tab(st):
             if spoc_name and spoc_name.strip() and spoc_name != client_data.last_searched_spoc and client_name_provided:
                 with st.spinner(f"Searching LinkedIn profiles for {spoc_name}..."):
                     # Assuming search_linkedin_serpapi is available
-                    linkedin_profiles = search_linkedin_serpapi(spoc_name.strip())
+                    #linkedin_profiles = search_linkedin_serpapi(spoc_name.strip())
+                    linkedin_profiles = get_linkedin(spoc_name.strip())
                     ClientDataManager.update_client_data(
                         linkedin_profiles=linkedin_profiles,
                         last_searched_spoc=spoc_name
@@ -2098,6 +1522,7 @@ def client_tab(st):
                                 logger.error(f"Error rendering content box for '{key}': {str(content_error)}")
                     except Exception as item_error:
                         logger.error(f"Error processing additional spec item '{key}': {str(item_error)}")
+
         except Exception as e:
             logger.error(f"Error displaying additional specs items: {str(e)}")
     
@@ -2109,3 +1534,4 @@ def client_tab(st):
             pass
     except Exception as e:
         logger.error(f"Error handling validation: {str(e)}")
+    return client_data

@@ -3,3 +3,6 @@
 .pyc
 .ipynb
 .__pycache__
+.log
+.cyc
+.sqlite3
