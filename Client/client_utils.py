@@ -43,8 +43,10 @@ def get_url_details(url:str):
     """Use this if you want to run async function synchronously"""
     try:
         # Run the async function synchronously
+
         website_details,logo = asyncio.run(get_data(url))
-        return website_details,logo
+        print(logo,website_details)
+        return (website_details,logo)
     except Exception as e:
         print(f"Error: {e}")
         return None

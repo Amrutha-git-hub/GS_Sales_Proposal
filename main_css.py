@@ -14,19 +14,19 @@ def add_professional_css():
     
     /* Header styling - more compact */
     .main-header {
-        background: linear-gradient(135deg, #333333 0%, #7fffff 100%);
+        background: linear-gradient(135deg, #333333 0%, #ffffff 100%);
         padding: 1rem;
         border-radius: 6px;
         margin-bottom: 1rem;
         text-align: center;
-        color: #0088ff;
+        color: #599cd4;
     }
     
     .main-header h1 {
         margin: 0;
         font-size: 1.6rem;
         font-weight: 600;
-        color: #0088ff;
+        color: #599cd4;
     }
     
     .main-header p {
@@ -43,11 +43,11 @@ def add_professional_css():
         box-shadow: 0 1px 4px rgba(255,255,255,0.1);
         margin-bottom: 0.8rem;
         border: 1px solid #666666;
-        background: #7fffff;
+        background: #ffffff;
     }
     
     .section-title {
-        color: #0088ff;
+        color: #599cd4;
         font-size: 1rem;
         font-weight: 600;
         margin-bottom: 0.6rem;
@@ -65,7 +65,7 @@ def add_professional_css():
     }
     
     .required-asterisk {
-        color: #0088ff;
+        color: #599cd4;
         font-weight: bold;
         margin-left: 3px;
     }
@@ -77,30 +77,30 @@ def add_professional_css():
         padding: 0.4rem 0.6rem;
         font-size: 0.85rem;
         transition: all 0.3s ease;
-        background: #7fffff;
-        color: #0088ff;
+        background: #ffffff;
+        color: #599cd4;
         height: 2.2rem;
     }
     
     .stTextInput > div > div > input:focus {
         border-color: #999999;
-        box-shadow: 0 0 0 2px rgba(153, 153, 153, 0.3);
-        background: #7fffff;
+        box-shadow: 0 0 0 2px rgba(89, 156, 212, 0.3);
+        background: #ffffff;
     }
     
     .stSelectbox > div > div > div {
         border-radius: 4px;
         border: 1px solid #666666;
         transition: all 0.3s ease;
-        background: #7fffff;
-        color: #0088ff;
+        background: #ffffff;
+        color: #599cd4;
         min-height: 2.2rem;
     }
     
     .stSelectbox > div > div > div:focus-within {
         border-color: #999999;
-        box-shadow: 0 0 0 2px rgba(153, 153, 153, 0.3);
-        background: #7fffff;
+        box-shadow: 0 0 0 2px rgba(89, 156, 212, 0.3);
+        background: #ffffff;
     }
     
     .stTextArea > div > div > textarea {
@@ -109,14 +109,14 @@ def add_professional_css():
         padding: 0.4rem 0.6rem;
         font-size: 0.85rem;
         transition: all 0.3s ease;
-        background: #7fffff;
-        color: #0088ff;
+        background: #ffffff;
+        color: #599cd4;
     }
     
     .stTextArea > div > div > textarea:focus {
         border-color: #999999;
-        box-shadow: 0 0 0 2px rgba(153, 153, 153, 0.3);
-        background: #7fffff;
+        box-shadow: 0 0 0 2px rgba(89, 156, 212, 0.3);
+        background: #ffffff;
     }
     
     /* File uploader styling - more compact */
@@ -126,13 +126,13 @@ def add_professional_css():
         padding: 0.8rem;
         text-align: center;
         transition: all 0.3s ease;
-        background: #7fffff;
+        background: #ffffff;
         color: #cccccc;
     }
     
     .stFileUploader > div:hover {
-        border-color: #0088ff;
-        background: #7fffff;
+        border-color: #599cd4;
+        background: #ffffff;
     }
     
     /* Link button styling - more compact */
@@ -146,21 +146,21 @@ def add_professional_css():
         transition: all 0.3s ease;
         display: inline-block;
         font-size: 0.75rem;
-        color: #0088ff;
+        color: #599cd4;
         height: 2.2rem;
         line-height: 1.6rem;
     }
     
     .external-link-btn:hover {
-        background: #7fffff;
+        background: #ffffff;
         transform: translateY(-1px);
         text-decoration: none;
-        color: #0088ff;
+        color: #599cd4;
     }
     
     /* Validation styling - more compact */
     .validation-success {
-        color: #0088ff;
+        color: #599cd4;
         font-size: 0.75rem;
         margin-top: 0.2rem;
         display: flex;
@@ -183,13 +183,13 @@ def add_professional_css():
         border-radius: 6px;
         box-shadow: 0 1px 4px rgba(255,255,255,0.1);
         border: 1px solid #666666;
-        background: #7fffff;
-        color: #0088ff;
+        background: #ffffff;
+        color: #599cd4;
     }
     
     /* Info styling - more compact */
     .info-container {
-        background: #7fffff;
+        background: #ffffff;
         border-left: 4px solid #666666;
         padding: 0.6rem;
         border-radius: 0 4px 4px 0;
@@ -211,18 +211,18 @@ def add_professional_css():
     .css-1d391kg {
         padding-top: 0.8rem;
         background:#ffffff;
-        color: #0088ff;
+        color: #599cd4;
     }
     
     /* General dark theme colors */
     .stApp {
         background:#ffffff;
-        color: #0088ff;
+        color: #599cd4;
     }
     
     /* Streamlit element colors */
     .stMarkdown {
-        color: #0088ff;
+        color: #599cd4;
     }
     
     /* Hide default streamlit styling */
@@ -240,12 +240,12 @@ def add_professional_css():
         border-radius: 6px;
         box-shadow: 0 1px 4px rgba(255,255,255,0.1);
         border: 1px solid #666666;
-        background: #7fffff;
+        background: #ffffff;
         height: 100%;
     }
     
     .column-header {
-        color: #0088ff;
+        color: #599cd4;
         font-size: 0.95rem;
         font-weight: 600;
         margin-bottom: 0.6rem;
@@ -258,7 +258,7 @@ def add_professional_css():
     }
     
     .suggestion-container {
-        background: #7fffff;
+        background: #ffffff;
         border: 1px solid #666666;
         padding: 0.5rem;
         margin: 0.3rem 0;
@@ -267,18 +267,18 @@ def add_professional_css():
     }
     
     .suggestion-container:hover {
-        background: #7fffff;
+        background: #ffffff;
         border-color: #999999;
     }
     
     .suggestion-title {
         font-size: 0.8rem;
         font-weight: 500;
-        color: #0088ff;
+        color: #599cd4;
     }
     
     .suggestion-added {
-        background: #7fffff !important;
+        background: #ffffff !important;
         border-color: #999999 !important;
     }
     
@@ -290,7 +290,7 @@ def add_professional_css():
     }
     
     .warning-container {
-        background: #7fffff;
+        background: #ffffff;
         border: 1px solid #666666;
         color: #cccccc;
     }
@@ -340,7 +340,7 @@ app_css = """
     width: 100%;
     padding: 3rem 0;
     margin-bottom: 2rem;
-    background: #7fffff;
+    background: #ffffff;
     border: 1px solid #666666;
     border-radius: 20px;
     box-shadow: 0 8px 32px rgba(255, 255, 255, 0.1);
@@ -349,7 +349,7 @@ app_css = """
 }
 
 .main-header h1 {
-    color: #0088ff;
+    color: #599cd4;
     font-size: 4rem;
     font-weight: 800;
     margin: 0;
@@ -392,10 +392,10 @@ app_css = """
 .separator-diamond {
     width: 8px;
     height: 8px;
-    background: #0088ff;
+    background: #599cd4;
     transform: rotate(45deg);
     border-radius: 2px;
-    box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+    box-shadow: 0 0 15px rgba(89, 156, 212, 0.3);
     animation: pulse-diamond 2s ease-in-out infinite;
     z-index: 2;
 }
@@ -416,18 +416,18 @@ app_css = """
 @keyframes pulse-diamond {
     0%, 100% {
         transform: rotate(45deg) scale(1);
-        box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+        box-shadow: 0 0 15px rgba(89, 156, 212, 0.3);
     }
     50% {
         transform: rotate(45deg) scale(1.2);
-        box-shadow: 0 0 25px rgba(255, 255, 255, 0.5);
+        box-shadow: 0 0 25px rgba(89, 156, 212, 0.5);
     }
 }
 
 /* Tab styling - Improved modern design */
 .stButton > button {
     background: #2a2a2a !important;
-    color: #0088ff !important;
+    color: #599cd4 !important;
     border: 1px solid #666666 !important;
     font-weight: 600 !important;
     font-size: 1.1rem !important;
@@ -466,17 +466,17 @@ app_css = """
 /* Active tab styling */
 .stButton > button:focus,
 .stButton > button:active {
-    background: #0088ff !important;
+    background: #599cd4 !important;
     color:#ffffff !important;
     border-color: #cccccc !important;
     transform: translateY(-2px) scale(1.03) !important;
-    box-shadow: 0 10px 40px rgba(255, 255, 255, 0.2) !important;
+    box-shadow: 0 10px 40px rgba(89, 156, 212, 0.2) !important;
     font-weight: 700 !important;
 }
 
 /* Content area - Full width within the 75% container */
 .content-area {
-    background: #7fffff;
+    background: #ffffff;
     padding: 3rem;
     border-radius: 20px;
     margin-bottom: 2rem;
@@ -489,7 +489,7 @@ app_css = """
 }
 
 .content-area h2 {
-    color: #0088ff;
+    color: #599cd4;
     font-size: 2.5rem;
     margin-bottom: 1.5rem;
     font-weight: 700;
@@ -535,7 +535,7 @@ app_css = """
 
 /* Footer styling - Full width within container */
 .footer {
-    background: #7fffff;
+    background: #ffffff;
     padding: 2rem;
     border-radius: 20px;
     text-align: center;
@@ -577,7 +577,7 @@ app_css = """
 /* Refresh Button */
 .footer div[data-testid="column"]:nth-child(1) .stButton > button {
     background: #666666 !important;
-    color: #0088ff !important;
+    color: #599cd4 !important;
     box-shadow: 0 6px 20px rgba(255, 255, 255, 0.1) !important;
 }
 
@@ -589,15 +589,15 @@ app_css = """
 
 /* Generate Presentation Button */
 .footer div[data-testid="column"]:nth-child(2) .stButton > button {
-    background: #0088ff !important;
+    background: #599cd4 !important;
     color:#ffffff !important;
-    box-shadow: 0 6px 20px rgba(255, 255, 255, 0.2) !important;
+    box-shadow: 0 6px 20px rgba(89, 156, 212, 0.2) !important;
 }
 
 .footer div[data-testid="column"]:nth-child(2) .stButton > button:hover {
     transform: translateY(-3px) scale(1.05) !important;
-    box-shadow: 0 10px 30px rgba(255, 255, 255, 0.3) !important;
-    background: #cccccc !important;
+    box-shadow: 0 10px 30px rgba(89, 156, 212, 0.3) !important;
+    background: #4a8bc2 !important;
 }
 
 /* Input styling - Modern glassmorphism */
@@ -605,7 +605,7 @@ app_css = """
 .stTextInput > div > div > input,
 .stTextArea > div > div > textarea {
     background: #2a2a2a !important;
-    color: #0088ff !important;
+    color: #599cd4 !important;
     border: 1px solid #666666 !important;
     border-radius: 10px !important;
     font-size: 1.1rem !important;
@@ -616,7 +616,7 @@ app_css = """
 .stTextInput > div > div > input:focus,
 .stTextArea > div > div > textarea:focus {
     border-color: #999999 !important;
-    box-shadow: 0 0 20px rgba(255, 255, 255, 0.1) !important;
+    box-shadow: 0 0 20px rgba(89, 156, 212, 0.1) !important;
     background: #333333 !important;
 }
 
@@ -635,8 +635,8 @@ app_css = """
 }
 
 .stFileUploader label, .stFileUploader p, .stFileUploader svg {
-    color: #0088ff !important;
-    fill: #0088ff !important;
+    color: #599cd4 !important;
+    fill: #599cd4 !important;
 }
 
 /* Sidebar removal */
@@ -727,7 +727,7 @@ header {visibility: hidden;}
 .metric-value {
     font-size: 2.5rem;
     font-weight: 800;
-    color: #0088ff;
+    color: #599cd4;
     margin-bottom: 0.5rem;
 }
 

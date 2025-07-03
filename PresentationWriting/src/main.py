@@ -86,13 +86,14 @@ def get_presentation(client , seller , project_specs ):
     # buyer = parse_to_user(buyer)
     # seller = parse_to_user(seller)
     #print(type(buyer),buyer)
+    print(seller,buyer)
     state = State(client = client , seller=seller , project_specs=project_specs,sections=[],final_result='')
     state = graph.invoke(state)
     colors = [ '#4F4F4F', '#101213', '#DBDBDB', '#299E75']
-    client_logo = client.enterprise_logo
-    seller_logo = seller.enterprise_logo
-    colors = get_color_from_image(client_logo) 
-    generate_modern_presentation(filename  = 'output.txt',logo_url=client_logo,logo_url_2 = seller_logo ,custom_colors=colors,output_format='pdf')
+
+    client_logo = client['enterprise_logo']
+    seller_logo = seller['enterprise_logo']
+    generate_modern_presentation(filename  = 'output.txt',logo_url=client_logo,logo_url_2 = seller_logo ,output_format='pdf')
     return 'output_proposal.pdf'
 
 

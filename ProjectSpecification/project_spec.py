@@ -293,6 +293,8 @@ def proj_specification_tab(client_data, seller_data):
         default_data=scope_data,
         right_title="Scope Options",
         right_tooltip="Select scope elements to include in your project definition.",
+        selected_border_color="#4a90e2",
+        
     )
     
     st.markdown("---")
@@ -310,7 +312,8 @@ def proj_specification_tab(client_data, seller_data):
         default_data=timeline_data,
         right_title="Timeline Phases",
         right_tooltip="Select timeline phases to include in your project schedule.",
-        selected_color="#8f00ff"
+        selected_color="#d2ebfb",
+        selected_border_color="#4a90e2",
     )
     
     st.markdown("---")
@@ -328,7 +331,7 @@ def proj_specification_tab(client_data, seller_data):
         default_data=effort_data,
         right_title="Effort Categories",
         right_tooltip="Select effort categories to include in your estimation.",
-        selected_color="#1f77b4",
+        selected_color="#d2ebfb",
         selected_border_color="#4a90e2"
     )
     
@@ -347,8 +350,8 @@ def proj_specification_tab(client_data, seller_data):
         default_data=team_data,
         right_title="Team Options",
         right_tooltip="Select team structures to include in your project staffing.",
-        selected_color="#ff7f0e",
-        selected_border_color="#ffb366"
+        selected_color="#d2ebfb",
+        selected_border_color="#4a90e2",
     )
     
     st.markdown("---")
@@ -366,8 +369,8 @@ def proj_specification_tab(client_data, seller_data):
         default_data=pricing_data,
         right_title="Pricing Models",
         right_tooltip="Select pricing models to include in your commercial proposal.",
-        selected_color="#ff4f58",
-        selected_border_color="#ff6b6b"
+        selected_color="#d2ebfb",
+        selected_border_color="#4a90e2",
     )
     
     st.markdown("---")
@@ -383,4 +386,4 @@ def proj_specification_tab(client_data, seller_data):
     )
     
     st.markdown("---")
-    return [scope_content, effort_content, timeline_content, team_content, pricing_content]
+    return [scope_content, effort_content, timeline_content, team_content, pricing_content,additional_notes]

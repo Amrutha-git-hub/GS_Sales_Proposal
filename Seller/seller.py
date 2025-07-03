@@ -493,15 +493,41 @@ def _handle_pending_scraping(seller_state: SellerTabState):
             
             with st.spinner(f"Scraping website details from {scrape_url}..."):
                 try:
-                    website_details = get_url_details(scrape_url)
+                    # Get both website details and logo from the URL
+                    scrape_result = get_url_details(scrape_url)
+                    
+                    # Handle different return formats from get_url_details
+                    if isinstance(scrape_result, dict):
+                        # If get_url_details returns a dictionary with separate fields
+                        website_details = scrape_result.get('website_details', '')
+                        logo_url = scrape_result.get('logo', '')
+                    elif isinstance(scrape_result, tuple) and len(scrape_result) >= 2:
+                        # If get_url_details returns a tuple (website_details, logo)
+                        website_details, logo_url = scrape_result[0], scrape_result[1]
+                    else:
+                        # If get_url_details returns only website details (backward compatibility)
+                        website_details = str(scrape_result)
+                        logo_url = ''
+                    
+                    # Update seller state with website details
                     seller_state.update_field('seller_enterprise_details_content', website_details)
                     seller_state.update_field('last_analyzed_seller_url', scrape_url)
+                    
+                    # Update seller state with logo if available
+                    if logo_url:
+                        seller_state.update_field('enterprise_logo', logo_url)
+                        logger.info(f"Logo found and saved: {logo_url}")
                     
                     # Clear pending operation
                     seller_state.update_field('seller_scraping_in_progress', False)
                     seller_state.update_field('seller_pending_scrape_url', None)
                     
-                    st.success("Website details extracted successfully!")
+                    # Show success message with logo info
+                    if logo_url:
+                        st.success("Website details and logo extracted successfully!")
+                    else:
+                        st.success("Website details extracted successfully!")
+                    
                     logger.info(f"Successfully scraped website: {scrape_url}")
                     st.rerun()
                     
@@ -514,6 +540,7 @@ def _handle_pending_scraping(seller_state: SellerTabState):
                     
     except Exception as e:
         logger.error(f"Error handling pending scraping: {str(e)}", exc_info=True)
+
 
 
 def _render_document_upload_section(seller_state: SellerTabState):
@@ -795,7 +822,8 @@ def _render_enterprise_details_section(seller_state: SellerTabState):
             text_color="#0000000",
             title_font_size="18px",
             title_color="#000000",
-            title_margin_bottom="10px"
+            title_margin_bottom="10px",
+            selected_color="#d2ebfb"
         )
 
         # Update state

@@ -21,7 +21,6 @@ def setup_logging():
         logs_dir = "logs"
         if not os.path.exists(logs_dir):
             os.makedirs(logs_dir)
-        st.info("Log file created")
             
         # Configure logger
         logger = logging.getLogger('client_module')
@@ -353,8 +352,26 @@ def client_tab(st,logger):
                         logger.info(f"Starting website scraping for: {client_data.pending_scrape_url}")
                         with st.spinner(f"Scraping website details from {client_data.pending_scrape_url}..."):
                             try:
-                                website_details,logo = get_url_details(client_data.pending_scrape_url)
-                                client_data.logo=logo
+                                # Get both website details and logo from the URL
+                                scrape_result = get_url_details(client_data.pending_scrape_url)
+                                print(scrape_result)
+                                # Handle different return formats from get_url_details
+                                if isinstance(scrape_result, dict):
+                                    # If get_url_details returns a dictionary with separate fields
+                                    website_details = scrape_result.get('website_details', '')
+                                    logo_url = scrape_result.get('logo', '')
+                                elif isinstance(scrape_result, tuple) and len(scrape_result) >= 2:
+                                    # If get_url_details returns a tuple (website_details, logo)
+                                    website_details, logo_url = scrape_result[0], scrape_result[1]
+                                else:
+                                    # If get_url_details returns only website details (backward compatibility)
+                                    website_details = str(scrape_result)
+                                    logo_url = ''
+                                
+                                # Update client data with logo if available
+                                if logo_url:
+                                    client_data.logo = logo_url
+                                    logger.info(f"Logo found and saved: {logo_url}")
                                 
                                 # Check if scraping returned empty or no data
                                 if not website_details or len(website_details.strip()) == 0:
@@ -368,24 +385,54 @@ def client_tab(st,logger):
                                     st.rerun()
                                 else:
                                     logger.info(f"Successfully scraped website details, length: {len(website_details)}")
-                                    ClientDataManager.update_client_data(
-                                        enterprise_details_content=website_details,
-                                        last_analyzed_url=client_data.pending_scrape_url,
-                                        scraping_in_progress=False,
-                                        pending_scrape_url=None
-                                    )
-                                    st.success("✅ Website details extracted successfully!")
+                                    
+                                    # Prepare update parameters
+                                    update_params = {
+                                        'enterprise_details_content': website_details,
+                                        'last_analyzed_url': client_data.pending_scrape_url,
+                                        'scraping_in_progress': False,
+                                        'pending_scrape_url': None
+                                    }
+                                    
+                                    # Add logo to update parameters if available
+                                    if logo_url:
+                                        update_params['logo'] = logo_url
+                                    
+                                    ClientDataManager.update_client_data(**update_params)
+                                    
+                                    # Show success message with logo info
+                                    if logo_url:
+                                        st.success("✅ Website details and logo extracted successfully!")
+                                    else:
+                                        st.success("✅ Website details extracted successfully!")
+                                    
                                     st.rerun()
                                     
-                            except Exception as e:
-                                logger.error(f"Error scraping website {client_data.pending_scrape_url}: {str(e)}")
+                            except Exception as scrape_error:
+                                logger.error(f"Error during website scraping for {client_data.pending_scrape_url}: {str(scrape_error)}", exc_info=True)
                                 ClientDataManager.update_client_data(
                                     scraping_in_progress=False,
                                     pending_scrape_url=None
                                 )
-                                st.error(f"❌ Error scraping website: {str(e)}")
+                                st.error(f"❌ Error scraping website: {str(scrape_error)}")
+                                time.sleep(3)
+                                st.rerun()
+                                
                     except Exception as e:
-                        logger.error(f"Error in scraping operation: {str(e)}")
+                        logger.error(f"Critical error in website scraping process: {str(e)}", exc_info=True)
+                        # Ensure scraping state is cleared even on critical errors
+                        try:
+                            ClientDataManager.update_client_data(
+                                scraping_in_progress=False,
+                                pending_scrape_url=None
+                            )
+                        except Exception as cleanup_error:
+                            logger.error(f"Error during cleanup: {str(cleanup_error)}")
+                        
+                        st.error("❌ A critical error occurred during website scraping. Please try again.")
+                        time.sleep(3)
+                        st.rerun()
+                                    
             except Exception as e:
                 logger.error(f"Error in scraping operation: {str(e)}")
                 st.error(f"❌ Error scraping website: {str(e)}")

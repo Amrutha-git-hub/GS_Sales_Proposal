@@ -33,10 +33,16 @@ def get_url_details(url:str):
     try:
         # Run the async function synchronously
         website_details,logo = asyncio.run(get_data(url))
-        return website_details,logo
+        return {
+            'website_details': website_details,
+            'logo': logo
+        }
+        
     except Exception as e:
-        print(f"Error: {e}")
-        return None
+        return {
+            'website_details': "",
+            'logo': ""
+        }
     
 def save_uploaded_file_and_get_path(file):
     return "saved"

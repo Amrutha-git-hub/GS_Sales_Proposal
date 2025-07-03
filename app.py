@@ -101,40 +101,31 @@ def validate_mandatory_fields():
     
     return errors
 
-def generate_presentation():
-    """Generate presentation after validating mandatory fields"""
-    validation_errors = validate_mandatory_fields()
-    
-    if validation_errors:
-        # Trigger validation display in client tab
-        st.session_state.trigger_validation = True
-        st.session_state.show_validation = True
-        
-        # Show error message
-        st.error("⚠️ Please fill in all mandatory fields before generating presentation!")
-        
-        # Show specific missing fields
-        missing_fields = ", ".join(validation_errors)
-        st.error(f"Missing required fields: {missing_fields}")
-        
-        # Force rerun to show validation warnings
+def navigate_to_previous_tab():
+    """Navigate to the previous tab"""
+    if st.session_state.active_tab > 0:
+        st.session_state.active_tab -= 1
         st.rerun()
-        return False
-    else:
-        st.success("✅ All mandatory fields are filled! Generating presentation...")
-        with st.spinner("Generating presentation..."):
-            import time
-            time.sleep(2)  # Simulate processing time
-        st.success("🎉 Presentation generated successfully!")
-        
-        # You can add your actual presentation generation logic here
-        # For example:
-        # - Create PowerPoint slides
-        # - Generate PDF report
-        # - Send to external API
-        # - Save to database
-        
-        return True
+
+def navigate_to_next_tab():
+    """Navigate to the next tab with validation"""
+    current_tab = st.session_state.active_tab
+    
+    # Validate current tab before moving to next
+    if current_tab == 0 and not validate_client_mandatory_fields():
+        show_validation_popup("Client Information")
+        return
+    elif current_tab == 1 and not validate_seller_mandatory_fields():
+        show_validation_popup("Seller Information")
+        return
+    elif current_tab == 2 and not validate_project_mandatory_fields():
+        show_validation_popup("Project Specifications")
+        return
+    
+    # Move to next tab if validation passes
+    if st.session_state.active_tab < 3:
+        st.session_state.active_tab += 1
+        st.rerun()
 
 # NOTE: Add this line at the very top of your main script (before any other Streamlit commands):
 # st.set_page_config(page_title="Sales Proposal Generator", page_icon="📊", layout="wide", initial_sidebar_state="collapsed")
@@ -146,12 +137,11 @@ st.markdown(app_css, unsafe_allow_html=True)
 if 'active_tab' not in st.session_state:
     st.session_state.active_tab = 0
 
-st.info("START OF THE PROJECT")
 
 # Tab buttons
 tab_names = ["Client Information", "Seller Information", "Project Specifications", "Generate Proposal"]
 
-# Create tab buttons with stylable containers for green active state
+# Create tab buttons with stylable containers for #599cd4 active state
 cols = st.columns(4, gap="large")
 for i, tab_name in enumerate(tab_names):
     with cols[i]:
@@ -166,27 +156,27 @@ for i, tab_name in enumerate(tab_names):
         elif i == 3 and (not validate_client_mandatory_fields() or not validate_seller_mandatory_fields() or not validate_project_mandatory_fields()):
             tab_enabled = False
         
-        # Use stylable_container to make active tab green
+        # Use stylable_container to make active tab #599cd4
         if is_active and tab_enabled:
             with stylable_container(
                 f"active_tab_{i}",
                 css_styles="""
                 button {
-                    background-color: #28a745 !important;
+                    background-color: #599cd4 !important;
                     color: white !important;
-                    border: 2px solid #1e7e34 !important;
+                    border: 2px solid #4a8bc2 !important;
                     font-weight: bold !important;
                     transition: all 0.3s ease !important;
-                    box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3) !important;
+                    box-shadow: 0 4px 8px rgba(89, 156, 212, 0.3) !important;
                 }
                 button:hover {
-                    background-color: #218838 !important;
+                    background-color: #4a8bc2 !important;
                     color: white !important;
                     transform: translateY(-2px) !important;
-                    box-shadow: 0 6px 12px rgba(40, 167, 69, 0.4) !important;
+                    box-shadow: 0 6px 12px rgba(89, 156, 212, 0.4) !important;
                 }
                 button:focus {
-                    background-color: #1e7e34 !important;
+                    background-color: #3b7ab0 !important;
                     color: white !important;
                     outline: none !important;
                 }
@@ -279,49 +269,123 @@ else:  # Generate Proposal Tab
     else:
        generate_tab(st.session_state.client_data_from_tab,st.session_state.seller_data_from_tab,st.session_state.project_specs_from_tab)
 
-# Bottom action buttons with enhanced styling
-col1, col2 = st.columns(2, gap="large")
+# Bottom navigation buttons with enhanced styling
+col1, col2, col3 = st.columns(3, gap="large")
 
+# Previous Button
 with col1:
+    is_first_tab = (st.session_state.active_tab == 0)
+    if is_first_tab:
+        with stylable_container(
+            "prev_button_disabled",
+            css_styles="""
+            button {
+                background-color: #e9ecef !important;
+                color: #6c757d !important;
+                border: 1px solid #dee2e6 !important;
+                cursor: not-allowed !important;
+                opacity: 0.6 !important;
+                font-weight: bold !important;
+            }
+            """,
+        ):
+            st.button("⬅️ Previous", key="prev_btn", use_container_width=True, disabled=True)
+    else:
+        with stylable_container(
+            "prev_button",
+            css_styles="""
+            button {
+                background-color: #6c757d !important;
+                color: white !important;
+                border: 1px solid #5a6268 !important;
+                font-weight: bold !important;
+                transition: all 0.3s ease !important;
+            }
+            button:hover {
+                background-color: #5a6268 !important;
+                color: white !important;
+                transform: translateY(-1px) !important;
+            }
+            button:active {
+                background-color: #599cd4 !important;
+                border: 2px solid #4a8bc2 !important;
+                transform: translateY(0px) !important;
+                box-shadow: 0 2px 4px rgba(89, 156, 212, 0.4) !important;
+            }
+            """,
+        ):
+            if st.button("⬅️ Previous", key="prev_btn", use_container_width=True):
+                navigate_to_previous_tab()
+
+# Refresh Button
+with col2:
     with stylable_container(
         "refresh_button",
         css_styles="""
         button {
-            background-color: #17a2b8 !important;
+            background-color: #6c757d !important;
             color: white !important;
-            border: 2px solid #138496 !important;
+            border: 1px solid #5a6268 !important;
             font-weight: bold !important;
             transition: all 0.3s ease !important;
         }
         button:hover {
-            background-color: #138496 !important;
+            background-color: #5a6268 !important;
             color: white !important;
-            transform: translateY(-2px) !important;
-            box-shadow: 0 4px 8px rgba(23, 162, 184, 0.3) !important;
+            transform: translateY(-1px) !important;
+        }
+        button:active {
+            background-color: #599cd4 !important;
+            border: 2px solid #4a8bc2 !important;
+            transform: translateY(0px) !important;
+            box-shadow: 0 2px 4px rgba(89, 156, 212, 0.4) !important;
         }
         """,
     ):
         if st.button("🔄 Refresh All Data", key="refresh_btn", use_container_width=True):
             refresh_all_data()
 
-with col2:
-    with stylable_container(
-        "generate_button",
-        css_styles="""
-        button {
-            background-color: #dc3545 !important;
-            color: white !important;
-            border: 2px solid #c82333 !important;
-            font-weight: bold !important;
-            transition: all 0.3s ease !important;
-        }
-        button:hover {
-            background-color: #c82333 !important;
-            color: white !important;
-            transform: translateY(-2px) !important;
-            box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3) !important;
-        }
-        """,
-    ):
-        if st.button("📊 Generate Presentation", key="generate_btn", use_container_width=True):
-            generate_presentation()
+# Next Button
+with col3:
+    is_last_tab = (st.session_state.active_tab == 3)
+    if is_last_tab:
+        with stylable_container(
+            "next_button_disabled",
+            css_styles="""
+            button {
+                background-color: #e9ecef !important;
+                color: #6c757d !important;
+                border: 1px solid #dee2e6 !important;
+                cursor: not-allowed !important;
+                opacity: 0.6 !important;
+                font-weight: bold !important;
+            }
+            """,
+        ):
+            st.button("Next ➡️", key="next_btn", use_container_width=True, disabled=True)
+    else:
+        with stylable_container(
+            "next_button",
+            css_styles="""
+            button {
+                background-color: #6c757d !important;
+                color: white !important;
+                border: 1px solid #5a6268 !important;
+                font-weight: bold !important;
+                transition: all 0.3s ease !important;
+            }
+            button:hover {
+                background-color: #5a6268 !important;
+                color: white !important;
+                transform: translateY(-1px) !important;
+            }
+            button:active {
+                background-color: #599cd4 !important;
+                border: 2px solid #4a8bc2 !important;
+                transform: translateY(0px) !important;
+                box-shadow: 0 2px 4px rgba(89, 156, 212, 0.4) !important;
+            }
+            """,
+        ):
+            if st.button("Next ➡️", key="next_btn", use_container_width=True):
+                navigate_to_next_tab()

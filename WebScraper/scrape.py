@@ -104,6 +104,8 @@ Services:
 - {'\n- '.join(details_obj.services)}
 """,details_obj.logo
 
+
+
 async def get_data(url:str):
 
     async with AsyncWebCrawler(config= browser_cfg) as crawler:
@@ -115,7 +117,7 @@ async def get_data(url:str):
         print(f"Successfully scraped : '\n\n\n {result.extracted_content}")    
         lists = json.loads(result.extracted_content)  # here instead of returning the last we may refine the one we need
         #print(lists)
-        print(aggregate_users(lists))
+        print(format_enterprise_details(aggregate_users(lists)))
         return format_enterprise_details(aggregate_users(lists))
     
     else:
