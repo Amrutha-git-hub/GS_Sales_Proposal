@@ -450,18 +450,7 @@ def render_preview_tab(client_data, seller_data, project_specs):
     gen_col1, gen_col2, gen_col3 = st.columns([1, 2, 1])
     
     with gen_col2:
-        st.markdown(f"""
-        <div style="text-align: center; padding: 20px; background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); 
-                    border-radius: 12px; border: 1px solid #cbd5e1; margin: 20px 0;">
-            <h4 style="color: #334155; margin-bottom: 10px;">Ready to Generate</h4>
-            <p style="color: #64748b; font-size: 14px; margin-bottom: 20px;">
-                Template: <strong>{selected_template_name}</strong><br>
-                Client: <strong>{client_name}</strong><br>
-                Value: <strong>${project_value:,}</strong>
-            </p>
-        </div>
-        """, unsafe_allow_html=True)
-        
+
         generate_clicked = st.button(
             "🚀 Generate Professional Proposal",
             type="primary",
