@@ -71,6 +71,8 @@ def get_linkedin(user_name):
     try:
         # Run the async function synchronously
         linkedin_profiles = asyncio.run(get_linkedin_p(user_name))
+        print(linkedin_profiles)
+        print(type(linkedin_profiles))
         return linkedin_profiles
     except Exception as e:
         print(f"Error: {e}")

@@ -4,7 +4,7 @@ from typing import Tuple, Dict, Optional
 from concurrent.futures import ThreadPoolExecutor
 import time
 from ProjectSpecification.proj_spec_css import proj_spec_css
-from Utils.ai_suggestion_utils import render_two_column_selector
+from Common_Utils.ai_suggestion_utils import render_two_column_selector
 from Recommendation.recommendation_utils import get_ai_proj_sepc_recommendations
 from Recommendation.prompts import *
 
@@ -294,7 +294,7 @@ def proj_specification_tab(client_data, seller_data):
         right_title="Scope Options",
         right_tooltip="Select scope elements to include in your project definition.",
         selected_border_color="#4a90e2",
-        
+                selected_color="#d2ebfb",
     )
     
     st.markdown("---")

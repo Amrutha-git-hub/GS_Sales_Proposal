@@ -3,10 +3,10 @@ import pandas as pd
 from typing import List
 import os
 
-from WebsiteUrl_Agent.agent_runner import get_urls
+from Search.WebsiteUrl_Agent.agent_runner import get_urls
 import asyncio 
-from Utils.pain_points_extractor import *
-from WebScraper.scrape import get_data
+from Common_Utils.pain_points_extractor import *
+from WebScraper.scrape_agent import get_data
 
 
 # Function to get URLs (placeholder function)

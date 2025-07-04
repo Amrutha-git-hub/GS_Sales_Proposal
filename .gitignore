@@ -1,8 +1,24 @@
-.env
-.pycache
-.pyc
-.ipynb
-.__pycache__
-.log
-.cyc
-.sqlite3
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Log files
+*.log
+
+# Cython files
+*.c
+*.cpp
+*.so
+*.cyc
+*.pyx
+*.pyd
+*.egg-info/
+
+# VSCode or IDE files (optional)
+.vscode/
+.idea/
+
+# MacOS & Linux system files (optional)
+.DS_Store
+Thumbs.db

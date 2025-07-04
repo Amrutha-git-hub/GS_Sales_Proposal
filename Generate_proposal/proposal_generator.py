@@ -4,8 +4,8 @@ import time
 from datetime import datetime
 import os
 from Generate_proposal.generate_proposal_css import *
-from PresentationWriting.src.main import get_presentation
-from Utils.logo_creator import create_text_image
+from SalesProposalWriting.src.main import get_presentation
+from Common_Utils.logo_creator import create_text_image
 
 def render_template_preview(template_name, template_key):
     """

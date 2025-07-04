@@ -6,7 +6,7 @@ from Seller.seller_css import seller_css
 from Seller.seller_utils import *
 from Search.Linkedin.linkedin_serp import *
 from Recommendation.recommendation_utils import *
-from Utils.ai_suggestion_utils import *
+from Common_Utils.ai_suggestion_utils import *
 
 # Configure logger
 logger = logging.getLogger(__name__)
@@ -794,7 +794,7 @@ def _render_enterprise_details_section(seller_state: SellerTabState):
             column_ratio=(2, 2, 2),
             column_gap="large",
             
-            left_title="Seller Enterprise Details",
+            left_title="Seller Services to be provided",
             left_tooltip="Define your enterprise details, services offered, company capabilities, core competencies, and business portfolio. This information helps clients understand your organizational strengths and service offerings.",
             left_required=True,
             textarea_height=200,
@@ -802,7 +802,7 @@ def _render_enterprise_details_section(seller_state: SellerTabState):
             textarea_session_key="seller_enterprise_content",
             textarea_widget_key="seller_enterprise_textarea",
             
-            unified_section_title="Available Services & Capabilities",
+            unified_section_title="Available Services",
             unified_section_tooltip="Select from available services and capabilities that represent your enterprise offerings. These can include technical services, consulting, products, or specialized business solutions.",
             
             middle_selected_items_key="selected_services_offered",

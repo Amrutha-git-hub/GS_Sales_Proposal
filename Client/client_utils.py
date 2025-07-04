@@ -3,9 +3,10 @@ import pandas as pd
 from typing import List
 import os
 
-from WebsiteUrl_Agent.agent_runner import get_urls
+from WebScraper.scrape_agent import get_data
+from Search.WebsiteUrl_Agent.agent_runner import get_urls
 import asyncio 
-from Utils.pain_points_extractor import *
+from Common_Utils.pain_points_extractor import *
 # Function to get URLs (placeholder function)
 
 def get_urls_list(company_name) -> List[str]:
@@ -37,7 +38,6 @@ def get_roles_list() -> List[str]:
     ]
 
 
-from WebScraper.scrape import get_data
 
 def get_url_details(url:str):
     """Use this if you want to run async function synchronously"""

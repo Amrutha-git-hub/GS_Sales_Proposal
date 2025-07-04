@@ -374,7 +374,7 @@ def client_tab(st,logger):
                                     logger.info(f"Logo found and saved: {logo_url}")
                                 
                                 # Check if scraping returned empty or no data
-                                if not website_details or len(website_details.strip()) == 0:
+                                if not website_details or len(website_details.strip()) <10:
                                     logger.warning(f"Website scraping returned empty data for: {client_data.pending_scrape_url}")
                                     ClientDataManager.update_client_data(
                                         scraping_in_progress=False,
@@ -385,6 +385,7 @@ def client_tab(st,logger):
                                     st.rerun()
                                 else:
                                     logger.info(f"Successfully scraped website details, length: {len(website_details)}")
+                                    
                                     
                                     # Prepare update parameters
                                     update_params = {
@@ -720,12 +721,13 @@ def client_tab(st,logger):
                         else:
                             # Dummy data when no client name or no file uploaded
                             rfi_pain_points_items = {
-                                "Revenue Challenges": "**Revenue Challenges** • Sales declined by 15% year-over-year despite market growth\n• Missed quarterly revenue targets by $2.3M for three consecutive quarters\n• Average deal size decreased by 22% due to increased price competition\n• Customer churn rate increased to 18%, up from 12% previous year\n• Revenue per customer dropped 8% as clients downgraded service tiers\n• New product launches generated only 60% of projected revenue\n• Seasonal revenue fluctuations creating 40% variance between peak and low periods\n• Pipeline conversion rates fell from 35% to 24% over past 12 months\n\n",
-                                
-                                "Cost and Margin Pressure": "**Cost and Margin Pressure** • Cost of Goods Sold increased by 12% due to supply chain disruptions\n• Labor costs rose 18% while productivity remained flat\n• Raw material prices up 25% with limited ability to pass costs to customers\n• Operational efficiency decreased by 14% due to outdated processes\n• Procurement costs increased 20% from supplier consolidation issues\n• Technology infrastructure costs grew 30% without proportional business benefits\n• Regulatory compliance expenses added $1.8M in unexpected annual costs\n• Facility and overhead costs up 16% while revenue remained stagnant\n\n",
-                                
-                                "Market Expansion and Customer Acquisition": "**Market Expansion and Customer Acquisition**\n\n • Win rate on new business opportunities dropped from 42% to 28%\n• Customer acquisition cost increased 35% while customer lifetime value declined\n• Expansion into new geographic markets yielding only 40% of projected results\n• Lack of local market knowledge resulting in 60% longer sales cycles\n• Digital marketing campaigns generating 50% fewer qualified leads\n• Competition from new market entrants capturing 25% of target customer segment\n• Limited brand recognition in new markets requiring 3x marketing investment\n• Difficulty penetrating enterprise accounts with average sales cycle extending to 18 months\n\n"
-                            }
+                                    "Revenue Challenges": "**Revenue Challenges** • Sales declined by XX year-over-year despite market growth\n• Missed quarterly revenue targets by XX for three consecutive quarters\n• Average deal size decreased by XX due to increased price competition\n• Customer churn rate increased to XX, up from XX previous year\n• Revenue per customer dropped XX as clients downgraded service tiers\n• New product launches generated only XX of projected revenue\n• Seasonal revenue fluctuations creating XX variance between peak and low periods\n• Pipeline conversion rates fell from XX to XX over past XX months\n\n",
+
+                                    "Cost and Margin Pressure": "**Cost and Margin Pressure** • Cost of Goods Sold increased by XX due to supply chain disruptions\n• Labor costs rose XX while productivity remained flat\n• Raw material prices up XX with limited ability to pass costs to customers\n• Operational efficiency decreased by XX due to outdated processes\n• Procurement costs increased XX from supplier consolidation issues\n• Technology infrastructure costs grew XX without proportional business benefits\n• Regulatory compliance expenses added XX in unexpected annual costs\n• Facility and overhead costs up XX while revenue remained stagnant\n\n",
+
+                                    "Market Expansion and Customer Acquisition": "**Market Expansion and Customer Acquisition**\n\n • Win rate on new business opportunities dropped from XX to XX\n• Customer acquisition cost increased XX while customer lifetime value declined\n• Expansion into new geographic markets yielding only XX of projected results\n• Lack of local market knowledge resulting in XX longer sales cycles\n• Digital marketing campaigns generating XX fewer qualified leads\n• Competition from new market entrants capturing XX of target customer segment\n• Limited brand recognition in new markets requiring XX marketing investment\n• Difficulty penetrating enterprise accounts with average sales cycle extending to XX months\n\n"
+                                }
+
                             logger.info("Using dummy pain points data as fallback")
 
                     except Exception as e:
@@ -966,177 +968,180 @@ def client_tab(st,logger):
             # SPOC Row
     except Exception as e:
         logger.error(f"Error in SPOC row: {str(e)}")
+
+
+
+
+        #____________________________________________________________________
+
     col_spoc1, col_spoc2 = st.columns([1, 1])
 
     with col_spoc1:
-        try:
-            st.markdown('''
-            <div class="tooltip-label">
-                SPOC Name
-                <div class="tooltip-icon" data-tooltip="Enter the Single Point of Contact (SPOC) name - the primary person responsible for communication and decision-making on the client side. This person will be your main contact throughout the project lifecycle.">ⓘ</div>
-            </div>
-            ''', unsafe_allow_html=True)
-            logger.info("Rendered SPOC name tooltip")
-        except Exception as e:
-            logger.error(f"Error rendering SPOC name tooltip: {str(e)}")
+        st.markdown('''
+        <div class="tooltip-label">
+            SPOC Name
+            <div class="tooltip-icon" data-tooltip="Enter the Single Point of Contact (SPOC) name - the primary person responsible for communication and decision-making on the client side. This person will be your main contact throughout the project lifecycle.">ⓘ</div>
+        </div>
+        ''', unsafe_allow_html=True)
         
-        try:
-            spoc_name = st.text_input(
-                label="SPOC Name", 
-                value=client_data.spoc_name,
-                placeholder="Enter SPOC full name...", 
-                key="spoc_name_input",
-                label_visibility="collapsed",
-                disabled=not client_name_provided
-            )
-            logger.info(f"SPOC name input rendered with value: {spoc_name}")
-        except Exception as e:
-            logger.error(f"Error creating SPOC name input: {str(e)}")
-            spoc_name = ""
+        spoc_name = st.text_input(
+            label="SPOC Name", 
+            value=client_data.spoc_name,
+            placeholder="Enter SPOC full name...", 
+            key="spoc_name_input",
+            label_visibility="collapsed",
+            disabled=not client_name_provided
+        )
         
-        try:
-            # Update client data when SPOC name changes
-            if spoc_name != client_data.spoc_name:
-                ClientDataManager.update_client_data(spoc_name=spoc_name)
-                logger.info(f"Updated SPOC name to: {spoc_name}")
-        except Exception as e:
-            logger.error(f"Error updating SPOC name: {str(e)}")
+        # Update client data when SPOC name changes
+        if spoc_name != client_data.spoc_name:
+            ClientDataManager.update_client_data(spoc_name=spoc_name)
         
-        try:
-            # Automatically search for LinkedIn profiles when SPOC name changes
-            if spoc_name and spoc_name.strip() and spoc_name != client_data.last_searched_spoc and client_name_provided:
-                with st.spinner(f"Searching LinkedIn profiles for {spoc_name}..."):
-                    # Assuming search_linkedin_serpapi is available
-                    #linkedin_profiles = search_linkedin_serpapi(spoc_name.strip())
-                    linkedin_profiles = get_linkedin(spoc_name.strip())
-                    ClientDataManager.update_client_data(
-                        linkedin_profiles=linkedin_profiles,
-                        last_searched_spoc=spoc_name
-                    )
-                    logger.info(f"LinkedIn search completed for: {spoc_name}")
-                    st.rerun()
-        except Exception as e:
-            logger.error(f"Error searching LinkedIn profiles: {str(e)}")
+        # Automatically search for LinkedIn profiles when SPOC name changes
+        if spoc_name and spoc_name.strip() and spoc_name != client_data.last_searched_spoc and client_name_provided:
+            with st.spinner(f"Searching LinkedIn profiles for {spoc_name}..."):
+                # Assuming search_linkedin_serpapi is available
+                print(f"Searching for {spoc_name}")
+                linkedin_profiles_raw = get_linkedin(spoc_name.strip())
+                
+                # Process LinkedIn profiles - handle both list and dict formats
+                processed_profiles = {}
+                if linkedin_profiles_raw:
+                    if isinstance(linkedin_profiles_raw, list):
+                        # Handle list format - merge all dictionaries
+                        for profile_dict in linkedin_profiles_raw:
+                            if isinstance(profile_dict, dict):
+                                processed_profiles.update(profile_dict)
+                    elif isinstance(linkedin_profiles_raw, dict):
+                        # Handle direct dictionary format
+                        processed_profiles = linkedin_profiles_raw
+                
+                ClientDataManager.update_client_data(
+                    linkedin_profiles=processed_profiles,
+                    last_searched_spoc=spoc_name
+                )
+                st.rerun()
 
     with col_spoc2:
-        try:
-            # Check if SPOC name is provided (for disabling LinkedIn field)
-            spoc_name_provided = bool(spoc_name and spoc_name.strip()) and client_name_provided
-            logger.info(f"SPOC name provided status: {spoc_name_provided}")
-        except Exception as e:
-            logger.error(f"Error checking SPOC name provided status: {str(e)}")
-            spoc_name_provided = False
+        # Check if SPOC name is provided (for disabling LinkedIn field)
+        spoc_name_provided = bool(spoc_name and spoc_name.strip()) and client_name_provided
         
-        try:
-            st.markdown('''
-            <div class="tooltip-label">
-                Select SPOC LinkedIn Profile
-                <div class="tooltip-icon" data-tooltip="Enter or select the LinkedIn profile URL of the SPOC. This helps in understanding their professional background, expertise, and communication style for better relationship building.">ⓘ</div>
-            </div>
-            ''', unsafe_allow_html=True)
-            logger.info("Rendered LinkedIn profile tooltip")
-        except Exception as e:
-            logger.error(f"Error rendering LinkedIn profile tooltip: {str(e)}")
+        st.markdown('''
+        <div class="tooltip-label">
+            Select SPOC LinkedIn Profile
+            <div class="tooltip-icon" data-tooltip="Enter or select the LinkedIn profile URL of the SPOC. This helps in understanding their professional background, expertise, and communication style for better relationship building.">ⓘ</div>
+        </div>
+        ''', unsafe_allow_html=True)
         
-        try:
-            # Prepare LinkedIn profile options
-            if spoc_name_provided and client_data.linkedin_profiles:
-                # Create options with profile titles for better selection
-                linkedin_options = ["Select a LinkedIn profile..."]
-                linkedin_url_mapping = {}  # To map display text to actual URL
-                
-                for url, profile_data in client_data.linkedin_profiles.items():
-                    display_text = f"{profile_data['role']} ({profile_data['name']})"
-                    linkedin_options.append(display_text)
-                    linkedin_url_mapping[display_text] = url
-                
-                selected_linkedin_display = st.selectbox(
-                    label="SPOC LinkedIn Profile",
-                    options=linkedin_options,
-                    key="spoc_linkedin_profile_selector",
-                    label_visibility="collapsed",
-                    disabled=not spoc_name_provided,
-                    accept_new_options=True,
-                )
-                
-                # Extract the actual URL from the selected option
-                if selected_linkedin_display != "Select a LinkedIn profile...":
-                    spoc_linkedin_profile = linkedin_url_mapping[selected_linkedin_display]
-                    ClientDataManager.update_client_data(spoc_linkedin_profile=spoc_linkedin_profile)
-                    logger.info(f"LinkedIn profile selected: {spoc_linkedin_profile}")
-                else:
-                    spoc_linkedin_profile = None
-                    logger.info("No LinkedIn profile selected")
-                    
-            elif spoc_name_provided and not client_data.linkedin_profiles:
-                # Show message when no profiles found
-                st.selectbox(
-                    label="SPOC LinkedIn Profile",
-                    options=["No LinkedIn profiles found. Try a different name."],
-                    key="spoc_linkedin_profile_selector",
-                    label_visibility="collapsed",
-                    disabled=True,
-                    accept_new_options=True
-                )
-                spoc_linkedin_profile = None
-                logger.info("No LinkedIn profiles found")
-            else:
-                # Default disabled state
-                spoc_linkedin_profile = st.selectbox(
-                    label="SPOC LinkedIn Profile",
-                    options=["Enter SPOC name to get LinkedIn profiles"],
-                    key="spoc_linkedin_profile_selector",
-                    label_visibility="collapsed",
-                    disabled=not spoc_name_provided,
-                    accept_new_options=True
-                )
-                logger.info("LinkedIn profile selector in disabled state")
-        except Exception as e:
-            logger.error(f"Error creating LinkedIn profile selector: {str(e)}")
-            spoc_linkedin_profile = None
-
-    try:
-        # Display selected profile information and handle dynamic updates
+        # Prepare LinkedIn profile options
         if spoc_name_provided and client_data.linkedin_profiles:
-            # Check if LinkedIn profile selection has changed
-            profile_changed = False
-            if 'spoc_linkedin_profile' in locals() and spoc_linkedin_profile:
-                if client_data.current_selected_profile_url != spoc_linkedin_profile:
-                    ClientDataManager.update_client_data(current_selected_profile_url=spoc_linkedin_profile)
-                    profile_changed = True
-                    logger.info(f"LinkedIn profile changed to: {spoc_linkedin_profile}")
-                    
-                selected_profile_data = client_data.linkedin_profiles.get(spoc_linkedin_profile)
-                if selected_profile_data:
-                    st.info(f"""**Selected Profile:** {selected_profile_data['role']} - {selected_profile_data['name']}  
-        **LinkedIn URL:** {spoc_linkedin_profile}""")
-                    
-                    # Update roles and priorities when profile changes
-                    if profile_changed:
-                        # Remove previously auto-populated LinkedIn role if it exists
-                        linkedin_roles_to_remove = []
-                        for i, role in enumerate(client_data.selected_target_roles):
+            # Create options with profile titles for better selection
+            linkedin_options = ["Select a LinkedIn profile..."]
+            linkedin_url_mapping = {}  # To map display text to actual URL
+            
+            for url, profile_data in client_data.linkedin_profiles.items():
+                # Handle both old and new profile data formats
+                if isinstance(profile_data, dict):
+                    name = profile_data.get('name', 'Unknown')
+                    role = profile_data.get('role', 'Unknown Role')
+                    display_text = f"{name} - {role}"
+                else:
+                    # Fallback for unexpected format
+                    display_text = f"Profile: {str(profile_data)}"
+                
+                linkedin_options.append(display_text)
+                linkedin_url_mapping[display_text] = url
+            
+            selected_linkedin_display = st.selectbox(
+                label="SPOC LinkedIn Profile",
+                options=linkedin_options,
+                key="spoc_linkedin_profile_selector",
+                label_visibility="collapsed",
+                disabled=not client_name_provided,
+                accept_new_options=True,
+            )
+            
+            # Extract the actual URL from the selected option
+            if selected_linkedin_display != "Select a LinkedIn profile...":
+                spoc_linkedin_profile = linkedin_url_mapping.get(selected_linkedin_display)
+                if spoc_linkedin_profile:
+                    ClientDataManager.update_client_data(spoc_linkedin_profile=spoc_linkedin_profile)
+            else:
+                spoc_linkedin_profile = None
+                
+        elif spoc_name_provided and not client_data.linkedin_profiles:
+            # Show message when no profiles found
+            st.selectbox(
+                label="SPOC LinkedIn Profile",
+                options=["No LinkedIn profiles found. Try a different name."],
+                key="spoc_linkedin_profile_selector",
+                label_visibility="collapsed",
+                disabled=True,
+                accept_new_options=True
+            )
+            spoc_linkedin_profile = None
+        else:
+            # Default disabled state
+            spoc_linkedin_profile = st.selectbox(
+                label="SPOC LinkedIn Profile",
+                options=["Enter SPOC name to get LinkedIn profiles"],
+                key="spoc_linkedin_profile_selector",
+                label_visibility="collapsed",
+                disabled=not spoc_name_provided,
+                accept_new_options=True
+            )
+
+    # Display selected profile information and handle dynamic updates
+    if spoc_name_provided and client_data.linkedin_profiles:
+        # Check if LinkedIn profile selection has changed
+        profile_changed = False
+        if 'spoc_linkedin_profile' in locals() and spoc_linkedin_profile:
+            if client_data.current_selected_profile_url != spoc_linkedin_profile:
+                ClientDataManager.update_client_data(current_selected_profile_url=spoc_linkedin_profile)
+                profile_changed = True
+                
+            selected_profile_data = client_data.linkedin_profiles.get(spoc_linkedin_profile)
+            if selected_profile_data and isinstance(selected_profile_data, dict):
+                name = selected_profile_data.get('name', 'Unknown')
+                role = selected_profile_data.get('role', 'Unknown Role')
+                st.info(f"""**Selected Profile:** {name} - {role}  
+    **LinkedIn URL:** {spoc_linkedin_profile}""")
+                
+                # Update roles and priorities when profile changes
+                if profile_changed:
+                    # Remove previously auto-populated LinkedIn role if it exists
+                    linkedin_roles_to_remove = []
+                    if hasattr(client_data, 'selected_target_roles') and isinstance(client_data.selected_target_roles, list):
+                        for i, existing_role in enumerate(client_data.selected_target_roles):
                             # Check if this role was from a previous LinkedIn profile
                             for url, profile in client_data.linkedin_profiles.items():
-                                if url != spoc_linkedin_profile and profile['role'] == role:
+                                if (url != spoc_linkedin_profile and 
+                                    isinstance(profile, dict) and 
+                                    profile.get('role') == existing_role):
                                     linkedin_roles_to_remove.append(i)
                                     break
-                        
+                    
                         # Remove old LinkedIn roles
                         for idx in reversed(linkedin_roles_to_remove):
                             client_data.selected_target_roles.pop(idx)
-                        
-                        # Add new LinkedIn role
-                        linkedin_role = selected_profile_data['role']
-                        if linkedin_role and linkedin_role not in client_data.selected_target_roles:
+                    
+                    # Add new LinkedIn role
+                    linkedin_role = selected_profile_data.get('role')
+                    if linkedin_role:
+                        if not hasattr(client_data, 'selected_target_roles'):
+                            client_data.selected_target_roles = []
+                        if linkedin_role not in client_data.selected_target_roles:
                             client_data.selected_target_roles.append(linkedin_role)
-                        
-                        # Remove old LinkedIn priorities and add new ones
+                    
+                    # Remove old LinkedIn priorities and add new ones
+                    if hasattr(client_data, 'selected_business_priorities') and isinstance(client_data.selected_business_priorities, list):
                         linkedin_priorities_to_remove = []
                         for priority in client_data.selected_business_priorities:
                             # Check if this priority was from a previous LinkedIn profile
                             for url, profile in client_data.linkedin_profiles.items():
-                                if url != spoc_linkedin_profile and priority in profile.get('top_3_priorities', []):
+                                if (url != spoc_linkedin_profile and 
+                                    isinstance(profile, dict) and 
+                                    priority in profile.get('top_3_priorities', [])):
                                     linkedin_priorities_to_remove.append(priority)
                                     break
                         
@@ -1144,219 +1149,204 @@ def client_tab(st,logger):
                         for priority in linkedin_priorities_to_remove:
                             if priority in client_data.selected_business_priorities:
                                 client_data.selected_business_priorities.remove(priority)
-                        
-                        # Add new LinkedIn priorities
-                        inferred_priorities = selected_profile_data.get('top_3_priorities', [])
-                        for priority in inferred_priorities:
-                            if priority not in client_data.selected_business_priorities:
-                                client_data.selected_business_priorities.append(priority)
-                        
-                        # Update client data
-                        ClientDataManager.update_client_data(
-                            selected_target_roles=client_data.selected_target_roles,
-                            selected_business_priorities=client_data.selected_business_priorities
-                        )
-                        logger.info("Updated roles and priorities based on LinkedIn profile change")
-                        
-                        # Force rerun to update the display
-                        st.rerun()
-            elif client_data.current_selected_profile_url is not None:
-                # Profile was deselected
-                ClientDataManager.update_client_data(current_selected_profile_url=None)
-                profile_changed = True
-                logger.info("LinkedIn profile deselected")
-    except Exception as e:
-        logger.error(f"Error handling LinkedIn profile changes: {str(e)}")
+                    
+                    # Add new LinkedIn priorities
+                    inferred_priorities = selected_profile_data.get('top_3_priorities', [])
+                    if not hasattr(client_data, 'selected_business_priorities'):
+                        client_data.selected_business_priorities = []
+                    
+                    for priority in inferred_priorities:
+                        if priority not in client_data.selected_business_priorities:
+                            client_data.selected_business_priorities.append(priority)
+                    
+                    # Update client data
+                    ClientDataManager.update_client_data(
+                        selected_target_roles=getattr(client_data, 'selected_target_roles', []),
+                        selected_business_priorities=getattr(client_data, 'selected_business_priorities', [])
+                    )
+                    
+                    # Force rerun to update the display
+                    st.rerun()
+        elif hasattr(client_data, 'current_selected_profile_url') and client_data.current_selected_profile_url is not None:
+            # Profile was deselected
+            ClientDataManager.update_client_data(current_selected_profile_url=None)
+            profile_changed = True
 
-    try:
-        # Roles and Priorities Row
-        col7, col8 = st.columns([1, 1])
-        logger.info("Created roles and priorities columns")
-    except Exception as e:
-        logger.error(f"Error creating roles and priorities columns: {str(e)}")
+    # Roles and Priorities Row
+    col7, col8 = st.columns([1, 1])
 
     with col7:
-        try:
-            st.markdown('''
-            <div class="tooltip-label">
-                SPOC Role 
-                <div class="tooltip-icon" data-tooltip="Select specific roles or positions within the client organization that your proposal should target. These are key stakeholders who will be involved in the decision-making process.">ⓘ</div>
-            </div>
-            ''', unsafe_allow_html=True)
-            logger.info("Rendered SPOC role tooltip")
-        except Exception as e:
-            logger.error(f"Error rendering SPOC role tooltip: {str(e)}")
+        st.markdown('''
+        <div class="tooltip-label">
+            SPOC Role 
+            <div class="tooltip-icon" data-tooltip="Select specific roles or positions within the client organization that your proposal should target. These are key stakeholders who will be involved in the decision-making process.">ⓘ</div>
+        </div>
+        ''', unsafe_allow_html=True)
 
-        try:
-            # Prepare role options for dropdown based on LinkedIn profile selection
-            role_options = ["Select a role..."]
+        # Prepare role options for dropdown based on LinkedIn profile selection
+        role_options = ["Select a role..."]
+        
+        # Get default roles from function (assuming this function exists)
+        target_roles_list = get_roles_list() or []
+        
+        # Check if a LinkedIn profile is selected
+        selected_linkedin_role = None
+        if (spoc_name_provided and 
+            client_data.linkedin_profiles and 
+            'spoc_linkedin_profile' in locals() and 
+            spoc_linkedin_profile):
             
-            # Get default roles from function (assuming this function exists)
-            target_roles_list = get_roles_list() or []
-            logger.info(f"Retrieved {len(target_roles_list)} default roles")
+            # Get the selected LinkedIn profile data
+            selected_profile_data = client_data.linkedin_profiles.get(spoc_linkedin_profile)
+            if selected_profile_data and isinstance(selected_profile_data, dict):
+                selected_linkedin_role = selected_profile_data.get('role')
+                if selected_linkedin_role:
+                    # Show LinkedIn profile role + default roles from get_roles_list()
+                    role_options = ["Select a role...", selected_linkedin_role]
+                    # Add default roles, avoiding duplicates
+                    for role in target_roles_list:
+                        if role not in role_options:
+                            role_options.append(role)
+        
+        # If no LinkedIn profile selected, show all available roles
+        if not selected_linkedin_role:
+            # Add standard roles from get_roles_list()
+            role_options.extend(target_roles_list)
             
-            # Check if a LinkedIn profile is selected
-            selected_linkedin_role = None
-            if (spoc_name_provided and 
-                client_data.linkedin_profiles and 
-                'spoc_linkedin_profile' in locals() and 
-                spoc_linkedin_profile):
-                
-                # Get the selected LinkedIn profile data
-                selected_profile_data = client_data.linkedin_profiles.get(spoc_linkedin_profile)
-                if selected_profile_data:
-                    selected_linkedin_role = selected_profile_data.get('role')
-                    if selected_linkedin_role:
-                        # Show LinkedIn profile role + default roles from get_roles_list()
-                        role_options = ["Select a role...", selected_linkedin_role]
-                        # Add default roles, avoiding duplicates
-                        for role in target_roles_list:
-                            if role not in role_options:
-                                role_options.append(role)
-                        logger.info(f"Added LinkedIn role: {selected_linkedin_role}")
-            
-            # If no LinkedIn profile selected, show all available roles
-            if not selected_linkedin_role:
-                # Add standard roles from get_roles_list()
-                role_options.extend(target_roles_list)
-                
-                # Add LinkedIn roles if available (but no specific profile selected)
-                if spoc_name_provided and client_data.linkedin_profiles:
-                    for url, profile_data in client_data.linkedin_profiles.items():
+            # Add LinkedIn roles if available (but no specific profile selected)
+            if spoc_name_provided and client_data.linkedin_profiles:
+                for url, profile_data in client_data.linkedin_profiles.items():
+                    if isinstance(profile_data, dict):
                         linkedin_role = profile_data.get('role')
                         if linkedin_role and linkedin_role not in role_options:
                             role_options.append(linkedin_role)
-        except Exception as e:
-            logger.error(f"Error preparing role options: {str(e)}")
-            role_options = ["Select a role..."]
 
-        try:
-            # Determine the default/current value for the selectbox
-            current_selection = "Select a role..."
-            if selected_linkedin_role and selected_linkedin_role in role_options:
-                # Auto-select the LinkedIn role
-                current_selection = selected_linkedin_role
-            elif "target_role_selector_dropdown" in st.session_state:
-                # Keep the current selection if it exists in options
-                current_value = st.session_state["target_role_selector_dropdown"]
-                if current_value in role_options:
-                    current_selection = current_value
+        # Determine the default/current value for the selectbox
+        current_selection = "Select a role..."
+        if selected_linkedin_role and selected_linkedin_role in role_options:
+            # Auto-select the LinkedIn role
+            current_selection = selected_linkedin_role
+        elif "target_role_selector_dropdown" in st.session_state:
+            # Keep the current selection if it exists in options
+            current_value = st.session_state["target_role_selector_dropdown"]
+            if current_value in role_options:
+                current_selection = current_value
 
-            # ROLES DROPDOWN - Only one role can be selected
-            selected_target_role = st.selectbox(
-                label="Target Role Selector", 
-                options=role_options,
-                index=role_options.index(current_selection) if current_selection in role_options else 0,
-                key="target_role_selector_dropdown",
-                label_visibility="collapsed",
-                disabled=not (client_name_provided and spoc_name_provided),
-                accept_new_options=True
-            )
-            logger.info(f"Role selector rendered with selection: {selected_target_role}")
-        except Exception as e:
-            logger.error(f"Error creating role selector: {str(e)}")
-            selected_target_role = None
+        # ROLES DROPDOWN - Only one role can be selected
+        selected_target_role = st.selectbox(
+            label="Target Role Selector", 
+            options=role_options,
+            index=role_options.index(current_selection) if current_selection in role_options else 0,
+            key="target_role_selector_dropdown",
+            label_visibility="collapsed",
+            disabled=not (client_name_provided and spoc_name_provided),
+            accept_new_options=True
+        )
 
-        try:
-            # Update client_data with the single selected role
-            if selected_target_role and selected_target_role != "Select a role...":
-                # Store as a single role, not a list
-                client_data.selected_target_role = selected_target_role
-                ClientDataManager.update_client_data(selected_target_role=selected_target_role)
-                logger.info(f"Updated selected target role: {selected_target_role}")
-            else:
-                client_data.selected_target_role = None
-                ClientDataManager.update_client_data(selected_target_role=None)
-                logger.info("Cleared selected target role")
-        except Exception as e:
-            logger.error(f"Error updating selected target role: {str(e)}")
+        # Update client_data with the single selected role
+        if selected_target_role and selected_target_role != "Select a role...":
+            # Store as a single role, not a list
+            client_data.selected_target_role = selected_target_role
+            ClientDataManager.update_client_data(selected_target_role=selected_target_role)
+        else:
+            client_data.selected_target_role = None
+            ClientDataManager.update_client_data(selected_target_role=None)
 
     with col8:
-        try:
-            # Label with tooltip
-            st.markdown('''
-            <div class="tooltip-label">
-                SPOC Business priorities
-                <div class="tooltip-icon" data-tooltip="Select Business priorities of the SPOC based on their role.">ⓘ</div>
-            </div>
-            ''', unsafe_allow_html=True)
-            logger.info("Rendered business priorities tooltip")
-        except Exception as e:
-            logger.error(f"Error rendering business priorities tooltip: {str(e)}")
+        # Label with tooltip
+        st.markdown('''
+        <div class="tooltip-label">
+            SPOC Business priorities
+            <div class="tooltip-icon" data-tooltip="Select Business priorities of the SPOC based on their role.">ⓘ</div>
+        </div>
+        ''', unsafe_allow_html=True)
 
-        try:
-            # Default priorities (used if role is not selected or error occurs)
-            default_priorities = [
-                {'title': 'Revenue Growth and Market Share Expansion', 'icon': '📈'}, 
-                {'title': 'Profitability and Cost Optimization', 'icon': '💰'}, 
-                {'title': 'Digital Transformation and Innovation', 'icon': '🤖'}
-            ]
+        # Default priorities (used if role is not selected or error occurs)
+        default_priorities = [
+            {'title': 'Revenue Growth and Market Share Expansion', 'icon': '📈'}, 
+            {'title': 'Profitability and Cost Optimization', 'icon': '💰'}, 
+            {'title': 'Digital Transformation and Innovation', 'icon': '🤖'}
+        ]
 
-            # Load role-based priorities if role is selected
-            business_priorities_list = default_priorities  # Start with default
-            if (
-                spoc_name_provided and 
-                hasattr(client_data, 'selected_target_role') and 
-                client_data.selected_target_role and 
-                client_data.selected_target_role != "Select a role..."
-            ):
-                try:
-                    role_priorities = get_ai_business_priorities(client_data.selected_target_role)
-                    if role_priorities:
-                        business_priorities_list = role_priorities
-                        logger.info(f"Loaded {len(business_priorities_list)} role-based priorities")
-                except Exception as priority_error:
-                    logger.error(f"Error loading role-based priorities: {str(priority_error)}")
-                    pass  # Silently fall back to default
+        # Initialize selected_business_priorities if missing
+        if not hasattr(client_data, 'selected_business_priorities'):
+            client_data.selected_business_priorities = []
+
+        # Track the current role to detect role changes
+        current_role = getattr(client_data, 'selected_target_role', None)
+        session_key = "last_role_for_priorities"
+
+        # Initialize session state tracking for last role
+        if session_key not in st.session_state:
+            st.session_state[session_key] = None
+
+        # Load role-based priorities only when role changes or is first loaded
+        if current_role and current_role != "Select a role..." and current_role != st.session_state[session_key]:
+            try:
+                role_priorities = get_ai_business_priorities(current_role)
+                if role_priorities:
+                    # Store the priorities for this role
+                    ClientDataManager.update_client_data(
+                        current_role_priorities=role_priorities,
+                    )
+                    business_priorities_list = role_priorities
+                else:
+                    business_priorities_list = default_priorities
+                    ClientDataManager.update_client_data(
+                        current_role_priorities=default_priorities,
+                    )
+                st.session_state[session_key] = current_role
+                # Clear initialization flags when role changes to reset checkboxes
+                keys_to_remove = [key for key in st.session_state.keys() if key.startswith("initialized_business_priority_checkbox_")]
+                for key in keys_to_remove:
+                    del st.session_state[key]
+            except Exception:
+                business_priorities_list = default_priorities
+                ClientDataManager.update_client_data(
+                    current_role_priorities=default_priorities,
+                )
+                st.session_state[session_key] = current_role
+        else:
+            # Use cached priorities for the current role
+            business_priorities_list = getattr(client_data, 'current_role_priorities', default_priorities)
+
+        # Show checkboxes for priorities
+        for i, priority in enumerate(business_priorities_list):
+            priority_title = priority.get('title') if isinstance(priority, dict) else str(priority)
+            priority_icon = priority.get('icon', '📋') if isinstance(priority, dict) else '📋'
+            display_text = f"{priority_icon} **{priority_title}**"
             
-            logger.info(f"Using {len(business_priorities_list)} business priorities")
-        except Exception as e:
-            logger.error(f"Error preparing business priorities: {str(e)}")
-            business_priorities_list = default_priorities
+            # Create unique key for this checkbox
+            checkbox_key = f"business_priority_checkbox_{i}_{hash(current_role or 'none')}"
+            
+            # Only set initial value when role changes or first time
+            if (f"initialized_{checkbox_key}" not in st.session_state or 
+                current_role != st.session_state[session_key]):
+                st.session_state[checkbox_key] = priority_title in client_data.selected_business_priorities
+                st.session_state[f"initialized_{checkbox_key}"] = True
+            
+            is_enabled = (
+                spoc_name_provided and 
+                current_role and 
+                current_role != "Select a role..."
+            )
+            
+            # Use checkbox without value parameter to prevent automatic rerun
+            is_checked = st.checkbox(
+                display_text,
+                key=checkbox_key,
+                disabled=not is_enabled
+            )
 
-        try:
-            # Initialize selected_business_priorities if missing
-            if not hasattr(client_data, 'selected_business_priorities'):
-                client_data.selected_business_priorities = []
-                logger.info("Initialized selected_business_priorities")
-        except Exception as e:
-            logger.error(f"Error initializing selected_business_priorities: {str(e)}")
+            # Update the client data based on checkbox state
+            if is_checked and priority_title not in client_data.selected_business_priorities:
+                client_data.selected_business_priorities.append(priority_title)
+            elif not is_checked and priority_title in client_data.selected_business_priorities:
+                client_data.selected_business_priorities.remove(priority_title)
 
-        try:
-            # Show checkboxes for priorities
-            for i, priority in enumerate(business_priorities_list):
-                priority_title = priority.get('title') if isinstance(priority, dict) else str(priority)
-                priority_icon = priority.get('icon', '📋') if isinstance(priority, dict) else '📋'
-                display_text = f"{priority_icon} **{priority_title}**"
-                
-                # Determine checkbox state
-                default_checked = priority_title in client_data.selected_business_priorities
-                is_enabled = (
-                    spoc_name_provided and 
-                    hasattr(client_data, 'selected_target_role') and 
-                    client_data.selected_target_role and 
-                    client_data.selected_target_role != "Select a role..."
-                )
-                
-                is_checked = st.checkbox(
-                    display_text,
-                    key=f"business_priority_checkbox_{i}",
-                    value=default_checked,
-                    disabled=not spoc_name_provided
-                )
-
-                # Update selected priorities
-                if is_checked and priority_title not in client_data.selected_business_priorities:
-                    client_data.selected_business_priorities.append(priority_title)
-                    ClientDataManager.update_client_data(selected_business_priorities=client_data.selected_business_priorities)
-                    logger.info(f"Added business priority: {priority_title}")
-                elif not is_checked and priority_title in client_data.selected_business_priorities:
-                    client_data.selected_business_priorities.remove(priority_title)
-                    ClientDataManager.update_client_data(selected_business_priorities=client_data.selected_business_priorities)
-                    logger.info(f"Removed business priority: {priority_title}")
-        except Exception as e:
-            logger.error(f"Error handling business priorities checkboxes: {str(e)}")
-
+        # Update client data without causing rerun
+        if hasattr(client_data, 'selected_business_priorities'):
+            ClientDataManager.update_client_data(selected_business_priorities=client_data.selected_business_priorities)
     try:
         col9, col10 = st.columns([1, 1])
         logger.info("Created additional requirements columns")
@@ -1535,8 +1525,8 @@ def client_tab(st,logger):
                             try:
                                 # Style the content box based on selection state
                                 if is_selected:
-                                    background_color = "#2e7d32"
-                                    border_color = "#5a9f9f"
+                                    background_color = "#d2ebfb"
+                                    border_color = "#4a90e2"
                                     text_color = "#ffffff"
                                     icon = "✅"
                                     box_shadow = "0 2px 8px rgba(76, 175, 80, 0.3)"

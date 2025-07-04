@@ -128,7 +128,7 @@ def navigate_to_next_tab():
         st.rerun()
 
 # NOTE: Add this line at the very top of your main script (before any other Streamlit commands):
-# st.set_page_config(page_title="Sales Proposal Generator", page_icon="📊", layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="CoXPRT", page_icon="Images/gs_logo.png", layout="wide")
         
 from main_css import *
 st.markdown(app_css, unsafe_allow_html=True)
