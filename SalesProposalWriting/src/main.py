@@ -2,7 +2,11 @@ from SalesProposalWriting.src.agent import graph
 from SalesProposalWriting.src.states import State
 from WebScraper.state import User
 from SalesProposalWriting.src.sales_proposal_html_writing import generate_modern_presentation
-from SalesProposalWriting.src.utils import  get_color_from_image
+from SalesProposalWriting.src.utils import  *
+from dotenv import load_dotenv
+load_dotenv()
+import os 
+OUTPUT_FILE_DIRECTORY = os.getenv("OUTPUT_PATH")
 
 
 
@@ -91,13 +95,16 @@ def get_presentation(client , seller , project_specs ):
     # seller = parse_to_user(seller)
     #print(type(buyer),buyer)
     state = State(client = client , seller=seller , project_specs=project_specs,sections=[],final_result='')
-    state = graph.invoke(state)
+    #state = graph.invoke(state)
     colors = [ '#4F4F4F', '#101213', '#DBDBDB', '#299E75']
 
-    client_logo = client['enterprise_logo']
-    seller_logo = seller['enterprise_logo']
-    generate_modern_presentation(filename  = 'output.txt',logo_url=client_logo,logo_url_2 = seller_logo ,output_format='pdf')
-    return 'output_proposal.pdf'
+    client_logo = client.enterprise_logo
+    seller_logo = seller.enterprise_logo
+    target = os.path.join(OUTPUT_FILE_DIRECTORY,client.enterprise_name)
+    file_path = os.path.join(target,"salesproposal.txt")
+    html = generate_modern_presentation(filename  = file_path ,logo_url=client_logo,logo_url_2 = seller_logo ,output_format='pdf')
+    inline_editable_html_component(html)
+    return html
 
 
 

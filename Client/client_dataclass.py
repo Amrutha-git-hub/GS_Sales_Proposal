@@ -12,6 +12,7 @@ class ClientData:
     website_urls_list: List[str] = field(default_factory=list)
     enterprise_logo : str = ""
     
+    
     # Client details and requirements
     enterprise_details_content: str = ""
     client_requirements_content: str = ""

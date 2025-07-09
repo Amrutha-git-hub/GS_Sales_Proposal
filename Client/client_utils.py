@@ -124,7 +124,7 @@ def save_uploaded_file(uploaded_file, save_dir="uploaded_rf_is"):
 
     return save_path
 
-def save_uploaded_file_and_get_path(uploaded_file):
+def save_uploaded_file_and_get_path(uploaded_file,):
     """Save uploaded file to a temporary directory and return the file path"""
     if uploaded_file is not None:
         # Create uploads directory if it doesn't exist

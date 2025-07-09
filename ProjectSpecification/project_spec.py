@@ -208,7 +208,7 @@ def get_section_data(section_name):
     else:
         return {}
 
-def proj_specification_tab(client_data, seller_data):
+def proj_specification_tab(client_data, seller_data,is_locked):
     # Initialize async session state
     init_async_session_state()
     

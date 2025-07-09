@@ -147,7 +147,7 @@ client_css = """
     }
     
     .add-button {
-        background: #28a745;
+        background:"#d2ebfb";
         color: white;
         border: none;
         padding: 6px 12px;

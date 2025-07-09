@@ -871,17 +871,8 @@ def generate_modern_presentation(
         
         print(f"✅ Generated HTML proposal: {html_filename}")
         
-        # Optional: Generate PDF using weasyprint if available
-        if output_format in ['pdf', 'both']:
-            try:
-                import weasyprint
-                pdf_filename = f"{base_name}_proposal.pdf"
-                weasyprint.HTML(string=html_content).write_pdf(pdf_filename)
-                print(f"✅ Generated PDF proposal: {pdf_filename}")
-            except ImportError:
-                print("⚠️  PDF generation requires 'weasyprint' package. Install with: pip install weasyprint")
         
-        return html_filename
+        return html_content
         
     except Exception as e:
         print(f"❌ Error generating proposal: {str(e)}")

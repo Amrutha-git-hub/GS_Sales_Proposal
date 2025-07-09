@@ -1,1029 +1,1010 @@
+from dataclasses import dataclass, field
+from typing import Dict, List, Optional, Any
 import streamlit as st
-from datetime import datetime
+import logging
+from Seller.seller_css import seller_css
+from Seller.seller_utils import *
+from Search.Linkedin.linkedin_serp import *
+from Recommendation.recommendation_utils import *
+from Common_Utils.ai_suggestion_utils import *
 
-def inline_editable_html_component(initial_html="", height=600, key=None):
-    """
-    Advanced HTML editor with direct inline editing, toolbar, and enhanced features.
+# Configure logger
+
+
+@dataclass
+class SellerTabState:
+    """Dataclass to manage all seller tab state with persistence across tab switches."""
     
-    Args:
-        initial_html (str): Initial HTML content to display
-        height (int): Height of the component in pixels
-        key (str): Unique key for the component (used for session state)
+    # Basic seller information
+    seller_enterprise_name: str = ""
+    seller_website_url: str = ""
+    seller_website_urls_list: List[str] = field(default_factory=list)
+    last_seller_company_name: str = ""
+    last_analyzed_seller_url: Optional[str] = None
     
-    Returns:
-        str: The edited HTML content
-    """
+    # Content fields
+    enterprise_logo :str = ""
+    seller_enterprise_details_content: str = ""
+    seller_requirements_content: str = ""
     
-    if key is None:
-        key = "inline_html_editor"
+    # Document handling
+    seller_uploaded_file_path: Optional[str] = None
+    seller_uploaded_files_paths: Dict[str, str] = field(default_factory=dict)
+    seller_services_by_file: Dict[str, Dict[str, Any]] = field(default_factory=dict)
+    seller_services_items: Dict[str, Any] = field(default_factory=dict)
+    seller_document_analyzed: bool = False
     
-    # Initialize session state
-    if f"{key}_content" not in st.session_state:
-        st.session_state[f"{key}_content"] = initial_html
+    # Processing states
+    show_validation: bool = False
+    url_search_in_progress: bool = False
+    url_search_company: str = ""
+    seller_scraping_in_progress: bool = False
+    seller_pending_scrape_url: Optional[str] = None
+    processing_all_seller_documents: bool = False
     
-    current_content = st.session_state[f"{key}_content"]
+    # LinkedIn related
+    seller_linkedin_profiles: Dict[str, Any] = field(default_factory=dict)
+    last_searched_seller_spoc: str = ""
     
-    # Enhanced editable HTML with toolbar and advanced features
-    advanced_html_template = f"""
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <style>
-            body {{
-                font-family: Arial, sans-serif;
-                margin: 0;
-                padding: 20px;
-                background-color: #f8f9fa;
-            }}
+    # RFI and pain points
+    seller_rfi_pain_points_items: Dict[str, Any] = field(default_factory=dict)
+    
+    # Service selection states
+    selected_services_offered: Dict[str, bool] = field(default_factory=dict)
+    services_content_map: Dict[str, str] = field(default_factory=dict)
+    selected_additional_capabilities: Dict[str, bool] = field(default_factory=dict)
+    capabilities_content_map: Dict[str, str] = field(default_factory=dict)
+    
+    def to_session_state(self) -> None:
+        """Save all dataclass fields to Streamlit session state."""
+        try:
+            for field_name, field_value in self.__dict__.items():
+                st.session_state[field_name] = field_value
+            logger.debug("Seller tab state saved to session state")
+        except Exception as e:
+            logger.error(f"Error saving seller state to session: {str(e)}")
+    
+    @classmethod
+    def from_session_state(cls) -> 'SellerTabState':
+        """Load seller tab state from Streamlit session state."""
+        try:
+            # Get all field names from the dataclass
+            field_names = {f.name for f in cls.__dataclass_fields__.values()}
             
-            .editor-container {{
-                background: white;
-                border-radius: 8px;
-                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-                padding: 20px;
-                margin-bottom: 20px;
-            }}
+            # Create kwargs dict with values from session state or defaults
+            kwargs = {}
+            for field_name in field_names:
+                if field_name in st.session_state:
+                    kwargs[field_name] = st.session_state[field_name]
             
-            .toolbar {{
-                position: sticky;
-                top: 0;
-                background: #343a40;
-                color: white;
-                padding: 10px;
-                border-radius: 5px;
-                margin-bottom: 20px;
-                display: flex;
-                gap: 10px;
-                align-items: center;
-                z-index: 100;
-            }}
+            instance = cls(**kwargs)
+            logger.debug("Seller tab state loaded from session state")
+            return instance
             
-            .toolbar button {{
-                background: #007bff;
-                color: white;
-                border: none;
-                padding: 5px 10px;
-                border-radius: 3px;
-                cursor: pointer;
-                font-size: 12px;
-            }}
+        except Exception as e:
+            logger.error(f"Error loading seller state from session: {str(e)}")
+            return cls()  # Return default instance on error
+    
+    def update_field(self, field_name: str, value: Any) -> None:
+        """Update a specific field and sync to session state."""
+        try:
+            if hasattr(self, field_name):
+                setattr(self, field_name, value)
+                st.session_state[field_name] = value
+                logger.debug(f"Updated seller state field: {field_name}")
+            else:
+                logger.warning(f"Attempted to update non-existent field: {field_name}")
+        except Exception as e:
+            logger.error(f"Error updating field {field_name}: {str(e)}")
+    
+    def clear_url_data(self) -> None:
+        """Clear URL-related data when company name changes."""
+        try:
+            self.seller_website_urls_list = []
+            self.last_seller_company_name = ""
+            self.url_search_in_progress = False
+            self.url_search_company = ""
+            self.to_session_state()
+            logger.debug("URL data cleared")
+        except Exception as e:
+            logger.error(f"Error clearing URL data: {str(e)}")
+    
+    def reset_processing_states(self) -> None:
+        """Reset all processing-related states."""
+        try:
+            self.url_search_in_progress = False
+            self.seller_scraping_in_progress = False
+            self.processing_all_seller_documents = False
+            self.seller_pending_scrape_url = None
+            self.url_search_company = ""
+            self.to_session_state()
+            logger.debug("Processing states reset")
+        except Exception as e:
+            logger.error(f"Error resetting processing states: {str(e)}")
+    
+    def add_processed_file(self, file_key: str, filename: str, services: Dict[str, Any], file_path: str) -> None:
+        """Add a processed file to the state."""
+        try:
+            self.seller_services_by_file[file_key] = {
+                'filename': filename,
+                'services': services,
+                'file_path': file_path
+            }
             
-            .toolbar button:hover {{
-                background: #0056b3;
-            }}
+            # Update services items
+            if isinstance(services, dict):
+                self.seller_services_items.update(services)
             
-            [contenteditable="true"] {{
-                outline: none;
-                transition: all 0.2s ease;
-                border-radius: 4px;
-                padding: 2px;
-            }}
-            
-            [contenteditable="true"]:hover {{
-                background-color: rgba(0, 123, 255, 0.05);
-            }}
-            
-            [contenteditable="true"]:focus {{
-                outline: none;
-                background-color: rgba(40, 167, 69, 0.05);
-            }}
-            
-            .status-bar {{
-                position: fixed;
-                bottom: 20px;
-                right: 20px;
-                background: #28a745;
-                color: white;
-                padding: 8px 16px;
-                border-radius: 20px;
-                font-size: 12px;
-                z-index: 1000;
-                display: none;
-                animation: fadeIn 0.3s ease;
-            }}
-            
-            @keyframes fadeIn {{
-                from {{ opacity: 0; transform: translateY(10px); }}
-                to {{ opacity: 1; transform: translateY(0); }}
-            }}
-            
-            .edit-mode {{
-                border: 2px solid #007bff;
-                border-radius: 8px;
-                padding: 10px;
-                margin: 10px 0;
-            }}
-        </style>
-    </head>
-    <body>
-        <div class="toolbar">
-            <span>🔧 Edit Mode Active</span>
-            <button onclick="toggleEditMode()">Toggle Edit Mode</button>
-            <button onclick="addParagraph()">+ Add Paragraph</button>
-            <button onclick="addHeading()">+ Add Heading</button>
-            <button onclick="exportHTML()">Export HTML</button>
-            <span id="wordCount">Words: 0</span>
-        </div>
+            self.seller_document_analyzed = True
+            self.to_session_state()
+            logger.debug(f"Added processed file: {filename}")
+        except Exception as e:
+            logger.error(f"Error adding processed file: {str(e)}")
+    
+    def is_file_processed(self, file_key: str) -> bool:
+        """Check if a file has been processed."""
+        return file_key in self.seller_services_by_file
+    
+    def get_processed_files_count(self) -> int:
+        """Get count of processed files."""
+        return len(self.seller_services_by_file)
+    
+    def validate_required_fields(self) -> Dict[str, bool]:
+        """Validate required fields and return validation results."""
+        validation_results = {
+            'seller_enterprise_name': bool(self.seller_enterprise_name and self.seller_enterprise_name.strip()),
+            'seller_website_url': bool(self.seller_website_url and self.seller_website_url.strip()),
+            'seller_enterprise_details_content': bool(self.seller_enterprise_details_content and self.seller_enterprise_details_content.strip())
+        }
+        return validation_results
+
+
+def seller_tab(is_locked,logger):
+    """Main seller tab function with dataclass-based state management."""
+
+    try:
+        logger.info("Starting seller_tab function")
         
-        <div class="status-bar" id="statusBar">💾 Changes saved automatically!</div>
+        # Load or create seller state
+        seller_state = SellerTabState.from_session_state()
         
-        <div class="editor-container">
-            <div id="editableContent" class="edit-mode">
-                {current_content}
+        # Re-apply CSS after every rerun to ensure persistence
+        try:
+            st.markdown(seller_css, unsafe_allow_html=True)
+            st.markdown("""
+                                                <style>
+                                                /* Force override all button styling */
+                                                button[kind="secondary"] {
+                                                    height: 48px !important;
+                                                    border: 2.2px solid #618f8f !important;
+                                                    border-radius: 12px !important;
+                                                    background-color: #4a4a4a !important;  /* Dark greyish background */
+                                                    color: white !important;  /* White text */
+                        transform: translateY(-5px);
+                                                }
+
+                                                button[kind="secondary"]:hover {
+                                                    border: 2.2px solid #618f8f !important;
+                                                    background-color: #5a5a5a !important;  /* Slightly lighter on hover */
+                                                    color: white !important;  /* Keep white text on hover */
+                        transform: translateY(-5px);
+                                                }
+
+                                                button[kind="secondary"]:focus {
+                                                    border: 2.2px solid #618f8f !important;
+                                                    outline: 2px solid #618f8f !important;
+                                                    background-color: #4a4a4a !important;  /* Keep dark background on focus */
+                                                    color: white !important;  /* Keep white text on focus */
+                        transform: translateY(-5px);
+                                                }
+
+                                                /* Try targeting by data attributes */
+                                                [data-testid] button {
+                                                    border: 2.2px solid #618f8f !important;
+                                                    height: 48px !important;
+                                                    background-color: #4a4a4a !important;  /* Dark greyish background */
+                                                    color: white !important;  /* White text */
+                                                }
+
+                                                /* Additional targeting for button text specifically */
+                                                button[kind="secondary"] p,
+                                                button[kind="secondary"] span,
+                                                button[kind="secondary"] div {
+                                                    color: white !important;
+                                                }
+
+                                                [data-testid] button p,
+                                                [data-testid] button span,
+                                                [data-testid] button div {
+                                                    color: white !important;
+                                                }
+                                                </style>
+                                                """, unsafe_allow_html=True)
+            logger.debug("CSS applied successfully")
+        except Exception as e:
+            logger.error(f"Error applying CSS: {str(e)}")
+            st.error("Error loading page styles")
+            
+        # Render main UI components
+        _render_top_section(seller_state,is_locked,logger)
+        _render_document_upload_section(seller_state,is_locked,logger)
+        _render_enterprise_details_section(seller_state,logger)
+        
+        logger.info("Seller tab rendered successfully")
+        
+    except Exception as e:
+        logger.error(f"Critical error in seller_tab: {str(e)}", exc_info=True)
+        st.error("A critical error occurred while loading the seller tab. Please refresh the page.")
+    return seller_state
+
+def _render_top_section(seller_state: SellerTabState,is_locked,logger):
+    """Render the top section with seller name and URL inputs."""
+    try:
+        logger.debug("Rendering top section")
+        
+        # Top section with seller name and URLs
+        col1, col2 = st.columns([1, 1])
+        
+        with col1:
+            _render_seller_name_input(seller_state,is_locked,logger)
+        
+        with col2:
+            _render_website_url_section(seller_state,is_locked,logger)
+            
+        logger.debug("Top section rendered successfully")
+        
+    except Exception as e:
+        logger.error(f"Error rendering top section: {str(e)}", exc_info=True)
+        st.error("Error loading seller information section")
+
+
+def _render_seller_name_input(seller_state: SellerTabState,is_locked,logger):
+    """Render seller name input with find URLs functionality."""
+    try:
+        logger.debug("Rendering seller name input")
+        
+        st.markdown("""
+            <div class="tooltip-label">
+                Seller Enterprise Name <span style="color:red;">*</span>
+                <div class="tooltip-icon" data-tooltip="Enter the full legal name of the seller organization. This is the primary identifier for the seller in all documentation and communications. This field is mandatory for creating the seller profile.">ⓘ</div>
             </div>
-        </div>
+        """, unsafe_allow_html=True)
         
-        <script>
-            let editableContent = document.getElementById('editableContent');
-            let statusBar = document.getElementById('statusBar');
-            let wordCount = document.getElementById('wordCount');
-            let saveTimeout;
-            let editMode = true;
+        # Create a sub-column layout for name input and find URLs button
+        name_col, button_col = st.columns([3, 1])
+        
+        with name_col:
+            seller_enterprise_name = st.text_input(
+                label="Seller Enterprise Name", 
+                placeholder="Enter seller enterprise name...", 
+                value=seller_state.seller_enterprise_name,
+                key="seller_enterprise_name_input",
+                label_visibility="collapsed",
+                disabled= is_locked
+            )
             
-            // Make elements editable
-            function makeEditable(element) {{
-                let textElements = element.querySelectorAll('p, h1, h2, h3, h4, h5, h6, span, div, td, th, li, a, button, label');
-                textElements.forEach(el => {{
-                    if (editMode) {{
-                        el.setAttribute('contenteditable', 'true');
-                        el.addEventListener('input', handleEdit);
-                        el.addEventListener('keydown', handleKeyDown);
-                    }} else {{
-                        el.removeAttribute('contenteditable');
-                    }}
-                }});
-            }}
+            # Update state if changed
+            if seller_enterprise_name != seller_state.seller_enterprise_name:
+                seller_state.update_field('seller_enterprise_name', seller_enterprise_name)
+        
+        with button_col:
+            _handle_find_urls_button(seller_state, seller_enterprise_name,is_locked,logger)
+        
+        # Common area for spinner/status - displayed under both input and button
+        _display_url_search_status(seller_state, seller_enterprise_name,is_locked,logger)
+        
+        # Clear URLs if company name is cleared
+        _handle_company_name_changes(seller_state, seller_enterprise_name,is_locked,logger)
+        
+        # Show validation warning if triggered and field is empty
+        if seller_state.show_validation and check_field_validation("Seller Enterprise Name", seller_enterprise_name, True):
+            show_field_warning("Seller Enterprise Name")
             
-            // Handle edit events
-            function handleEdit() {{
-                clearTimeout(saveTimeout);
-                updateWordCount();
-                
-                saveTimeout = setTimeout(() => {{
-                    statusBar.style.display = 'block';
-                    setTimeout(() => {{
-                        statusBar.style.display = 'none';
-                    }}, 2000);
+        logger.debug("Seller name input rendered successfully")
+        
+    except Exception as e:
+        logger.error(f"Error rendering seller name input: {str(e)}", exc_info=True)
+        st.error("Error loading seller name input")
+
+
+def _handle_find_urls_button(seller_state: SellerTabState, seller_enterprise_name: str,is_locked,logger):
+    """Handle find URLs button functionality."""
+    try:
+        # Find URLs button - only enabled when seller name has more than 2 characters
+        find_urls_disabled = not (seller_enterprise_name and len(seller_enterprise_name.strip()) > 2)
+        
+        if st.button("🔍 Find Website",
+                    disabled=find_urls_disabled or seller_state.url_search_in_progress or is_locked,
+                    help="Find website URLs for this company",
+                    key="find_seller_urls_button"):
+            
+            logger.info(f"Finding URLs for company: {seller_enterprise_name.strip()}")
+            
+            # Set search in progress flag
+            seller_state.update_field('url_search_in_progress', True)
+            seller_state.update_field('url_search_company', seller_enterprise_name.strip())
+            st.rerun()
                     
-                    window.editedHTML = editableContent.innerHTML;
-                }}, 1000);
-            }}
-            
-            // Handle keyboard shortcuts
-            function handleKeyDown(e) {{
-                if (e.ctrlKey) {{
-                    switch(e.key) {{
-                        case 'b':
-                            e.preventDefault();
-                            document.execCommand('bold');
-                            break;
-                        case 'i':
-                            e.preventDefault();
-                            document.execCommand('italic');
-                            break;
-                        case 'u':
-                            e.preventDefault();
-                            document.execCommand('underline');
-                            break;
-                    }}
-                }}
-            }}
-            
-            // Toggle edit mode
-            function toggleEditMode() {{
-                editMode = !editMode;
-                makeEditable(editableContent);
-                editableContent.className = editMode ? 'edit-mode' : '';
-            }}
-            
-            // Add new paragraph
-            function addParagraph() {{
-                let p = document.createElement('p');
-                p.textContent = 'New paragraph - click to edit';
-                p.setAttribute('contenteditable', 'true');
-                p.addEventListener('input', handleEdit);
-                p.addEventListener('keydown', handleKeyDown);
-                editableContent.appendChild(p);
-                p.focus();
-            }}
-            
-            // Add new heading
-            function addHeading() {{
-                let h2 = document.createElement('h2');
-                h2.textContent = 'New Heading - click to edit';
-                h2.setAttribute('contenteditable', 'true');
-                h2.addEventListener('input', handleEdit);
-                h2.addEventListener('keydown', handleKeyDown);
-                editableContent.appendChild(h2);
-                h2.focus();
-            }}
-            
-            // Update word count
-            function updateWordCount() {{
-                let text = editableContent.textContent || '';
-                let words = text.trim().split(/\s+/).filter(word => word.length > 0).length;
-                wordCount.textContent = `Words: ${{words}}`;
-            }}
-            
-            // Export HTML
-            function exportHTML() {{
-                let html = `<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edited HTML Page</title>
-    <style>
-        body {{
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            padding: 0;
-            line-height: 1.6;
-        }}
-    </style>
-</head>
-<body>
-    ${{editableContent.innerHTML}}
-</body>
-</html>`;
-                
-                let blob = new Blob([html], {{type: 'text/html'}});
-                let url = URL.createObjectURL(blob);
-                let a = document.createElement('a');
-                a.href = url;
-                a.download = 'edited_page.html';
-                a.click();
-                URL.revokeObjectURL(url);
-            }}
-            
-            // Initialize
-            makeEditable(editableContent);
-            updateWordCount();
-            window.editedHTML = editableContent.innerHTML;
-            
-            // Auto-save every 30 seconds
-            setInterval(() => {{
-                window.editedHTML = editableContent.innerHTML;
-            }}, 30000);
-        </script>
-    </body>
-    </html>
-    """
-    
+    except Exception as e:
+        logger.error(f"Error in find URLs button handler: {str(e)}", exc_info=True)
+        st.error("Error with URL search functionality")
 
-    
-    # Render the advanced editor
-    st.components.v1.html(
-        advanced_html_template,
-        height=height,
-        scrolling=True
-    )
-    
-    # Download section
-    st.markdown("---")
-    col1, col2, col3 = st.columns([1, 1, 1])
-    
-    with col2:
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        filename = f"edited_page_{timestamp}.html"
+
+def _handle_company_name_changes(seller_state: SellerTabState, seller_enterprise_name: str,is_locked,logger):
+    """Handle changes in company name and clear URLs if needed."""
+    try:
+        if not seller_enterprise_name and seller_state.last_seller_company_name:
+            seller_state.clear_url_data()
+            logger.debug("Cleared URLs due to empty company name")
+            
+    except Exception as e:
+        logger.error(f"Error handling company name changes: {str(e)}", exc_info=True)
+
+
+def _display_url_search_status(seller_state: SellerTabState, seller_enterprise_name: str,is_locked,logger):
+    """Display URL search status in a common area under name input and button."""
+    try:
+        # Check if URL search is in progress
+        if seller_state.url_search_in_progress:
+            search_company = seller_state.url_search_company or seller_enterprise_name
+            
+            # Display spinner in common area
+            with st.spinner(f"🔍 Finding websites for '{search_company}'..."):
+                try:
+                    urls_list = get_urls_list(search_company)
+                    seller_state.update_field('seller_website_urls_list', urls_list)
+                    seller_state.update_field('last_seller_company_name', search_company)
+                    
+                    # Clear search state
+                    seller_state.update_field('url_search_in_progress', False)
+                    seller_state.update_field('url_search_company', '')
+                    
+                    logger.info(f"Successfully found {len(urls_list)} URLs for {search_company}")
+                    
+                    # Show success message in the common area
+                    if urls_list:
+                        st.success(f"✅ Found {len(urls_list)} website(s) for {search_company}")
+                    else:
+                        st.warning(f"⚠️ No websites found for {search_company}")
+                    
+                    st.rerun()
+                    
+                except Exception as e:
+                    logger.error(f"Error finding URLs for {search_company}: {str(e)}", exc_info=True)
+                    seller_state.update_field('seller_website_urls_list', [])
+                    seller_state.update_field('url_search_in_progress', False)
+                    seller_state.update_field('url_search_company', '')
+                    st.error(f"❌ Error finding URLs: {str(e)}")
         
-        download_html = f"""<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edited HTML Page</title>
-    <style>
-        body {{
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            padding: 0;
-            line-height: 1.6;
-        }}
-    </style>
-</head>
-<body>
-    {current_content}
-</body>
-</html>"""
+        # Show current status if URLs exist
+        elif seller_state.seller_website_urls_list and seller_state.last_seller_company_name:
+            url_count = len(seller_state.seller_website_urls_list)
+            company_name = seller_state.last_seller_company_name
+            #st.info(f"ℹ️ {url_count} website(s) available for {company_name}")
+            
+    except Exception as e:
+        logger.error(f"Error displaying URL search status: {str(e)}", exc_info=True)
+
+
+
+
+def _render_url_dropdown(seller_state: SellerTabState,is_locked,logger):
+    """Render URL dropdown selection."""
+    try:
+        seller_name_provided = bool(seller_state.seller_enterprise_name and seller_state.seller_enterprise_name.strip())
         
-        st.download_button(
-            label="📥 Download Edited HTML",
-            data=download_html,
-            file_name=filename,
-            mime="text/html",
-            key=f"{key}_download",
-            help="Download the edited HTML as a complete webpage"
+        if not seller_state.seller_website_urls_list:
+            url_options = ["Select seller website URL"]
+        else:
+            url_options = ["Select seller website URL"] + seller_state.seller_website_urls_list
+        
+        # Set initial index based on current URL
+        initial_index = 0
+        if seller_state.seller_website_url and seller_state.seller_website_url in url_options:
+            initial_index = url_options.index(seller_state.seller_website_url)
+        
+        seller_website_url = st.selectbox(
+            label="Seller Website URL",
+            options=url_options,
+            index=initial_index,
+            key="seller_website_url_selector",
+            label_visibility="collapsed",
+            disabled=not seller_name_provided or is_locked,
+            accept_new_options=True
         )
-    
-    return current_content
-
-# Example usage
-def main():
-
-    
-    # Sample HTML content
-    sample_html = """
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>title of the sales proposal</title>
-    <meta name="description" content="Professional Sales Proposal - title of the sales proposal">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700&display=swap');
         
-        :root {
-            --primary: #1a365d;
-            --secondary: #2d3748;
-            --accent: #3182ce;
-            --success: #38a169;
-            --background: #ffffff;
-            --surface: #f7fafc;
-            --text: #2d3748;
-            --text-light: #718096;
-            --border: #e2e8f0;
-            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-            --radius-sm: 0.375rem;
-            --radius-md: 0.5rem;
-            --radius-lg: 0.75rem;
-            --radius-xl: 1rem;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        @page {
-            size: A4;
-            margin: 0;
-        }
-
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-            line-height: 1.6;
-            color: var(--text);
-            background: var(--background);
-            font-size: 16px;
-            font-weight: 400;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-        }
-
-        /* ENHANCED PREMIUM COVER PAGE WITH REDUCED TRANSPARENCY */
-        .cover-page {
-            width: 100vw;
-            height: 100vh;
-            background: linear-gradient(135deg, 
-                #1a365df2 0%, 
-                #2d3748f2 50%, 
-                #3182cef2 100%),
-                radial-gradient(circle at center, rgba(255,255,255,0.1) 0%, transparent 70%);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            position: relative;
-            page-break-after: always;
-            padding: 2rem;
-            overflow: hidden;
-        }
-
-        .cover-page::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: 
-                radial-gradient(circle at 20% 20%, rgba(255,255,255,0.05) 0%, transparent 50%),
-                radial-gradient(circle at 80% 80%, rgba(255,255,255,0.03) 0%, transparent 50%);
-            pointer-events: none;
-        }
-
-        /* ENHANCED LOGO SECTION */
-        .cover-logos {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 3rem;
-            margin-bottom: 3rem;
-            z-index: 10;
-            position: relative;
-            width: 100%;
-            max-width: 800px;
-        }
-
-        .cover-logo {
-            width: 200px;
-            height: 200px;
-            background: rgba(255, 255, 255, 0.98);
-            border-radius: var(--radius-xl);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-            padding: 1.5rem;
-            border: 2px solid rgba(255, 255, 255, 0.5);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .cover-logo:hover {
-            transform: translateY(-5px) scale(1.02);
-            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.25);
-        }
-
-        .cover-logo img {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain;
-            filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
-        }
-
-        .cover-logo-1 {
-            background: rgba(255, 255, 255, 0.98) url('https://static.wixstatic.com/media/cb6b3d_5c8f2b020ebe48b69bc8c163cc480156~mv2.png/v1/fill/w_60,h_60,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/GrowthSutra%20Logo.png') no-repeat center;
-            background-size: contain;
-        }
-
-        .cover-logo-2 {
-            background: rgba(255, 255, 255, 0.98) url('https://benori.com/assets/web/images/Benori_Logo.svg') no-repeat center;
-            background-size: contain;
-        }
-
-        /* ENHANCED TITLE SECTION WITH BETTER VISIBILITY */
-        .cover-title {
-            font-family: 'Playfair Display', serif;
-            font-size: clamp(2rem, 4vw, 3.5rem);
-            font-weight: 700;
-            color: #ffffff;
-            margin-bottom: 0;
-            text-shadow: 
-                0 2px 4px rgba(0,0,0,0.5),
-                0 4px 8px rgba(0,0,0,0.3),
-                0 8px 16px rgba(0,0,0,0.2);
-            max-width: 90%;
-            line-height: 1.3;
-            letter-spacing: -0.025em;
-            z-index: 10;
-            position: relative;
-            text-align: center;
-            background: linear-gradient(135deg, #ffffff 0%, #f0f8ff 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
-        }
-
-        /* MODERN CONTENT PAGES */
-        .content-page {
-            page-break-before: always;
-            position: relative;
-            padding: 3rem;
-            min-height: 100vh;
-            background: var(--background);
-        }
-
-        .presentation-container {
-            max-width: 100%;
-            padding: 0;
-            background: var(--background);
-            position: relative;
-        }
-
-        .main-title {
-            font-family: 'Playfair Display', serif;
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: var(--primary);
-            text-align: center;
-            margin-bottom: 3rem;
-            padding-bottom: 1rem;
-            position: relative;
-        }
-
-        .main-title::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 80px;
-            height: 4px;
-            background: linear-gradient(90deg, var(--accent), var(--success));
-            border-radius: 2px;
-        }
-
-        .section {
-            margin-bottom: 2.5rem;
-            padding: 2rem;
-            background: var(--surface);
-            border-radius: var(--radius-lg);
-            border: 1px solid var(--border);
-            box-shadow: var(--shadow-sm);
-            page-break-inside: avoid;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .section::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 4px;
-            height: 100%;
-            background: linear-gradient(180deg, var(--accent), var(--success));
-        }
-
-        .section-title {
-            font-family: 'Inter', sans-serif;
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: var(--primary);
-            margin-bottom: 1rem;
-            letter-spacing: -0.025em;
-        }
-
-        .section-content {
-            font-size: 1rem;
-            line-height: 1.7;
-            color: var(--text);
-        }
-
-        .section-content p {
-            margin-bottom: 1rem;
-        }
-
-        .section-content p:last-child {
-            margin-bottom: 0;
-        }
-
-        .section-content ul {
-            margin-left: 1.5rem;
-            margin-top: 0.5rem;
-        }
-
-        .section-content li {
-            margin-bottom: 0.5rem;
-            position: relative;
-        }
-
-        .section-content li::marker {
-            color: var(--accent);
-        }
-
-        .company-info {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-            color: white;
-            padding: 2.5rem;
-            margin: 2rem 0;
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-lg);
-            page-break-inside: avoid;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .company-info::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            right: 0;
-            width: 200px;
-            height: 200px;
-            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
-            border-radius: 50%;
-            transform: translate(50%, -50%);
-        }
-
-        .company-title {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.75rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-            color: white;
-            position: relative;
-            z-index: 10;
-        }
-
-        .company-content {
-            font-size: 1rem;
-            line-height: 1.6;
-            color: rgba(255,255,255,0.95);
-            position: relative;
-            z-index: 10;
-        }
-
-        .pricing-highlight {
-            background: linear-gradient(135deg, var(--surface) 0%, white 100%);
-            border: 2px solid var(--success);
-            padding: 2.5rem;
-            margin: 2rem 0;
-            text-align: center;
-            border-radius: var(--radius-xl);
-            box-shadow: var(--shadow-lg);
-            page-break-inside: avoid;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .pricing-highlight::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, var(--success), var(--accent));
-        }
-
-        .price-amount {
-            font-family: 'Inter', sans-serif;
-            font-size: 3rem;
-            font-weight: 800;
-            color: var(--success);
-            margin-bottom: 1rem;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .cta-section {
-            background: linear-gradient(135deg, var(--accent) 0%, var(--primary) 100%);
-            color: white;
-            padding: 2.5rem;
-            text-align: center;
-            margin-top: 2.5rem;
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-lg);
-            page-break-inside: avoid;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .cta-section::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: 
-                radial-gradient(circle at 30% 30%, rgba(255,255,255,0.1) 0%, transparent 50%),
-                radial-gradient(circle at 70% 70%, rgba(255,255,255,0.05) 0%, transparent 50%);
-            pointer-events: none;
-        }
-
-        .cta-title {
-            font-family: 'Playfair Display', serif;
-            font-size: 2rem;
-            font-weight: 600;
-            color: white;
-            margin-bottom: 1rem;
-            position: relative;
-            z-index: 10;
-        }
-
-        .cta-content {
-            font-size: 1.1rem;
-            line-height: 1.6;
-            color: rgba(255,255,255,0.95);
-            position: relative;
-            z-index: 10;
-        }
-
-        .phase-section {
-            background: white;
-            border: 2px solid var(--border);
-            padding: 2rem;
-            margin: 1.5rem 0;
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-sm);
-            page-break-inside: avoid;
-            transition: box-shadow 0.3s ease;
-        }
-
-        .phase-section:hover {
-            box-shadow: var(--shadow-md);
-        }
-
-        .phase-title {
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: var(--primary);
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .phase-title::before {
-            content: '';
-            width: 8px;
-            height: 8px;
-            background: var(--accent);
-            border-radius: 50%;
-        }
-
-        .timeline-item {
-            background: white;
-            border-left: 4px solid var(--success);
-            margin: 1rem 0;
-            padding: 1.5rem;
-            border-radius: 0 var(--radius-md) var(--radius-md) 0;
-            box-shadow: var(--shadow-sm);
-            page-break-inside: avoid;
-            position: relative;
-        }
-
-        .timeline-item::before {
-            content: '';
-            position: absolute;
-            left: -8px;
-            top: 1.5rem;
-            width: 12px;
-            height: 12px;
-            background: var(--success);
-            border-radius: 50%;
-            border: 3px solid white;
-        }
-
-        .timeline-week {
-            font-weight: 600;
-            color: var(--success);
-            font-size: 1rem;
-            margin-bottom: 0.5rem;
-        }
-
-        /* ENHANCED TYPOGRAPHY */
-        h1, h2, h3, h4, h5, h6 {
-            font-weight: 600;
-            line-height: 1.2;
-            margin-bottom: 0.5rem;
-        }
-
-        strong {
-            font-weight: 600;
-            color: var(--primary);
-        }
-
-        em {
-            font-style: italic;
-            color: var(--accent);
-        }
-
-        /* RESPONSIVE DESIGN */
-        @media (max-width: 768px) {
-            .cover-logos {
-                flex-direction: column;
-                gap: 2rem;
-                margin-bottom: 2rem;
-            }
+        # Reset to empty string if default option is selected
+        if seller_website_url == "Select seller website URL":
+            seller_website_url = ""
+        
+        # Update state if URL changed
+        if seller_website_url != seller_state.seller_website_url:
+            seller_state.update_field('seller_website_url', seller_website_url)
             
-            .cover-logo {
-                width: 160px;
-                height: 160px;
-            }
-            
-            .cover-title {
-                font-size: clamp(1.5rem, 4vw, 2.5rem);
-            }
-            
-            .content-page {
-                padding: 2rem;
-            }
-            
-            .section {
-                padding: 1.5rem;
-            }
-        }
+        return seller_website_url
+        
+    except Exception as e:
+        logger.error(f"Error rendering URL dropdown: {str(e)}", exc_info=True)
+        return ""
 
-        /* PDF PRINT OPTIMIZATION */
-        @media print {
-            .cover-page {
-                width: 210mm !important;
-                height: 297mm !important;
-                page-break-after: always !important;
-                margin: 0 !important;
-                padding: 15mm !important;
-                display: flex !important;
-                flex-direction: column !important;
-                justify-content: center !important;
-                align-items: center !important;
-                background: linear-gradient(135deg, 
-                    #1a365df2 0%, 
-                    #2d3748f2 50%, 
-                    #3182cef2 100%) !important;
-                print-color-adjust: exact !important;
-                -webkit-print-color-adjust: exact !important;
-            }
+
+# def _render_visit_website_button(seller_website_url: str,is_locked,logger):
+#     """Render visit website button."""
+#     try:
+#         if seller_website_url:
+#             st.link_button("🌐", seller_website_url, help="Visit website", use_container_width=True)
+#         else:
+#             st.button("🌐", help="Visit website", disabled=True, use_container_width=True)
             
-            .cover-logos {
-                margin-bottom: 20mm !important;
-            }
+#     except Exception as e:
+#         logger.error(f"Error rendering visit website button: {str(e)}", exc_info=True)
+
+
+
+
+def _handle_refresh_urls(seller_state: SellerTabState,is_locked,logger):
+    """Handle URL refresh functionality."""
+    try:
+        seller_name_provided = bool(seller_state.seller_enterprise_name and seller_state.seller_enterprise_name.strip())
+        
+        if seller_name_provided:
+            logger.info(f"Refreshing URLs for: {seller_state.seller_enterprise_name}")
             
-            .cover-logo {
-                width: 80mm !important;
-                height: 80mm !important;
-                print-color-adjust: exact !important;
-                -webkit-print-color-adjust: exact !important;
-                background-color: rgba(255, 255, 255, 0.98) !important;
-            }
+            with st.spinner("Refreshing website URLs..."):
+                try:
+                    urls_list = get_urls_list(seller_state.seller_enterprise_name)
+                    seller_state.update_field('seller_website_urls_list', urls_list)
+                    st.success("Website URLs refreshed!")
+                    st.rerun()
+                    
+                    logger.info(f"Successfully refreshed {len(urls_list)} URLs")
+                    
+                except Exception as e:
+                    logger.error(f"Error refreshing URLs: {str(e)}", exc_info=True)
+                    st.error(f"Error refreshing URLs: {str(e)}")
+                    
+    except Exception as e:
+        logger.error(f"Error in refresh URLs handler: {str(e)}", exc_info=True)
+
+def _render_website_url_section(seller_state: SellerTabState,is_locked,logger):
+    """Render website URL selection and action buttons."""
+    try:
+        logger.debug("Rendering website URL section")
+        
+        # Label row with inline emoji and tooltip
+        st.markdown('''
+        <div class="tooltip-label" style="display: flex; align-items: center; gap: 8px;">
+            <span>Seller Website URL</span>
+            <div class="tooltip-icon" data-tooltip="Enter or select the seller's official website URL. The system will automatically analyze the website to extract company information, services, and business details to help understand the seller's capabilities and offerings.">ⓘ</div>
+        </div>
+        ''', unsafe_allow_html=True)
+        
+        # Create columns for dropdown and buttons
+        url_col, btn1_col, btn2_col = st.columns([7, 1, 2])
+        
+        with url_col:
+            seller_website_url = _render_url_dropdown(seller_state)
+        
+        # Render action buttons
+        with btn1_col:
+            _render_refresh_urls_button(seller_state, seller_website_url,is_locked,logger)
+        with btn2_col:
+            _render_scrape_website_button(seller_state, seller_website_url,is_locked,logger)
+        
+        # Show redirect link when website is selected
+        if seller_website_url:
+            st.info(f"🌐 [Visit Website]({seller_website_url})")
+        
+        # Handle pending scraping operation
+        _handle_pending_scraping(seller_state,is_locked,logger)
+        
+        # Show validation warning if needed
+        if seller_state.show_validation and check_field_validation("Seller Website URL", seller_website_url, False):
+            show_field_warning("Seller Website URL")
             
-            .cover-title {
-                font-size: 24pt !important;
-                line-height: 1.2 !important;
-                color: white !important;
-                print-color-adjust: exact !important;
-                -webkit-print-color-adjust: exact !important;
-                text-shadow: 0 2px 4px rgba(0,0,0,0.5) !important;
-                -webkit-text-fill-color: white !important;
-                background: none !important;
-            }
+        logger.debug("Website URL section rendered successfully")
+        
+    except Exception as e:
+        logger.error(f"Error rendering website URL section: {str(e)}", exc_info=True)
+        st.error("Error loading website URL section")
+
+
+def _render_refresh_urls_button(seller_state: SellerTabState, seller_website_url: str,is_locked,logger):
+    """Render refresh URLs button and handle refresh action."""
+    try:
+        seller_name_provided = bool(seller_state.seller_enterprise_name and seller_state.seller_enterprise_name.strip())
+        
+        refresh_clicked = st.button("🔄", help="Refresh website URLs list", 
+                                  key="refresh_seller_urls_btn", use_container_width=True, 
+                                  disabled=not seller_name_provided or is_locked)
+        
+        if refresh_clicked:
+            _handle_refresh_urls(seller_state,is_locked,logger)
             
-            .content-page {
-                page-break-before: always !important;
-                margin: 15mm !important;
-                padding: 0 !important;
-                min-height: calc(297mm - 30mm) !important;
-            }
+    except Exception as e:
+        logger.error(f"Error with refresh URLs button: {str(e)}", exc_info=True)
+
+
+def _render_scrape_website_button(seller_state: SellerTabState, seller_website_url: str,is_locked,logger):
+    """Render scrape website button."""
+    try:
+        scrape_clicked = st.button("📑 Get Details", help="Get enterprise details", 
+                                 key="scrape_seller_website_btn", use_container_width=True ,
+                                 disabled=not seller_website_url or is_locked)
+        
+        if scrape_clicked and seller_website_url:
+            logger.info(f"Initiating website scraping for: {seller_website_url}")
+            seller_state.update_field('seller_pending_scrape_url', seller_website_url)
+            seller_state.update_field('seller_scraping_in_progress', True)
+            st.rerun()
             
-            .presentation-container {
-                padding: 0 !important;
-            }
+    except Exception as e:
+        logger.error(f"Error with scrape website button: {str(e)}", exc_info=True)
+def _handle_pending_scraping(seller_state: SellerTabState,is_locked,logger):
+    """Handle pending website scraping operation."""
+    try:
+        if seller_state.seller_scraping_in_progress and seller_state.seller_pending_scrape_url:
+            scrape_url = seller_state.seller_pending_scrape_url
+            logger.info(f"Processing pending scrape for: {scrape_url}")
             
-            .section,
-            .company-info,
-            .pricing-highlight,
-            .cta-section,
-            .phase-section,
-            .timeline-item {
-                page-break-inside: avoid !important;
-                orphans: 2 !important;
-                widows: 2 !important;
-            }
+            with st.spinner(f"Scraping website details from {scrape_url}..."):
+                try:
+                    # Get both website details and logo from the URL
+                    scrape_result = get_url_details(scrape_url)
+                    
+                    # Handle different return formats from get_url_details
+                    if isinstance(scrape_result, dict):
+                        # If get_url_details returns a dictionary with separate fields
+                        website_details = scrape_result.get('website_details', '')
+                        logo_url = scrape_result.get('logo', '')
+                    elif isinstance(scrape_result, tuple) and len(scrape_result) >= 2:
+                        # If get_url_details returns a tuple (website_details, logo)
+                        website_details, logo_url = scrape_result[0], scrape_result[1]
+                    else:
+                        # If get_url_details returns only website details (backward compatibility)
+                        website_details = str(scrape_result)
+                        logo_url = ''
+                    
+                    # Update seller state with website details
+                    seller_state.update_field('seller_enterprise_details_content', website_details)
+                    seller_state.update_field('last_analyzed_seller_url', scrape_url)
+                    
+                    # Update seller state with logo if available
+                    if logo_url:
+                        seller_state.update_field('enterprise_logo', logo_url)
+                        logger.info(f"Logo found and saved: {logo_url}")
+                    
+                    # Clear pending operation
+                    seller_state.update_field('seller_scraping_in_progress', False)
+                    seller_state.update_field('seller_pending_scrape_url', None)
+                    
+                    # Show success message with logo info
+                    if logo_url:
+                        st.success("Website details and logo extracted successfully!")
+                    else:
+                        st.success("Website details extracted successfully!")
+                    
+                    logger.info(f"Successfully scraped website: {scrape_url}")
+                    st.rerun()
+                    
+                except Exception as e:
+                    logger.error(f"Error scraping website {scrape_url}: {str(e)}", exc_info=True)
+                    # Clear pending operation on error
+                    seller_state.update_field('seller_scraping_in_progress', False)
+                    seller_state.update_field('seller_pending_scrape_url', None)
+                    st.error(f"Error scraping website: {str(e)}")
+                    
+    except Exception as e:
+        logger.error(f"Error handling pending scraping: {str(e)}", exc_info=True)
+
+
+def _render_website_url_section(seller_state: SellerTabState,is_locked,logger):
+    """Render website URL selection and action buttons."""
+    try:
+        logger.debug("Rendering website URL section")
+        
+        # Label row with inline emoji and tooltip
+        st.markdown('''
+        <div class="tooltip-label" style="display: flex; align-items: center; gap: 8px;">
+            <span>Seller Website URL</span>
+            <div class="tooltip-icon" data-tooltip="Enter or select the seller's official website URL. The system will automatically analyze the website to extract company information, services, and business details to help understand the seller's capabilities and offerings.">ⓘ</div>
+        </div>
+        ''', unsafe_allow_html=True)
+        
+        # Create columns for dropdown and buttons
+        url_col, btn1_col, btn2_col = st.columns([7, 1, 2])
+        
+        with url_col:
+            seller_website_url = _render_url_dropdown(seller_state,is_locked,logger)
+        
+        # Render action buttons
+        with btn1_col:
+            _render_refresh_urls_button(seller_state, seller_website_url,is_locked,logger)
+        with btn2_col:
+            _render_scrape_website_button(seller_state, seller_website_url,is_locked,logger)
+        
+        # Show redirect link when website is selected
+        if seller_website_url:
+            st.info(f"🌐 [Visit Website]({seller_website_url})")
+        
+        # Handle pending scraping operation
+        _handle_pending_scraping(seller_state,is_locked,logger)
+        
+        # Show validation warning if needed
+        if seller_state.show_validation and check_field_validation("Seller Website URL", seller_website_url, False):
+            show_field_warning("Seller Website URL")
             
-            .cover-logo:hover {
-                transform: none !important;
-            }
+        logger.debug("Website URL section rendered successfully")
+        
+    except Exception as e:
+        logger.error(f"Error rendering website URL section: {str(e)}", exc_info=True)
+        st.error("Error loading website URL section")
+
+
+def _render_refresh_urls_button(seller_state: SellerTabState, seller_website_url: str,is_locked,logger):
+    """Render refresh URLs button and handle refresh action."""
+    try:
+        seller_name_provided = bool(seller_state.seller_enterprise_name and seller_state.seller_enterprise_name.strip())
+        
+        refresh_clicked = st.button("🔄", help="Refresh website URLs list", 
+                                  key="refresh_seller_urls_btn", use_container_width=True, 
+                                  disabled=not seller_name_provided or is_locked)
+        
+        if refresh_clicked:
+            _handle_refresh_urls(seller_state)
+            
+    except Exception as e:
+        logger.error(f"Error with refresh URLs button: {str(e)}", exc_info=True)
+
+
+def _render_scrape_website_button(seller_state: SellerTabState, seller_website_url: str,is_locked,logger):
+    """Render scrape website button."""
+    try:
+        scrape_clicked = st.button("📑 Get Details", help="Get enterprise details", 
+                                 key="scrape_seller_website_btn", use_container_width=True, 
+                                 disabled=not seller_website_url or is_locked)
+        
+        if scrape_clicked and seller_website_url:
+            logger.info(f"Initiating website scraping for: {seller_website_url}")
+            seller_state.update_field('seller_pending_scrape_url', seller_website_url)
+            seller_state.update_field('seller_scraping_in_progress', True)
+            st.rerun()
+            
+    except Exception as e:
+        logger.error(f"Error with scrape website button: {str(e)}", exc_info=True)
+        
+def _render_document_upload_section(seller_state: SellerTabState,is_locked,logger):
+    """Render document upload section with comprehensive error handling."""
+    try:
+        logger.debug("Rendering document upload section")
+        
+        # Add custom CSS
+        _add_document_upload_css()
+        
+        # Create two columns - left for upload, right for scraped data
+        upload_col, data_col = st.columns([1, 1])
+        
+        with upload_col:
+            st.markdown('''
+            <div class="tooltip-label">
+                Upload Seller Document
+                <div class="tooltip-icon" data-tooltip="Upload seller-related documents such as company profiles, service catalogs, capabilities documents, or proposals in PDF, DOCX, TXT, or CSV format. The system will automatically analyze and extract key capabilities, services, and business strengths to help understand the seller's offerings.">ⓘ</div>
+            </div>
+            ''', unsafe_allow_html=True)
+            
+            # FILE UPLOAD
+            seller_documents_upload = st.file_uploader(
+                label="Upload Seller Documents", 
+                type=['pdf', 'docx', 'txt', 'csv', 'png', 'jpg', 'jpeg'], 
+                key="seller_documents_uploader",
+                label_visibility="collapsed",
+                accept_multiple_files=True
+            )
+            
+            if seller_documents_upload and len(seller_documents_upload) > 0:
+                _handle_uploaded_documents(seller_state, seller_documents_upload)
+        
+        with data_col:
+            st.markdown('''
+            <div class="tooltip-label">
+                Scraped Website Data
+                <div class="tooltip-icon" data-tooltip="This field displays the enterprise details and information extracted from the seller's website when you click the 'Get Details' button. The data includes company information, services, and business details automatically scraped from the provided website URL.">ⓘ</div>
+            </div>
+            ''', unsafe_allow_html=True)
+            
+            # Display scraped data in a text area
+            scraped_data_display = st.text_area(
+                label="Scraped Website Data",
+                value=seller_state.seller_enterprise_details_content,
+                height=300,
+                placeholder="Website details will appear here after clicking 'Get Details' button...",
+                key="scraped_data_display",
+                label_visibility="collapsed",
+                disabled=bool(seller_state.seller_enterprise_name and seller_state.seller_enterprise_name.strip()) or is_locked
+            )
+            
+            # Show additional info if data is available
+            if seller_state.seller_enterprise_details_content:
+                if seller_state.last_analyzed_seller_url:
+                    st.info(f"📊 Data scraped from: {seller_state.last_analyzed_seller_url}")
+                
+                # Show logo if available
+                if seller_state.enterprise_logo:
+                    st.image(seller_state.enterprise_logo, caption="Enterprise Logo", width=100)
+                
+                # Add a button to clear the scraped data
+                if st.button("🗑️ Clear Scraped Data", key="clear_scraped_data_btn", help="Clear the scraped website data"):
+                    seller_state.update_field('seller_enterprise_details_content', '')
+                    seller_state.update_field('last_analyzed_seller_url', None)
+                    seller_state.update_field('enterprise_logo', '')
+                    st.rerun()
+            
+            # Show a message if no data is available
+            if not seller_state.seller_enterprise_details_content:
+                st.info("💡 Enter a website URL above and click 'Get Details' to see scraped data here.")
+                
+        logger.debug("Document upload section rendered successfully")
+        
+    except Exception as e:
+        logger.error(f"Error rendering document upload section: {str(e)}", exc_info=True)
+        st.error("Error loading document upload section")
+
+def _add_document_upload_css(is_locked,logger):
+    """Add CSS for document upload section."""
+    try:
+        st.markdown("""
+        <style>
+        .stFileUploader > div > div > div {
+            padding: 0.5rem !important;
+            min-height: 2rem !important;
+        }
+        .stFileUploader > div > div {
+            min-height: 2rem !important;
+        }
+        [data-testid="stFileUploader"] {
+            height: auto !important;
+        }
+        [data-testid="stFileUploader"] > div {
+            padding: 0.25rem 0.5rem !important;
+            min-height: 2rem !important;
+        }
+        
+        /* Animation for processing file */
+        .processing-file {
+            animation: pulse 1.5s ease-in-out infinite;
+            background: linear-gradient(90deg, #e3f2fd, #bbdefb, #e3f2fd);
+            background-size: 200% 100%;
+            animation: shimmer 2s linear infinite;
+            border-radius: 4px;
+            padding: 2px 4px;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+        
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+        
+        .analyzing-text {
+            color: #1976d2;
+            font-weight: 500;
         }
         </style>
-</head>
-<body>
-    <!-- ENHANCED PREMIUM COVER PAGE WITH PROPER TITLE -->
-    <div class="cover-page">
-        <div class="cover-logos">
-            <div class="cover-logo cover-logo-1"></div>
-            <div class="cover-logo cover-logo-2"></div>
-        </div>
-        <h1 class="cover-title">title of the sales proposal</h1>
-    </div>
+        """, unsafe_allow_html=True)
+        
+    except Exception as e:
+        logger.error(f"Error adding document upload CSS: {str(e)}", exc_info=True)
+
+
+def _handle_uploaded_documents(seller_state: SellerTabState, seller_documents_upload,is_locked,logger):
+    """Handle uploaded documents display and processing."""
+    try:
+        logger.debug(f"Handling {len(seller_documents_upload)} uploaded documents")
+        
+        st.markdown("**Uploaded Documents:**")
+        
+        # Display all uploaded files
+        _display_uploaded_files(seller_state, seller_documents_upload,is_locked,logger)
+        
+        # Single button to process all files
+        st.markdown("---")
+        _render_process_all_button(seller_state, seller_documents_upload,is_locked,logger)
+        
+        # Handle processing when button is clicked
+        if seller_state.processing_all_seller_documents:
+            _process_all_documents(seller_state, seller_documents_upload,is_locked,logger)
+            
+        logger.debug("Uploaded documents handled successfully")
+        
+    except Exception as e:
+        logger.error(f"Error handling uploaded documents: {str(e)}", exc_info=True)
+        st.error("Error processing uploaded documents")
+
+
+def _display_uploaded_files(seller_state: SellerTabState, seller_documents_upload,is_locked,logger):
+    """Display information about uploaded files."""
+    try:
+        for idx, uploaded_file in enumerate(seller_documents_upload):
+            file_key = f"{uploaded_file.name}_{uploaded_file.size}"
+            
+            # Calculate file size display
+            file_size_kb = round(uploaded_file.size / 1024, 1)
+            file_size_display = f"{file_size_kb}KB" if file_size_kb < 1024 else f"{round(file_size_kb/1024, 1)}MB"
+            
+            # Check processing status
+            is_processed = seller_state.is_file_processed(file_key)
+            is_processing = seller_state.processing_all_seller_documents
+            
+            if is_processing:
+                st.markdown(f"""
+                <div class="processing-file">
+                    <span style='font-size:0.8em' class="analyzing-text">
+                        🔄 {uploaded_file.name[:25]}{'...' if len(uploaded_file.name) > 25 else ''} (Analyzing...)
+                    </span>
+                </div>
+                """, unsafe_allow_html=True)
+            else:
+                status_icon = "✅" if is_processed else "📄"
+                st.markdown(f"<span style='font-size:0.8em'>{status_icon} {uploaded_file.name[:30]}{'...' if len(uploaded_file.name) > 30 else ''} ({file_size_display})</span>", 
+                        unsafe_allow_html=True)
+                        
+    except Exception as e:
+        logger.error(f"Error displaying uploaded files: {str(e)}", exc_info=True)
+
+def _render_process_all_button(seller_state: SellerTabState, seller_documents_upload,is_locked,logger):
+    """Render button to process all documents."""
+    try:
+        all_processed = all(
+            f"{file.name}_{file.size}" in seller_state.seller_services_by_file
+            for file in seller_documents_upload
+        )
+        
+        is_processing = seller_state.processing_all_seller_documents
+        
+        if all_processed:
+            button_color = "#28a745"
+            button_text = "All Documents Processed"
+            button_disabled = True
+        elif is_processing:
+            button_color = "#FF6B6B"
+            button_text = "Analyzing All Documents..."
+            button_disabled = True
+        else:
+            button_color = "#4CAF50"
+            button_text = f"Get Services from All Documents ({len(seller_documents_upload)} files)"
+            button_disabled = False
+
+        st.markdown(f"""
+        <style>
+        div.stButton > button:first-child {{
+            background-color: {button_color};
+            color: white;
+            border: none;
+            font-weight: bold;
+        }}
+        </style>
+        """, unsafe_allow_html=True)
+
+        if st.button(
+            button_text,
+            key="analyze_all_seller_documents_btn",
+            help="Process all seller documents" if not button_disabled else "All documents processed" if all_processed else "Processing in progress...",
+            type="secondary",
+            disabled=button_disabled or is_locked,
+            use_container_width=True
+        ):
+            if not seller_state.seller_enterprise_name:
+                st.error("❌ Please enter the Seller Enterprise Name first")
+                logger.warning("Analyze all clicked without seller enterprise name")
+            else:
+                seller_state.update_field('processing_all_seller_documents', True)
+                logger.info("Started processing all seller documents")
+                st.rerun()
+
+    except Exception as e:
+        logger.error(f"Error rendering process all button: {str(e)}", exc_info=True)
+
+
+def _process_all_documents(seller_state: SellerTabState, seller_documents_upload,is_locked,logger):
+    """Process all uploaded documents."""
+    try:
+        logger.info(f"Processing {len(seller_documents_upload)} documents")
+        st.markdown("**🔍 Processing all documents and extracting services...**")
+
+        processed_count = 0
+        total_files = len(seller_documents_upload)
+
+        for idx, uploaded_file in enumerate(seller_documents_upload):
+            file_key = f"{uploaded_file.name}_{uploaded_file.size}"
+            progress_text = f"Processing {uploaded_file.name} ({idx + 1}/{total_files})..."
+
+            with st.spinner(progress_text):
+                try:
+                    file_path = save_uploaded_file_and_get_path(uploaded_file)
+                    seller_state.seller_uploaded_files_paths[file_key] = file_path
+
+                    if file_path and seller_state.seller_enterprise_name:
+                        services = get_seller_services(file_path, seller_state.seller_enterprise_name)
+                        seller_state.add_processed_file(file_key, uploaded_file.name, services, file_path)
+                        st.success(f"✅ {uploaded_file.name} processed successfully!")
+                        logger.info(f"Successfully processed: {uploaded_file.name}")
+                        processed_count += 1
+                    else:
+                        st.error(f"❌ Error saving {uploaded_file.name}")
+                        logger.error(f"File path invalid for {uploaded_file.name}")
+                except Exception as e:
+                    st.error(f"❌ Error processing {uploaded_file.name}: {str(e)}")
+                    logger.error(f"Error processing file {uploaded_file.name}: {str(e)}", exc_info=True)
+
+        seller_state.update_field('processing_all_seller_documents', False)
+
+        if processed_count == total_files:
+            st.success(f"🎉 All {total_files} documents processed successfully!")
+        elif processed_count > 0:
+            st.warning(f"⚠️ {processed_count} out of {total_files} documents processed.")
+        else:
+            st.error("❌ No documents could be processed.")
+
+        logger.info(f"Document processing completed: {processed_count}/{total_files}")
+        st.rerun()
+
+    except Exception as e:
+        seller_state.update_field('processing_all_seller_documents', False)
+        logger.error(f"Error processing documents: {str(e)}", exc_info=True)
+        st.error("Error occurred while processing documents")
+def _render_enterprise_details_section(seller_state: SellerTabState,is_locked,logger):
+    """Render the enterprise details section."""
+    try:
+        logger.debug("Rendering enterprise details section")
+
+        seller_enterprise_details, provided = render_three_column_selector_unified(
+            column_ratio=(2, 2, 2),
+            column_gap="large",
+            
+            left_title="Seller Services to be provided",
+            left_tooltip="Define your enterprise details, services offered, company capabilities, core competencies, and business portfolio. This information helps clients understand your organizational strengths and service offerings.",
+            left_required=True,
+            textarea_height=200,
+            textarea_placeholder="Click to get the AI suggested Enterprise services",
+            textarea_session_key="seller_enterprise_content",
+            textarea_widget_key="seller_enterprise_textarea",
+            
+            unified_section_title="Available Services",
+            unified_section_tooltip="Select from available services and capabilities that represent your enterprise offerings. These can include technical services, consulting, products, or specialized business solutions.",
+            
+            middle_selected_items_key="selected_services_offered",
+            middle_content_map_key="services_content_map",
+            right_selected_items_key="selected_additional_capabilities",
+            right_content_map_key="capabilities_content_map",
+
+            default_data=None,
+            split_ratio=(3, 3),
+
+            client_enabled_condition=True,
+            client_name_provided=bool(seller_state.seller_enterprise_name),
+
+            button_column_width=2.5,
+            content_column_width=6.5,
+            show_success_messages=False,
+            text_color="#0000000",
+            title_font_size="18px",
+            title_color="#000000",
+            title_margin_bottom="10px",
+            selected_color="#d2ebfb"
+        )
+
+        # Update state
+        if seller_enterprise_details != seller_state.seller_enterprise_details_content:
+            seller_state.update_field("seller_enterprise_details_content", seller_enterprise_details)
+
+        logger.debug("Enterprise details section rendered successfully")
+
+    except Exception as e:
+        logger.error(f"Error rendering enterprise details section: {str(e)}", exc_info=True)
+        st.error("Error loading enterprise details section")
     
-    <!-- MODERN CONTENT PAGES -->
-    <div class="content-page">
-        <div class="presentation-container">
-
-            <div class="section">
-                <h3 class="section-title">title of the sales proposal</h3>
-                <div class="section-content">
-                    <p>Strategic Growth Partnership Proposal</p>
-                </div>
-            </div>
-
-            <div class="section">
-                <h3 class="section-title">Executive Summary</h3>
-                <div class="section-content">
-                    <p>This proposal outlines a strategic partnership designed to accelerate your company's growth trajectory. We understand the challenges businesses face in today's dynamic market, from evolving customer expectations to the need for innovative solutions. Our approach focuses on providing tailored strategies and actionable insights that drive measurable results. This partnership is built on a foundation of collaboration, transparency, and a shared commitment to achieving your business objectives. We are confident that our expertise and proven methodologies will empower your organization to reach new heights of success. We look forward to embarking on this journey with you.</p>
-                </div>
-            </div>
-
-            <div class="section">
-                <h3 class="section-title">Understanding Your Needs</h3>
-                <div class="section-content">
-                    <p>We recognize that every organization has unique challenges and opportunities. While we lack specific details regarding your current needs, we understand that growth and adaptation are paramount for sustained success. Our experience across various industries has equipped us with the ability to quickly assess your specific situation, identify key areas for improvement, and develop customized solutions that address your precise requirements. We're committed to a collaborative discovery process to fully understand your goals, pain points, and aspirations. By working closely with your team, we can ensure that our proposed strategies are perfectly aligned with your overall business objectives and deliver maximum impact.</p>
-                </div>
-            </div>
-
-            <div class="section">
-                <h3 class="section-title">Proposed Solution</h3>
-                <div class="section-content">
-                    <p>Our proposed solution is a comprehensive and adaptable framework designed to drive sustainable growth. While specific solutions will be tailored to your needs during the discovery phase, our general approach centers around strategic planning, innovative solutions, and data-driven decision-making. We will leverage our expertise in market analysis, customer engagement, and operational efficiency to identify opportunities for improvement and develop actionable strategies. Our team will work closely with you to implement these strategies, track progress, and make necessary adjustments to ensure optimal results. We are committed to providing you with the tools and support you need to achieve your growth objectives and build a more resilient and successful organization.</p>
-                </div>
-            </div>
-
-            <div class="phase-section">
-                <h3 class="phase-title">Scope of Work / Project Breakdown</h3>
-                <div class="section-content">
-                <p><strong>Phase 1: Discovery & Planning (Week 1-2)</strong></p>
-<ul>
-<li><strong>Kick-off Meeting:</strong> Conduct a comprehensive kickoff meeting with key stakeholders to establish project goals, timelines, and communication protocols.</li>
-<li><strong>Requirements Gathering:</strong> Conduct detailed interviews and workshops to gather specific business requirements, pain points, and desired outcomes.</li>
-<li><strong>Market Analysis:</strong> Perform a thorough analysis of the competitive landscape, industry trends, and market opportunities.</li>
-<li><strong>Stakeholder Mapping:</strong> Identify and analyze key stakeholders to ensure alignment and effective communication throughout the project.</li>
-<li><strong>KPI Definition:</strong> Define key performance indicators (KPIs) to measure the success of the project and track progress towards achieving business objectives.</li>
-</ul>
-<p><strong>Phase 2: Strategy & Solution Design (Week 3-4)</strong></p>
-<ul>
-<li><strong>Solution Conceptualization:</strong> Develop innovative solutions that address the identified business challenges and leverage industry best practices.</li>
-<li><strong>Strategy Development:</strong> Create a comprehensive growth strategy that aligns with your business goals and market opportunities.</li>
-<li><strong>Technology Assessment:</strong> Evaluate existing technology infrastructure and identify potential areas for improvement or integration.</li>
-<li><strong>Roadmap Creation:</strong> Develop a detailed roadmap outlining the key milestones, activities, and resources required to implement the proposed solution.</li>
-<li><strong>Risk Assessment:</strong> Identify potential risks and develop mitigation strategies to ensure project success.</li>
-</ul>
-<p><strong>Phase 3: Implementation & Execution (Week 5-8)</strong></p>
-<ul>
-<li><strong>Project Management:</strong> Utilize agile project management methodologies to ensure efficient execution and timely delivery of project milestones.</li>
-<li><strong>Team Coordination:</strong> Coordinate internal and external teams to ensure seamless collaboration and effective communication.</li>
-<li><strong>Change Management:</strong> Implement change management strategies to minimize disruption and ensure smooth adoption of the new solution.</li>
-<li><strong>Training & Support:</strong> Provide comprehensive training and support to your team to ensure they are equipped to effectively utilize the new solution.</li>
-<li><strong>Performance Monitoring:</strong> Continuously monitor performance against defined KPIs and make necessary adjustments to optimize results.</li>
-</ul>
-<p><strong>Phase 4: Optimization & Reporting (Week 9-12)</strong></p>
-<ul>
-<li><strong>Data Analysis:</strong> Analyze data to identify areas for improvement and optimize the performance of the implemented solution.</li>
-<li><strong>Reporting & Communication:</strong> Provide regular reports and updates to stakeholders on project progress and performance.</li>
-<li><strong>Continuous Improvement:</strong> Continuously identify and implement improvements to ensure the solution remains aligned with evolving business needs.</li>
-<li><strong>Knowledge Transfer:</strong> Transfer knowledge and best practices to your team to ensure long-term sustainability of the solution.</li>
-<li><strong>Post-Implementation Review:</strong> Conduct a post-implementation review to assess the overall success of the project and identify lessons learned.</li>
-</ul>
-                </div>
-            </div>
-
-            <div class="section">
-                <h3 class="section-title">Deliverables</h3>
-                <div class="section-content">
-                    <p>Our engagement will provide several key deliverables designed to drive tangible results. These include a comprehensive strategic plan tailored to your specific needs, a detailed roadmap outlining implementation steps, and regular performance reports to track progress. You will also receive access to our team of experts, who will provide ongoing support and guidance throughout the project. The final deliverable will be a fully implemented solution that addresses your key business challenges and positions you for sustained growth. We are committed to delivering high-quality deliverables that exceed your expectations and provide lasting value. We will also provide documentation and training to ensure your team can successfully manage the solution in the long term.</p>
-                </div>
-            </div>
-
-            <div class="phase-section">
-                <h3 class="phase-title">Timeline</h3>
-                <div class="section-content">
-                <p>The project timeline is structured to ensure efficient execution and timely delivery of results. The initial phase, Discovery & Planning, will take approximately 2 weeks. This will be followed by Strategy & Solution Design, which will also take around 2 weeks. Implementation & Execution is expected to take 4 weeks, with the final Optimization & Reporting phase spanning 4 weeks. This is a flexible timeline and will be refined based on the specific needs of your organization during the initial discovery phase. We will provide regular updates and maintain open communication throughout the project to ensure everyone is informed of progress and any potential adjustments to the timeline. We are committed to delivering the project on time and within budget.</p>
-                </div>
-            </div>
-
-            <div class="section">
-                <h3 class="section-title">Investment / Pricing</h3>
-                <div class="section-content">
-                    <p>The investment for this strategic partnership will be customized based on the specific scope of work and your organization's unique requirements. Following the initial Discovery & Planning phase, we will provide a detailed pricing proposal that outlines the costs associated with each phase of the project. Our pricing is transparent and competitive, and we are committed to providing you with the best possible value for your investment. We offer flexible payment options to accommodate your budgetary constraints. We believe that this partnership represents a significant investment in your organization's future and will deliver a substantial return on investment in the form of increased revenue, improved efficiency, and enhanced customer satisfaction.</p>
-                </div>
-            </div>
-
-            <div class="company-info">
-                <h3 class="company-title">Our Team / About Us</h3>
-                <div class="company-content">
-                    <p>We are a team of experienced consultants, strategists, and technologists dedicated to helping businesses achieve their growth objectives. Our team has a proven track record of success across various industries, and we bring a wealth of knowledge and expertise to every project. We are passionate about innovation and committed to providing our clients with the highest quality service. Our collaborative approach ensures that we work closely with your team to understand your unique needs and develop solutions that are perfectly aligned with your business goals. We pride ourselves on our integrity, transparency, and commitment to delivering exceptional results. We believe that our team's expertise and dedication will be invaluable in helping your organization achieve its full potential.</p>
-                </div>
-            </div>
-
-            <div class="section">
-                <h3 class="section-title">Case Studies / Success Stories</h3>
-                <div class="section-content">
-                    <p>While we don't have specific case studies readily available, we can share examples of successful engagements we've undertaken in similar industries and with similar challenges. We have helped numerous organizations improve their operational efficiency, increase their revenue, and enhance their customer satisfaction. These engagements have involved developing and implementing strategic plans, optimizing marketing campaigns, and leveraging technology to drive innovation. We are confident that our experience and expertise can be applied to your organization to achieve similar results. During our initial consultation, we can provide more detailed examples of our past successes and discuss how we can help you achieve your specific business objectives. We are committed to providing you with the insights and tools you need to succeed.</p>
-                </div>
-            </div>
-
-            <div class="section">
-                <h3 class="section-title">Terms and Conditions</h3>
-                <div class="section-content">
-                    <p>This proposal is subject to our standard terms and conditions, which will be provided in a separate agreement. These terms and conditions cover aspects such as confidentiality, intellectual property rights, payment terms, and liability limitations. We are committed to ensuring that our relationship with you is based on transparency and mutual understanding. We encourage you to review the terms and conditions carefully and ask any questions you may have. We are confident that our terms and conditions are fair and reasonable and reflect our commitment to providing you with the best possible service. We are always willing to discuss and negotiate the terms and conditions to ensure they meet your specific needs.</p>
-                </div>
-            </div>
-
-            <div class="cta-section">
-                <h3 class="cta-title">Call to Action</h3>
-                <div class="cta-content">
-                    <p>We are excited about the opportunity to partner with you and help you achieve your growth objectives. We believe that our proposed solution represents a significant investment in your organization's future and will deliver a substantial return on investment. We encourage you to schedule a follow-up meeting to discuss this proposal in more detail and answer any questions you may have. We are confident that we can develop a customized solution that meets your specific needs and positions you for sustained success. We look forward to hearing from you soon and embarking on this journey together. Let's discuss how we can make this happen.</p>
-                </div>
-            </div>
-
-        </div>
-    </div>
-</body>
-</html>
-    """
-    
-    # Use the advanced inline editor
-    edited_html = inline_editable_html_component(
-        initial_html=sample_html,
-        height=600,
-        key="main_editor"
-    )
-    
-
-
-if __name__ == "__main__":
-    main()

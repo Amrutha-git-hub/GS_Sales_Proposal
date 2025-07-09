@@ -21,14 +21,56 @@ def show_field_warning(field_name: str):
     st.markdown(f'<div class="field-warning">⚠️ {field_name} is mandatory and cannot be empty!</div>', unsafe_allow_html=True)
 
 
-def save_uploaded_file(uploaded_file, save_dir="uploaded_rf_is"):
-    os.makedirs(save_dir, exist_ok=True)
-    save_path = os.path.join(save_dir, uploaded_file.name)
 
-    with open(save_path, "wb") as f:
-        f.write(uploaded_file.getbuffer())
 
-    return save_path
+def save_uploaded_file_and_get_path(uploaded_file, logger, client_enterprise_name):
+    """Save uploaded file to a temporary directory and return the file path"""
+    logger.info(f"Starting file upload process for file: {uploaded_file.name if uploaded_file else 'None'}")
+    
+    try:
+        if uploaded_file is not None:
+            logger.debug(f"File details - Name: {uploaded_file.name}, Size: {uploaded_file.size} bytes")
+
+            # Base upload directory from environment
+            base_upload_dir = os.getenv("FILE_SAVE_PATH")
+            logger.debug(f"Base upload directory path: {base_upload_dir}")
+            
+            # Full path including enterprise name
+            enterprise_upload_dir = os.path.join(base_upload_dir, client_enterprise_name)
+            logger.debug(f"Enterprise-specific upload path: {enterprise_upload_dir}")
+            
+            # Create the directory if it doesn't exist
+            if not os.path.exists(enterprise_upload_dir):
+                try:
+                    os.makedirs(enterprise_upload_dir)
+                    logger.info(f"Created directory: {enterprise_upload_dir}")
+                except OSError as e:
+                    logger.error(f"Failed to create directory {enterprise_upload_dir}: {str(e)}")
+                    raise
+            
+            # Full file path
+            file_path = os.path.join(enterprise_upload_dir, uploaded_file.name)
+            logger.debug(f"Full file path: {file_path}")
+            
+            # Save the file
+            try:
+                with open(file_path, "wb") as f:
+                    f.write(uploaded_file.getbuffer())
+                logger.info(f"Successfully saved file to: {file_path}")
+                return file_path
+            except IOError as e:
+                logger.error(f"Failed to save file {file_path}: {str(e)}")
+                raise
+                
+        else:
+            logger.warning("No file provided for upload")
+            return None
+            
+    except Exception as e:
+        st.error(str(e))
+        logger.error(f"Unexpected error in save_uploaded_file_and_get_path: {str(e)}")
+        raise
+
 
 def save_uploaded_file_and_get_path(uploaded_file):
     """Save uploaded file to a temporary directory and return the file path"""

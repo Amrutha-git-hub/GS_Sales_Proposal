@@ -79,7 +79,7 @@ def add_professional_css():
         transition: all 0.3s ease;
         background: #ffffff;
         color: #599cd4;
-        height: 2.2rem;
+        height: 2rem;
     }
     
     .stTextInput > div > div > input:focus {
@@ -94,7 +94,7 @@ def add_professional_css():
         transition: all 0.3s ease;
         background: #ffffff;
         color: #599cd4;
-        min-height: 2.2rem;
+        min-height: 2rem;
     }
     
     .stSelectbox > div > div > div:focus-within {
@@ -147,7 +147,7 @@ def add_professional_css():
         display: inline-block;
         font-size: 0.75rem;
         color: #599cd4;
-        height: 2.2rem;
+        height: 2rem;
         line-height: 1.6rem;
     }
     
@@ -251,6 +251,7 @@ def add_professional_css():
         margin-bottom: 0.6rem;
         padding-bottom: 0.2rem;
         border-bottom: 2px solid #666666;
+                height:6rem!important;
     }
     
     .column-content {
@@ -363,6 +364,7 @@ app_css = """
     width: 100%;
     position: relative;
     margin-bottom: 2rem;
+
 }
 
 .tab-separator-line {
@@ -385,7 +387,7 @@ app_css = """
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    height: 4rem;
+    height: 3rem;
     position: relative;
 }
 
@@ -435,7 +437,7 @@ app_css = """
     letter-spacing: 1px !important;
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
-    height: 4rem !important;
+    height: 3rem !important;
     border-radius: 15px !important;
     position: relative !important;
     overflow: hidden !important;

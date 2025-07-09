@@ -21,6 +21,11 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_huggingface import HuggingFaceEmbeddings
 from .prompts import image_prompt  # Make sure this exists
 
+from dotenv import load_dotenv
+load_dotenv()
+
+chroma_path = os.getenv("CHROMA_PATH")
+
 # --- Utility Functions ---
 
 def get_filename(file_path):
@@ -250,7 +255,7 @@ def vectorize_text(text: str, company_name: str, filename: str = "text_input", b
         docs = splitter.split_text(text)
         
         # Create persist directory
-        persist_directory = os.path.join("chroma_store", company_name, filename)
+        persist_directory = os.path.join(chroma_path, company_name, filename)
         os.makedirs(persist_directory, exist_ok=True)
         
         # Create collection name (sanitize company name)

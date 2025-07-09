@@ -10,74 +10,42 @@ import time
 from Search.Linkedin.linkedin_serp import *
 from Search.Linkedin.linkedin_agent_runner_unused import *
 from Recommendation.recommendation_utils import *
-from .client_css import *
+from .client_css import client_css
 from .client_dataclass import ClientData, ClientDataManager
 from datetime import datetime 
 # Configure logging
-def setup_logging():
-    """Setup logging configuration for client module"""
-    try:
-        # Create logs directory if it doesn't exist
-        logs_dir = "logs"
-        if not os.path.exists(logs_dir):
-            os.makedirs(logs_dir)
-            
-        # Configure logger
-        logger = logging.getLogger('client_module')
-        logger.setLevel(logging.DEBUG)
-        
-        # Remove existing handlers to avoid duplicates
-        for handler in logger.handlers[:]:
-            logger.removeHandler(handler)
-        
-        # Create file handler
-        file_handler = logging.FileHandler(os.path.join(logs_dir, 'client_logs'+datetime.now().strftime("%d_%m_%Y_%H_%M_%S")+'.log'))
-        file_handler.setLevel(logging.DEBUG)
-        
-        # Create console handler
-        console_handler = logging.StreamHandler()
-        console_handler.setLevel(logging.INFO)
-        
-        # Create formatter
-        formatter = logging.Formatter(
-            '%(asctime)s - %(name)s - %(levelname)s - %(funcName)s:%(lineno)d - %(message)s'
-        )
-        file_handler.setFormatter(formatter)
-        console_handler.setFormatter(formatter)
-        
-        # Add handlers to logger
-        logger.addHandler(file_handler)
-        logger.addHandler(console_handler)
-        
-        return logger
-    except Exception as e:
-        st.error(f"Error setting up logging: {str(e)}")
-        return logging.getLogger('client_module')
 
 
 
-def save_uploaded_file_and_get_path(uploaded_file,logger):
+
+
+def save_uploaded_file_and_get_path(uploaded_file, logger, client_enterprise_name):
     """Save uploaded file to a temporary directory and return the file path"""
     logger.info(f"Starting file upload process for file: {uploaded_file.name if uploaded_file else 'None'}")
     
     try:
         if uploaded_file is not None:
             logger.debug(f"File details - Name: {uploaded_file.name}, Size: {uploaded_file.size} bytes")
+
+            # Base upload directory from environment
+            base_upload_dir = os.getenv("FILE_SAVE_PATH")
+            logger.debug(f"Base upload directory path: {base_upload_dir}")
             
-            # Create uploads directory if it doesn't exist
-            upload_dir = os.getenv("FILE_SAVE_PATH")
-            logger.debug(f"Upload directory path: {upload_dir}")
+            # Full path including enterprise name
+            enterprise_upload_dir = os.path.join(base_upload_dir, client_enterprise_name)
+            logger.debug(f"Enterprise-specific upload path: {enterprise_upload_dir}")
             
-            if not os.path.exists(upload_dir):
+            # Create the directory if it doesn't exist
+            if not os.path.exists(enterprise_upload_dir):
                 try:
-                    os.makedirs(upload_dir)
-                    logger.info(f"Created upload directory: {upload_dir}")
+                    os.makedirs(enterprise_upload_dir)
+                    logger.info(f"Created directory: {enterprise_upload_dir}")
                 except OSError as e:
-                    logger.error(f"Failed to create upload directory {upload_dir}: {str(e)}")
+                    logger.error(f"Failed to create directory {enterprise_upload_dir}: {str(e)}")
                     raise
             
-            # Create file path
-            file_path = os.path.join(upload_dir, uploaded_file.name)
+            # Full file path
+            file_path = os.path.join(enterprise_upload_dir, uploaded_file.name)
             logger.debug(f"Full file path: {file_path}")
             
             # Save the file
@@ -95,10 +63,9 @@ def save_uploaded_file_and_get_path(uploaded_file,logger):
             return None
             
     except Exception as e:
-        st.error(e)
+        st.error(str(e))
         logger.error(f"Unexpected error in save_uploaded_file_and_get_path: {str(e)}")
         raise
-
 
 def validate_client_mandatory_fields():
     """Validate client mandatory fields using dataclass"""
@@ -106,23 +73,22 @@ def validate_client_mandatory_fields():
     
     try:
         client_data = ClientDataManager.get_client_data()
-        # logger.debug("Retrieved client data for validation")
+        #logger.debug("Retrieved client data for validation")
         
-        # # Temporarily return True - validation disabled
-        # logger.info("Validation bypassed - returning True")
-        return True
+        # Temporarily return True - validation disabled
+        #st.info("Validation bypassed - returning True")
+        #return True
         
         # Uncomment below for actual validation
-        # result = client_data.validate_mandatory_fields()
-        # logger.info(f"Validation result: {result}")
-        # return result
+        result = client_data.validate_mandatory_fields()
+        return result
         
     except Exception as e:
-       # logger.error(f"Error in validate_client_mandatory_fields: {str(e)}")
+        st.error(f"Error in validate_client_mandatory_fields: {str(e)}")
         return False
 
 
-def client_tab(st,logger):
+def client_tab(st,logger,is_locked):
     logger.info("Starting client_tab function")
     
     try:
@@ -132,11 +98,11 @@ def client_tab(st,logger):
         
         # Apply CSS only once
         try:
-            if not client_data.css_applied:
-                logger.debug("Applying CSS for the first time")
-                st.markdown(client_css, unsafe_allow_html=True)
-                ClientDataManager.update_client_data(css_applied=True)
-                logger.info("CSS applied and updated in client data")
+            # if not client_data.css_applied:
+            #     logger.debug("Applying CSS for the first time")
+            #     st.markdown(client_css, unsafe_allow_html=True)
+            #     ClientDataManager.update_client_data(css_applied=True)
+            #     logger.info("CSS applied and updated in client data")
             
             # Re-apply CSS after every rerun to ensure persistence
             st.markdown(client_css, unsafe_allow_html=True)
@@ -171,6 +137,7 @@ def client_tab(st,logger):
                         placeholder="Enter client enterprise name...", 
                         key="client_enterprise_name_input",
                         label_visibility="collapsed",
+                        disabled = is_locked,
                     )
                     
                     # Update dataclass when input changes
@@ -187,33 +154,36 @@ def client_tab(st,logger):
                         find_urls_disabled = not (client_enterprise_name and len(client_enterprise_name.strip()) > 2)
                         logger.debug(f"Find URLs button disabled: {find_urls_disabled}")
                         
-                        if st.button("🔍 Find Website",
+                        find_urls_clicked = st.button("🔍 Find Website",
                                     disabled=find_urls_disabled,
                                     help="Find website URLs for this company",
                                     key="find_urls_button",
-                                    type="secondary"):
-                            
-                            logger.info(f"Find URLs button clicked for: {client_enterprise_name.strip()}")
-                            
-                            # Add spinner while fetching URLs
-                            with st.spinner(f"Finding Websites for '{client_enterprise_name.strip()}'..."):
-                                try:
-                                    urls_list = get_urls_list(client_enterprise_name.strip())
-                                    logger.info(f"Found {len(urls_list)} URLs for {client_enterprise_name.strip()}")
-                                    
-                                    ClientDataManager.update_client_data(
-                                        website_urls_list=urls_list,
-                                        enterprise_name=client_enterprise_name
-                                    )
-                                    logger.debug("Updated client data with URLs list")
-                                    
-                                except Exception as e:
-                                    logger.error(f"Error finding URLs for {client_enterprise_name.strip()}: {str(e)}")
-                                    ClientDataManager.update_client_data(website_urls_list=[])
-                                    st.error(f"Error finding URLs: {str(e)}")
+                                    type="secondary")
                     
                     except Exception as e:
                         logger.error(f"Error in Find URLs button section: {str(e)}")
+                        find_urls_clicked = False
+                
+                # Handle the Find URLs button click with spinner under the whole first column
+                if find_urls_clicked:
+                    logger.info(f"Find URLs button clicked for: {client_enterprise_name.strip()}")
+                    
+                    # Add spinner under the whole first column
+                    with st.spinner(f"Finding Websites for '{client_enterprise_name.strip()}'..."):
+                        try:
+                            urls_list = get_urls_list(client_enterprise_name.strip())
+                            logger.info(f"Found {len(urls_list)} URLs for {client_enterprise_name.strip()}")
+                            
+                            ClientDataManager.update_client_data(
+                                website_urls_list=urls_list,
+                                enterprise_name=client_enterprise_name
+                            )
+                            logger.debug("Updated client data with URLs list")
+                            
+                        except Exception as e:
+                            logger.error(f"Error finding URLs for {client_enterprise_name.strip()}: {str(e)}")
+                            ClientDataManager.update_client_data(website_urls_list=[])
+                            st.error(f"Error finding URLs: {str(e)}")
                 
                 # Clear URLs if company name is cleared
                 try:
@@ -252,7 +222,7 @@ def client_tab(st,logger):
                 ''', unsafe_allow_html=True)
                 
                 # Create columns for dropdown and buttons
-                url_col, btn1_col, btn2_col, btn3_col = st.columns([7, 1, 1, 1])
+                url_col, btn1_col, btn2_col = st.columns([7, 1, 2])
                 
                 with url_col:
                     try:
@@ -278,8 +248,8 @@ def client_tab(st,logger):
                             index=default_index,
                             key="client_website_url_selector",
                             label_visibility="collapsed",
-                            disabled=not client_name_provided,
-                            accept_new_options=True
+                            disabled=not client_name_provided or is_locked,
+                            accept_new_options=True,
                         )
                         
                         # Reset to empty string if default option is selected
@@ -301,24 +271,15 @@ def client_tab(st,logger):
                 # Buttons for website actions
                 with btn1_col:
                     try:
-                        if client_website_url:
-                            st.link_button("🌐", client_website_url, help="Visit website", use_container_width=True)
-                        else:
-                            st.button("🌐", help="Visit website", disabled=True, use_container_width=True)
-                    except Exception as e:
-                        logger.error(f"Error creating visit website button: {str(e)}")
-                
-                with btn2_col:
-                    try:
                         refresh_clicked = st.button("🔄", help="Refresh website URLs list", key="refresh_urls_btn", 
-                                                  use_container_width=True, disabled=not client_website_url)
+                                                  use_container_width=True, disabled=not client_name_provided)
                     except Exception as e:
                         logger.error(f"Error creating refresh button: {str(e)}")
                         refresh_clicked = False
                 
-                with btn3_col:
+                with btn2_col:
                     try:
-                        scrape_clicked = st.button("📑", help="Get enterprise details", key="scrape_website_btn", 
+                        scrape_clicked = st.button("📑 Get  Details", help="Get enterprise details", key="scrape_website_btn", 
                                                   use_container_width=True, disabled=not client_website_url)
                         
                         if scrape_clicked and client_website_url:
@@ -331,6 +292,10 @@ def client_tab(st,logger):
                     except Exception as e:
                         logger.error(f"Error creating scrape button: {str(e)}")
                         scrape_clicked = False
+
+                # Show redirect link when website is selected
+                if client_website_url:
+                    st.info(f"🌐 [Visit Website]({client_website_url})")
 
                 # Handle refresh action
                 if refresh_clicked and client_name_provided:
@@ -489,7 +454,8 @@ def client_tab(st,logger):
                         label="Upload RFI Document", 
                         type=['pdf', 'docx', 'txt', 'csv', 'png', 'jpg', 'jpeg'], 
                         key="rfi_document_uploader",
-                        label_visibility="collapsed"
+                        label_visibility="collapsed",
+                        
                     )
                     
                     if rfi_document_upload is not None:
@@ -575,7 +541,7 @@ def client_tab(st,logger):
                                 # Perform the actual processing
                                 try:
                                     logger.info("Starting RFI document processing")
-                                    file_path = save_uploaded_file_and_get_path(rfi_document_upload,logger)
+                                    file_path = save_uploaded_file_and_get_path(rfi_document_upload,logger,client_enterprise_name)
                                     
                                     if file_path and client_enterprise_name:
                                         logger.info(f"Processing RFI file: {file_path}")
@@ -635,7 +601,7 @@ def client_tab(st,logger):
                         height=150, 
                         key="enterprise_details_textarea",
                         label_visibility="collapsed",
-                        disabled=not client_name_provided
+                        disabled=not client_name_provided or is_locked
                     )
                     
                     # Update dataclass when text area changes
@@ -675,7 +641,7 @@ def client_tab(st,logger):
                         height=200, 
                         key="client_requirements_textarea",
                         label_visibility="collapsed",
-                        disabled=not client_name_provided,
+                        disabled=not client_name_provided or is_locked,
                         placeholder="Enter client name first to enable this field" if not client_name_provided else "Add your client requirements here youmay take suggestions from AI in the right as well"
                     )
                     
@@ -760,59 +726,57 @@ def client_tab(st,logger):
                                         try:
                                             # Style the button to align vertically with the content box
                                             st.markdown("""
-                                            <style>
-                                            /* Force override all button styling */
-                                            button[kind="secondary"] {
-                                                height: 48px !important;
-                                                border: 2.2px solid #618f8f !important;
-                                                border-radius: 4px !important;
-                                                margin-top: -5px !important;  /* Move button up */
-                                                transform: translateY(-3px) !important;  /* Additional upward adjustment */
-                                                background-color: #4a4a4a !important;  /* Dark greyish background */
-                                                color: white !important;  /* White text */
-                                            }
-                                            
-                                            button[kind="secondary"]:hover {
-                                                border: 2.2px solid #618f8f !important;
-                                                transform: translateY(-3px) !important;  /* Keep position on hover */
-                                                background-color: #5a5a5a !important;  /* Slightly lighter on hover */
-                                                color: white !important;  /* Keep white text on hover */
-                                            }
-                                            
-                                            button[kind="secondary"]:focus {
-                                                border: 2.2px solid #618f8f !important;
-                                                outline: 2px solid #618f8f !important;
-                                                transform: translateY(-3px) !important;  /* Keep position on focus */
-                                                background-color: #4a4a4a !important;  /* Keep dark background on focus */
-                                                color: white !important;  /* Keep white text on focus */
-                                            }
-                                            
-                                            /* Try targeting by data attributes */
-                                            [data-testid] button {
-                                                border: 2.2px solid #618f8f !important;
-                                                height: 48px !important;
-                                                margin-top: -5px !important;  /* Move button up */
-                                                transform: translateY(-2.5px) !important;  /* Additional upward adjustment */
-                                                background-color: #4a4a4a !important;  /* Dark greyish background */
-                                                color: white !important;  /* White text */
-                                            }
-                                            
-                                            /* Additional targeting for button text specifically */
-                                            button[kind="secondary"] p,
-                                            button[kind="secondary"] span,
-                                            button[kind="secondary"] div {
-                                                color: white !important;
-                                            }
-                                            
-                                            [data-testid] button p,
-                                            [data-testid] button span,
-                                            [data-testid] button div {
-                                                color: white !important;
-                                            }
-                                            </style>
-                                            """, unsafe_allow_html=True)
-                                            
-                                            # Change button appearance based on selection state
+                    <style>
+                    /* Force override all button styling */
+                    button[kind="secondary"] {
+                        height: 48px !important;
+                        border: 2.2px solid #618f8f !important;
+                        border-radius: 4px !important;
+                        margin-top: -5px !important;  /* Move button up */
+                        transform: translateY(-3px) !important;  /* Additional upward adjustment */
+                        background-color: #4a4a4a !important;  /* Dark greyish background */
+                        color: white !important;  /* White text */
+                    }
+                     
+                    button[kind="secondary"]:hover {
+                        border: 2.2px solid #618f8f !important;
+                        transform: translateY(-3px) !important;  /* Keep position on hover */
+                        background-color: #5a5a5a !important;  /* Slightly lighter on hover */
+                        color: white !important;  /* Keep white text on hover */
+                    }
+                     
+                    button[kind="secondary"]:focus {
+                        border: 2.2px solid #618f8f !important;
+                        outline: 2px solid #618f8f !important;
+                        transform: translateY(-3px) !important;  /* Keep position on focus */
+                        background-color: #4a4a4a !important;  /* Keep dark background on focus */
+                        color: white !important;  /* Keep white text on focus */
+                    }
+                     
+                    /* Try targeting by data attributes */
+                    [data-testid] button {
+                        border: 2.2px solid #618f8f !important;
+                        height: 48px !important;
+                        margin-top: -5px !important;  /* Move button up */
+                        transform: translateY(-2.5px) !important;  /* Additional upward adjustment */
+                        background-color: #4a4a4a !important;  /* Dark greyish background */
+                        color: white !important;  /* White text */
+                    }
+                    
+                    /* Additional targeting for button text specifically */
+                    button[kind="secondary"] p,
+                    button[kind="secondary"] span,
+                    button[kind="secondary"] div {
+                        color: white !important;
+                    }
+                    
+                    [data-testid] button p,
+                    [data-testid] button span,
+                    [data-testid] button div {
+                        color: white !important;
+                    }
+                    </style>
+                    """, unsafe_allow_html=True)         # Change button appearance based on selection state
                                             button_text = "❌" if is_selected else "➕"
                                             button_help = f"Remove '{key}' from client requirements" if is_selected else f"Add '{key}' to client requirements section"
                                             button_type = "secondary" 
@@ -821,7 +785,7 @@ def client_tab(st,logger):
                                                     key=f"toggle_rfi_pain_point_item_{i}", 
                                                     help=button_help,
                                                     type=button_type,
-                                                    disabled=not client_name_provided):
+                                                    disabled=not client_name_provided or is_locked):
                                                 
                                                 logger.info(f"Pain point button clicked for '{key}', current selection: {is_selected}")
                                                 
@@ -990,7 +954,7 @@ def client_tab(st,logger):
             placeholder="Enter SPOC full name...", 
             key="spoc_name_input",
             label_visibility="collapsed",
-            disabled=not client_name_provided
+            disabled=not client_name_provided or is_locked
         )
         
         # Update client data when SPOC name changes
@@ -1057,7 +1021,7 @@ def client_tab(st,logger):
                 options=linkedin_options,
                 key="spoc_linkedin_profile_selector",
                 label_visibility="collapsed",
-                disabled=not client_name_provided,
+                disabled=not client_name_provided or is_locked,
                 accept_new_options=True,
             )
             
@@ -1239,7 +1203,7 @@ def client_tab(st,logger):
             index=role_options.index(current_selection) if current_selection in role_options else 0,
             key="target_role_selector_dropdown",
             label_visibility="collapsed",
-            disabled=not (client_name_provided and spoc_name_provided),
+            disabled=not (client_name_provided and spoc_name_provided) or is_locked,
             accept_new_options=True
         )
 
@@ -1275,55 +1239,58 @@ def client_tab(st,logger):
         # Track the current role to detect role changes
         current_role = getattr(client_data, 'selected_target_role', None)
         session_key = "last_role_for_priorities"
+        priorities_session_key = "current_business_priorities_list"
 
         # Initialize session state tracking for last role
         if session_key not in st.session_state:
             st.session_state[session_key] = None
+        if priorities_session_key not in st.session_state:
+            st.session_state[priorities_session_key] = default_priorities
 
         # Load role-based priorities only when role changes or is first loaded
         if current_role and current_role != "Select a role..." and current_role != st.session_state[session_key]:
             try:
                 role_priorities = get_ai_business_priorities(current_role)
                 if role_priorities:
-                    # Store the priorities for this role
-                    ClientDataManager.update_client_data(
-                        current_role_priorities=role_priorities,
-                    )
                     business_priorities_list = role_priorities
+                    ClientDataManager.update_client_data(current_role_priorities=role_priorities)
                 else:
                     business_priorities_list = default_priorities
-                    ClientDataManager.update_client_data(
-                        current_role_priorities=default_priorities,
-                    )
+                    ClientDataManager.update_client_data(current_role_priorities=default_priorities)
+                
+                # Store in session state
+                st.session_state[priorities_session_key] = business_priorities_list
                 st.session_state[session_key] = current_role
-                # Clear initialization flags when role changes to reset checkboxes
-                keys_to_remove = [key for key in st.session_state.keys() if key.startswith("initialized_business_priority_checkbox_")]
+                
+                # Clear previous selections when role changes
+                ClientDataManager.update_client_data(selected_business_priorities=[])
+                
+                # Clear checkbox initialization flags when role changes
+                keys_to_remove = [key for key in st.session_state.keys() if key.startswith("business_priority_checkbox_")]
                 for key in keys_to_remove:
                     del st.session_state[key]
-            except Exception:
+                    
+            except Exception as e:
                 business_priorities_list = default_priorities
-                ClientDataManager.update_client_data(
-                    current_role_priorities=default_priorities,
-                )
+                st.session_state[priorities_session_key] = default_priorities
+                ClientDataManager.update_client_data(current_role_priorities=default_priorities)
                 st.session_state[session_key] = current_role
         else:
-            # Use cached priorities for the current role
-            business_priorities_list = getattr(client_data, 'current_role_priorities', default_priorities)
+            # Use cached priorities from session state
+            business_priorities_list = st.session_state.get(priorities_session_key, default_priorities)
 
+        # Collect checkbox states without immediate updates
+        checkbox_states = {}
+        selected_priorities = []
+        
         # Show checkboxes for priorities
         for i, priority in enumerate(business_priorities_list):
             priority_title = priority.get('title') if isinstance(priority, dict) else str(priority)
             priority_icon = priority.get('icon', '📋') if isinstance(priority, dict) else '📋'
             display_text = f"{priority_icon} **{priority_title}**"
             
-            # Create unique key for this checkbox
+            # Create unique key for this checkbox based on role and index
             checkbox_key = f"business_priority_checkbox_{i}_{hash(current_role or 'none')}"
-            
-            # Only set initial value when role changes or first time
-            if (f"initialized_{checkbox_key}" not in st.session_state or 
-                current_role != st.session_state[session_key]):
-                st.session_state[checkbox_key] = priority_title in client_data.selected_business_priorities
-                st.session_state[f"initialized_{checkbox_key}"] = True
             
             is_enabled = (
                 spoc_name_provided and 
@@ -1331,22 +1298,25 @@ def client_tab(st,logger):
                 current_role != "Select a role..."
             )
             
-            # Use checkbox without value parameter to prevent automatic rerun
+            # Get checkbox state - let Streamlit handle the initial value
             is_checked = st.checkbox(
                 display_text,
                 key=checkbox_key,
-                disabled=not is_enabled
+                disabled=not is_enabled,
+                value=priority_title in client_data.selected_business_priorities
             )
+            
+            # Store the state for batch update
+            checkbox_states[priority_title] = is_checked
+            if is_checked:
+                selected_priorities.append(priority_title)
 
-            # Update the client data based on checkbox state
-            if is_checked and priority_title not in client_data.selected_business_priorities:
-                client_data.selected_business_priorities.append(priority_title)
-            elif not is_checked and priority_title in client_data.selected_business_priorities:
-                client_data.selected_business_priorities.remove(priority_title)
-
-        # Update client data without causing rerun
-        if hasattr(client_data, 'selected_business_priorities'):
-            ClientDataManager.update_client_data(selected_business_priorities=client_data.selected_business_priorities)
+        # Batch update client data only if there are actual changes
+        current_selections = set(client_data.selected_business_priorities)
+        new_selections = set(selected_priorities)
+        
+        if current_selections != new_selections:
+            ClientDataManager.update_client_data(selected_business_priorities=selected_priorities)
     try:
         col9, col10 = st.columns([1, 1])
         logger.info("Created additional requirements columns")
@@ -1374,7 +1344,7 @@ def client_tab(st,logger):
                 height=200,
                 key="client_additional_requirements_textarea",
                 label_visibility="collapsed",
-                disabled=not client_name_provided
+                disabled=not client_name_provided or is_locked,
             )
             logger.info(f"Additional requirements text area rendered with {len(client_additional_requirements)} characters")
         except Exception as e:
@@ -1461,7 +1431,7 @@ def client_tab(st,logger):
                                     key=f"toggle_additional_spec_item_{i}", 
                                     help=button_help,
                                     type=button_type,
-                                    disabled=not client_name_provided):
+                                    disabled=not client_name_provided or is_locked):
                                 
                                 if is_selected:
                                     try:

@@ -1,14 +1,14 @@
 seller_css = """
 <style>
-    .client-section {
-        background: #f5f5f5;
-        padding: 1.5rem;
-        border-radius: 10px;
-        border-left: 4px solid #667eea;
-        margin-bottom: 1rem;
-        color: #2a2a2a;
-    }
-    
+.seller-section {
+    background: #f5f5f5;
+    padding: 1.5rem;
+    border-radius: 4px; /* More square than default */
+    border: 2px solid #618f8f; /* Matches button border color */
+    box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3); /* Optional: match visual depth */
+    margin-bottom: 1rem;
+    color: #2a2a2a;
+}
     .url-section {
         background: #f5f5f5;
         padding: 1.5rem;
@@ -444,54 +444,6 @@ select,
     color: #2a2a2a !important;
 }
 
-   /* Force override all button styling */
-                    button[kind="secondary"] {
-                        height: 88px !important;
-                        border: 2.2px solid #618f8f !important;
-                        border-radius: 4px !important;
-                        margin-top: -5px !important;  /* Move button up */
-                        transform: translateY(5px) !important;  /* Additional upward adjustment */
-                        background-color: #4a4a4a !important;  /* Dark greyish background */
-                        color: white !important;  /* White text */
-                    }
-                     
-                    button[kind="secondary"]:hover {
-                        border: 2.2px solid #618f8f !important;
-                        transform: translateY(5px) !important;  /* Keep position on hover */
-                        background-color: #5a5a5a !important;  /* Slightly lighter on hover */
-                        color: white !important;  /* Keep white text on hover */
-                    }
-                     
-                    button[kind="secondary"]:focus {
-                        border: 2.2px solid #618f8f !important;
-                        outline: 2px solid #618f8f !important;
-                        transform: translateY(5px) !important;  /* Keep position on focus */
-                        background-color: #4a4a4a !important;  /* Keep dark background on focus */
-                        color: white !important;  /* Keep white text on focus */
-                    }
-                     
-                    /* Try targeting by data attributes */
-                    [data-testid] button {
-                        border: 2.2px solid #618f8f !important;
-                        height: 48px !important;
-                        margin-top: -5px !important;  /* Move button up */
-                        transform: translateY(5px) !important;  /* Additional upward adjustment */
-                        background-color: #4a4a4a !important;  /* Dark greyish background */
-                        color: white !important;  /* White text */
-                    }
-                    
-                    /* Additional targeting for button text specifically */
-                    button[kind="secondary"] p,
-                    button[kind="secondary"] span,
-                    button[kind="secondary"] div {
-                        color: white !important;
-                    }
-                    
-                    [data-testid] button p,
-                    [data-testid] button span,
-                    [data-testid] button div {
-                        color: white !important;
-                    }
 
 </style>
 """
