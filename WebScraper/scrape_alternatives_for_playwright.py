@@ -3,9 +3,7 @@ import json
 
 from WebScraper.state import User
 
-
-
-from crawl4ai import LLMConfig,AsyncWebCrawler,CacheMode,CrawlerRunConfig,BrowserConfig
+from crawl4ai import LLMConfig, AsyncWebCrawler, CacheMode, CrawlerRunConfig, BrowserConfig
 from crawl4ai.extraction_strategy import LLMExtractionStrategy
 import os 
 from dotenv import load_dotenv
@@ -18,7 +16,7 @@ llm_strategy = LLMExtractionStrategy(
     ),
     schema=User.model_json_schema(),
     extraction_type="schema",
-        instruction="""
+    instruction="""
 You are analyzing a webpage to extract structured information about the organization behind it.
 
 Your goal is to extract the following:
@@ -36,8 +34,8 @@ Tips:
 - Avoid generic filler content like navigation menus, service listings, or unrelated calls to action.
 
 Return the data in the format defined by the schema.
-"""
-,    chunk_token_threshold=1000,
+""",
+    chunk_token_threshold=1000,
     overlap_rate=0.0,
     apply_chunking=True,
     input_format="markdown",   # or "html", "fit_markdown"
@@ -49,17 +47,59 @@ crawl_config = CrawlerRunConfig(
     cache_mode=CacheMode.BYPASS
 )
 
+# OPTION 1: Using Selenium with Chrome
+browser_cfg = BrowserConfig(
+    browser_type="chromium",  # Options: "chromium", "firefox", "webkit"
+    headless=True,
+    use_managed_browser=True,  # Let crawl4ai manage the browser
+    extra_args=[
+        "--no-sandbox",
+        "--disable-dev-shm-usage",
+        "--disable-gpu",
+        "--disable-web-security",
+        "--disable-features=VizDisplayCompositor"
+    ]
+)
 
-browser_cfg = BrowserConfig(headless=True)
+
+# browser_cfg = BrowserConfig(
+#     browser_type="firefox",
+#     headless=True,
+#     use_managed_browser=True,
+#     extra_args=[
+#         "--no-sandbox",
+#         "--disable-dev-shm-usage"
+#     ]
+# )
+
+# browser_cfg = BrowserConfig(
+#     browser_type="webkit",
+#     headless=True,
+#     use_managed_browser=True
+# )
+
+
+# browser_cfg = BrowserConfig(
+#     browser_type="chromium",
+#     headless=True,
+#     use_managed_browser=False,  # Use system browser
+#     browser_executable_path="/usr/bin/google-chrome",  # Path to your browser
+#     extra_args=[
+#         "--no-sandbox",
+#         "--disable-dev-shm-usage",
+#         "--disable-gpu"
+#     ]
+# )
+
+
+# browser_cfg = BrowserConfig(
+#     browser_type="fetch",  # Simple HTTP requests without browser engine
+#     headless=True
+# )
 
 import re 
-
-import re
 from collections import Counter
 from typing import List
-
-
-
 
 def aggregate_users(users: List[dict]) -> User:
     print("🔍 Starting aggregation of users...")
@@ -67,11 +107,11 @@ def aggregate_users(users: List[dict]) -> User:
     # Filter out users with error=True
     valid_users = [u for u in users if not u.get('error', False)]
 
-
     # Most frequent name (non-empty and non-None)
     names = [u.get('name', '') or '' for u in valid_users if u.get('name')]
     name_counter = Counter(names)
     name = name_counter.most_common(1)[0][0] if name_counter else (valid_users[0].get('name') or "Unknown")
+    
     logo = next(
         (
             logo for u in valid_users
@@ -79,7 +119,6 @@ def aggregate_users(users: List[dict]) -> User:
         ),
         ""
     )
-
 
     # Longest non-empty description
     descriptions = [u.get('description', '') or '' for u in valid_users]
@@ -90,6 +129,7 @@ def aggregate_users(users: List[dict]) -> User:
         (u.get('name', 'Unknown'), u.get('services') or []) for u in valid_users
     ]
     services = max((s for _, s in all_service_lists), key=len, default=[])
+    
     return User(
         name=name,
         logo=logo,
@@ -102,25 +142,19 @@ def format_enterprise_details(details_obj: User):
 Description: {details_obj.description}
 Services:
 - {'\n- '.join(details_obj.services)}
-""",details_obj.logo
+""", details_obj.logo
 
-
-
-async def get_data(url:str):
-
-    async with AsyncWebCrawler(config= browser_cfg) as crawler:
+async def get_data(url: str):
+    async with AsyncWebCrawler(config=browser_cfg) as crawler:
         result = await crawler.arun(
-            url = url,
-            config = crawl_config)
+            url=url,
+            config=crawl_config
+        )
     
     if result.success:
-        print(f"Successfully scraped : '\n\n\n {result.extracted_content}")    
-        lists = json.loads(result.extracted_content)  # here instead of returning the last we may refine the one we need
-        #print(lists)
+        print(f"Successfully scraped: '\n\n\n {result.extracted_content}")    
+        lists = json.loads(result.extracted_content)
         print(format_enterprise_details(aggregate_users(lists)))
         return format_enterprise_details(aggregate_users(lists))
-    
     else:
-        print(f"The code exited with eroor {result.error_message}")
-
-
+        print(f"The code exited with error: {result.error_message}")

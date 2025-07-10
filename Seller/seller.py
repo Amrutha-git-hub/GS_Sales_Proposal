@@ -8,7 +8,8 @@ from Search.Linkedin.linkedin_serp import *
 from Recommendation.recommendation_utils import *
 from Common_Utils.ai_suggestion_utils import *
 
-logger = None
+# Configure logger
+logger = logging.getLogger(__name__)
 
 @dataclass
 class SellerTabState:
@@ -160,18 +161,9 @@ class SellerTabState:
 
 def seller_tab(is_locked):
     """Main seller tab function with dataclass-based state management."""
-
-
     try:
-        logger.info("Starting seller_tab function")
-        
-        # Load or create seller state
-        seller_state = SellerTabState.from_session_state()
-        
-        # Re-apply CSS after every rerun to ensure persistence
-        try:
-            st.markdown(seller_css, unsafe_allow_html=True)
-            st.markdown("""
+        st.markdown(seller_css, unsafe_allow_html=True)
+        st.markdown("""
                                                 <style>
                                                 /* Force override all button styling */
                                                 button[kind="secondary"] {
@@ -220,25 +212,28 @@ def seller_tab(is_locked):
                                                 }
                                                 </style>
                                                 """, unsafe_allow_html=True)
-            print("CSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS")
-            logger.debug("CSS applied successfully")
-        except Exception as e:
-            logger.error(f"Error applying CSS: {str(e)}")
-            st.error("Error loading page styles")
-            
-        # Render main UI components
-        _render_top_section(seller_state,is_locked)
-        _render_document_upload_section(seller_state,is_locked)
-        _render_enterprise_details_section(seller_state,is_locked)
+        logger.info("Starting seller_tab function")
+        
+        # Load or create seller state
+        seller_state = SellerTabState.from_session_state()
+        
+        # Re-apply CSS after every rerun to ensure persistence
+        # ... CSS code remains the same ...
+        
+        # Render main UI components - PASS is_locked parameter
+        _render_top_section(seller_state, is_locked)
+        _render_document_upload_section(seller_state, is_locked)
+        _render_enterprise_details_section(seller_state, is_locked)
         
         logger.info("Seller tab rendered successfully")
         
     except Exception as e:
         logger.error(f"Critical error in seller_tab: {str(e)}", exc_info=True)
-        st.error("A critical error occurred while loading the seller tab. Please refresh the page.")
+        st.error('''🚨 Oops! Something went wrong. Please try again or contact support.''')
+        #st.error("A critical error occurred while loading the seller tab. Please refresh the page.")
     return seller_state
 
-def _render_top_section(seller_state: SellerTabState,is_locked):
+def _render_top_section(seller_state: SellerTabState, is_locked: bool):
     """Render the top section with seller name and URL inputs."""
     try:
         logger.debug("Rendering top section")
@@ -247,19 +242,20 @@ def _render_top_section(seller_state: SellerTabState,is_locked):
         col1, col2 = st.columns([1, 1])
         
         with col1:
-            _render_seller_name_input(seller_state,is_locked)
+            _render_seller_name_input(seller_state, is_locked)  # Pass is_locked
         
         with col2:
-            _render_website_url_section(seller_state,is_locked)
+            _render_website_url_section(seller_state, is_locked)  # Pass is_locked
             
         logger.debug("Top section rendered successfully")
         
     except Exception as e:
         logger.error(f"Error rendering top section: {str(e)}", exc_info=True)
-        st.error("Error loading seller information section")
+        st.error('''🚨 Oops! Something went wrong. Please try again or contact support.''')
+        #st.error("Error loading seller information section")
 
 
-def _render_seller_name_input(seller_state: SellerTabState,is_locked):
+def _render_seller_name_input(seller_state: SellerTabState, is_locked: bool):
     """Render seller name input with find URLs functionality."""
     try:
         logger.debug("Rendering seller name input")
@@ -280,21 +276,22 @@ def _render_seller_name_input(seller_state: SellerTabState,is_locked):
                 placeholder="Enter seller enterprise name...", 
                 value=seller_state.seller_enterprise_name,
                 key="seller_enterprise_name_input",
-                label_visibility="collapsed"
+                label_visibility="collapsed",
+                disabled=is_locked  # ADD THIS LINE
             )
             
-            # Update state if changed
-            if seller_enterprise_name != seller_state.seller_enterprise_name:
-                seller_state.update_field('seller_enterprise_name', seller_enterprise_name,is_locked)
+            # Update state if changed (only if not locked)
+            if not is_locked and seller_enterprise_name != seller_state.seller_enterprise_name:
+                seller_state.update_field('seller_enterprise_name', seller_enterprise_name)
         
         with button_col:
-            _handle_find_urls_button(seller_state, seller_enterprise_name,is_locked)
+            _handle_find_urls_button(seller_state, seller_enterprise_name, is_locked)
         
         # Common area for spinner/status - displayed under both input and button
-        _display_url_search_status(seller_state, seller_enterprise_name,is_locked)
+        _display_url_search_status(seller_state, seller_enterprise_name)
         
         # Clear URLs if company name is cleared
-        _handle_company_name_changes(seller_state, seller_enterprise_name,is_locked)
+        _handle_company_name_changes(seller_state, seller_enterprise_name)
         
         # Show validation warning if triggered and field is empty
         if seller_state.show_validation and check_field_validation("Seller Enterprise Name", seller_enterprise_name, True):
@@ -304,33 +301,36 @@ def _render_seller_name_input(seller_state: SellerTabState,is_locked):
         
     except Exception as e:
         logger.error(f"Error rendering seller name input: {str(e)}", exc_info=True)
-        st.error("Error loading seller name input")
+        st.error('''🚨 Oops! Something went wrong. Please try again or contact support.''')
+        #st.error("Error loading seller name input")
 
 
-def _handle_find_urls_button(seller_state: SellerTabState, seller_enterprise_name: str,is_locked):
+def _handle_find_urls_button(seller_state: SellerTabState, seller_enterprise_name: str, is_locked: bool):
     """Handle find URLs button functionality."""
     try:
-        # Find URLs button - only enabled when seller name has more than 2 characters
-        find_urls_disabled = not (seller_enterprise_name and len(seller_enterprise_name.strip()) > 2)
+        # Find URLs button - disabled when locked OR when conditions not met
+        find_urls_disabled = is_locked or not (seller_enterprise_name and len(seller_enterprise_name.strip()) > 2)
         
         if st.button("🔍 Find Website",
-                    disabled=find_urls_disabled or seller_state.url_search_in_progress or is_locked,
+                    disabled=find_urls_disabled or seller_state.url_search_in_progress,
                     help="Find website URLs for this company",
                     key="find_seller_urls_button"):
             
-            logger.info(f"Finding URLs for company: {seller_enterprise_name.strip()}")
-            
-            # Set search in progress flag
-            seller_state.update_field('url_search_in_progress', True)
-            seller_state.update_field('url_search_company', seller_enterprise_name.strip())
-            st.rerun()
+            if not is_locked:  # Only proceed if not locked
+                logger.info(f"Finding URLs for company: {seller_enterprise_name.strip()}")
+                
+                # Set search in progress flag
+                seller_state.update_field('url_search_in_progress', True)
+                seller_state.update_field('url_search_company', seller_enterprise_name.strip())
+                st.rerun()
                     
     except Exception as e:
         logger.error(f"Error in find URLs button handler: {str(e)}", exc_info=True)
-        st.error("Error with URL search functionality")
+        st.error('''🚨 Oops! Something went wrong. Please try again or contact support.''')
+        #st.error("Error with URL search functionality")
 
 
-def _handle_company_name_changes(seller_state: SellerTabState, seller_enterprise_name: str,is_locked):
+def _handle_company_name_changes(seller_state: SellerTabState, seller_enterprise_name: str):
     """Handle changes in company name and clear URLs if needed."""
     try:
         if not seller_enterprise_name and seller_state.last_seller_company_name:
@@ -341,7 +341,7 @@ def _handle_company_name_changes(seller_state: SellerTabState, seller_enterprise
         logger.error(f"Error handling company name changes: {str(e)}", exc_info=True)
 
 
-def _display_url_search_status(seller_state: SellerTabState, seller_enterprise_name: str,is_locked):
+def _display_url_search_status(seller_state: SellerTabState, seller_enterprise_name: str):
     """Display URL search status in a common area under name input and button."""
     try:
         # Check if URL search is in progress
@@ -374,7 +374,8 @@ def _display_url_search_status(seller_state: SellerTabState, seller_enterprise_n
                     seller_state.update_field('seller_website_urls_list', [])
                     seller_state.update_field('url_search_in_progress', False)
                     seller_state.update_field('url_search_company', '')
-                    st.error(f"❌ Error finding URLs: {str(e)}")
+                    st.error('''🚨 Oops! Something went wrong. Please try again or contact support.''')
+                    #st.error(f"❌ Error finding URLs: {str(e)}")
         
         # Show current status if URLs exist
         elif seller_state.seller_website_urls_list and seller_state.last_seller_company_name:
@@ -388,7 +389,7 @@ def _display_url_search_status(seller_state: SellerTabState, seller_enterprise_n
 
 
 
-def _render_url_dropdown(seller_state: SellerTabState,is_locked):
+def _render_url_dropdown(seller_state: SellerTabState, is_locked: bool):
     """Render URL dropdown selection."""
     try:
         seller_name_provided = bool(seller_state.seller_enterprise_name and seller_state.seller_enterprise_name.strip())
@@ -409,16 +410,16 @@ def _render_url_dropdown(seller_state: SellerTabState,is_locked):
             index=initial_index,
             key="seller_website_url_selector",
             label_visibility="collapsed",
-            disabled=not seller_name_provided or is_locked,
-            accept_new_options=True
+            disabled=is_locked or not seller_name_provided,  # ADD is_locked condition
+            accept_new_options=not is_locked  # Only allow new options if not locked
         )
         
         # Reset to empty string if default option is selected
         if seller_website_url == "Select seller website URL":
             seller_website_url = ""
         
-        # Update state if URL changed
-        if seller_website_url != seller_state.seller_website_url:
+        # Update state if URL changed (only if not locked)
+        if not is_locked and seller_website_url != seller_state.seller_website_url:
             seller_state.update_field('seller_website_url', seller_website_url)
             
         return seller_website_url
@@ -442,7 +443,7 @@ def _render_visit_website_button(seller_website_url: str):
 
 
 
-def _handle_refresh_urls(seller_state: SellerTabState,is_locked):
+def _handle_refresh_urls(seller_state: SellerTabState):
     """Handle URL refresh functionality."""
     try:
         seller_name_provided = bool(seller_state.seller_enterprise_name and seller_state.seller_enterprise_name.strip())
@@ -461,12 +462,13 @@ def _handle_refresh_urls(seller_state: SellerTabState,is_locked):
                     
                 except Exception as e:
                     logger.error(f"Error refreshing URLs: {str(e)}", exc_info=True)
-                    st.error(f"Error refreshing URLs: {str(e)}")
+                    st.error('''🚨 Oops! Something went wrong. Please try again or contact support.''')
+                    #st.error(f"Error refreshing URLs: {str(e)}")
                     
     except Exception as e:
         logger.error(f"Error in refresh URLs handler: {str(e)}", exc_info=True)
 
-def _render_website_url_section(seller_state: SellerTabState,is_locked):
+def _render_website_url_section(seller_state: SellerTabState, is_locked: bool):
     """Render website URL selection and action buttons."""
     try:
         logger.debug("Rendering website URL section")
@@ -483,13 +485,13 @@ def _render_website_url_section(seller_state: SellerTabState,is_locked):
         url_col, btn1_col, btn2_col = st.columns([7, 1, 2])
         
         with url_col:
-            seller_website_url = _render_url_dropdown(seller_state,is_locked)
+            seller_website_url = _render_url_dropdown(seller_state, is_locked)  # Pass is_locked
         
         # Render action buttons
         with btn1_col:
-            _render_refresh_urls_button(seller_state, seller_website_url,is_locked)
+            _render_refresh_urls_button(seller_state,  is_locked)  # Pass is_locked
         with btn2_col:
-            _render_scrape_website_button(seller_state, seller_website_url,is_locked)
+            _render_scrape_website_button(seller_state, seller_website_url, is_locked)
         
         # Show redirect link when website is selected
         if seller_website_url:
@@ -506,33 +508,33 @@ def _render_website_url_section(seller_state: SellerTabState,is_locked):
         
     except Exception as e:
         logger.error(f"Error rendering website URL section: {str(e)}", exc_info=True)
-        st.error("Error loading website URL section")
+        st.error('''🚨 Oops! Something went wrong. Please try again or contact support.''')
+        #st.error("Error loading website URL section")
 
 
-def _render_refresh_urls_button(seller_state: SellerTabState, seller_website_url: str,is_locked):
+def _render_refresh_urls_button(seller_state: SellerTabState,is_locked: bool):
     """Render refresh URLs button and handle refresh action."""
     try:
         seller_name_provided = bool(seller_state.seller_enterprise_name and seller_state.seller_enterprise_name.strip())
         
         refresh_clicked = st.button("🔄", help="Refresh website URLs list", 
                                   key="refresh_seller_urls_btn", use_container_width=True, 
-                                  disabled=not seller_name_provided or is_locked)
+                                  disabled=is_locked or not seller_name_provided)  # ADD is_locked condition
         
-        if refresh_clicked:
+        if refresh_clicked and not is_locked:  # Only proceed if not locked
             _handle_refresh_urls(seller_state)
             
     except Exception as e:
         logger.error(f"Error with refresh URLs button: {str(e)}", exc_info=True)
 
-
-def _render_scrape_website_button(seller_state: SellerTabState, seller_website_url: str,is_locked):
+def _render_scrape_website_button(seller_state: SellerTabState, seller_website_url: str, is_locked: bool):
     """Render scrape website button."""
     try:
         scrape_clicked = st.button("📑 Get Details", help="Get enterprise details", 
-                                 key="scrape_seller_website_btn", use_container_width=True ,
-                                 disabled=not seller_website_url or is_locked)
+                                 key="scrape_seller_website_btn", use_container_width=True,
+                                 disabled=is_locked or not seller_website_url)  # ADD is_locked condition
         
-        if scrape_clicked and seller_website_url:
+        if scrape_clicked and seller_website_url and not is_locked:  # Only proceed if not locked
             logger.info(f"Initiating website scraping for: {seller_website_url}")
             seller_state.update_field('seller_pending_scrape_url', seller_website_url)
             seller_state.update_field('seller_scraping_in_progress', True)
@@ -540,7 +542,7 @@ def _render_scrape_website_button(seller_state: SellerTabState, seller_website_u
             
     except Exception as e:
         logger.error(f"Error with scrape website button: {str(e)}", exc_info=True)
-def _handle_pending_scraping(seller_state: SellerTabState,is_locked):
+def _handle_pending_scraping(seller_state: SellerTabState):
     """Handle pending website scraping operation."""
     try:
         if seller_state.seller_scraping_in_progress and seller_state.seller_pending_scrape_url:
@@ -592,88 +594,18 @@ def _handle_pending_scraping(seller_state: SellerTabState,is_locked):
                     # Clear pending operation on error
                     seller_state.update_field('seller_scraping_in_progress', False)
                     seller_state.update_field('seller_pending_scrape_url', None)
-                    st.error(f"Error scraping website: {str(e)}")
+                    st.error('''🚨 Oops! Something went wrong. Please try again or contact support.''')
+                    #st.error(f"Error scraping website: {str(e)}")
                     
     except Exception as e:
         logger.error(f"Error handling pending scraping: {str(e)}", exc_info=True)
 
 
-def _render_website_url_section(seller_state: SellerTabState,is_locked):
-    """Render website URL selection and action buttons."""
-    try:
-        logger.debug("Rendering website URL section")
-        
-        # Label row with inline emoji and tooltip
-        st.markdown('''
-        <div class="tooltip-label" style="display: flex; align-items: center; gap: 8px;">
-            <span>Seller Website URL</span>
-            <div class="tooltip-icon" data-tooltip="Enter or select the seller's official website URL. The system will automatically analyze the website to extract company information, services, and business details to help understand the seller's capabilities and offerings.">ⓘ</div>
-        </div>
-        ''', unsafe_allow_html=True)
-        
-        # Create columns for dropdown and buttons
-        url_col, btn1_col, btn2_col = st.columns([7, 1, 2])
-        
-        with url_col:
-            seller_website_url = _render_url_dropdown(seller_state,is_locked)
-        
-        # Render action buttons
-        with btn1_col:
-            _render_refresh_urls_button(seller_state, seller_website_url,is_locked)
-        with btn2_col:
-            _render_scrape_website_button(seller_state, seller_website_url,is_locked)
-        
-        # Show redirect link when website is selected
-        if seller_website_url:
-            st.info(f"🌐 [Visit Website]({seller_website_url})")
-        
-        # Handle pending scraping operation
-        _handle_pending_scraping(seller_state)
-        
-        # Show validation warning if needed
-        if seller_state.show_validation and check_field_validation("Seller Website URL", seller_website_url, False):
-            show_field_warning("Seller Website URL")
-            
-        logger.debug("Website URL section rendered successfully")
-        
-    except Exception as e:
-        logger.error(f"Error rendering website URL section: {str(e)}", exc_info=True)
-        st.error("Error loading website URL section")
 
 
-def _render_refresh_urls_button(seller_state: SellerTabState, seller_website_url: str,is_locked):
-    """Render refresh URLs button and handle refresh action."""
-    try:
-        seller_name_provided = bool(seller_state.seller_enterprise_name and seller_state.seller_enterprise_name.strip())
-        
-        refresh_clicked = st.button("🔄", help="Refresh website URLs list", 
-                                  key="refresh_seller_urls_btn", use_container_width=True, 
-                                  disabled=not seller_name_provided or is_locked)
-        
-        if refresh_clicked:
-            _handle_refresh_urls(seller_state,is_locked)
-            
-    except Exception as e:
-        logger.error(f"Error with refresh URLs button: {str(e)}", exc_info=True)
 
-
-def _render_scrape_website_button(seller_state: SellerTabState, seller_website_url: str,is_locked):
-    """Render scrape website button."""
-    try:
-        scrape_clicked = st.button("📑 Get Details", help="Get enterprise details", 
-                                 key="scrape_seller_website_btn", use_container_width=True, 
-                                 disabled=not seller_website_url or is_locked)
         
-        if scrape_clicked and seller_website_url:
-            logger.info(f"Initiating website scraping for: {seller_website_url}")
-            seller_state.update_field('seller_pending_scrape_url', seller_website_url)
-            seller_state.update_field('seller_scraping_in_progress', True)
-            st.rerun()
-            
-    except Exception as e:
-        logger.error(f"Error with scrape website button: {str(e)}", exc_info=True)
-        
-def _render_document_upload_section(seller_state: SellerTabState,is_locked):
+def _render_document_upload_section(seller_state: SellerTabState, is_locked: bool):
     """Render document upload section with comprehensive error handling."""
     try:
         logger.debug("Rendering document upload section")
@@ -692,22 +624,25 @@ def _render_document_upload_section(seller_state: SellerTabState,is_locked):
             </div>
             ''', unsafe_allow_html=True)
             
-            # FILE UPLOAD
-            seller_documents_upload = st.file_uploader(
-                label="Upload Seller Documents", 
-                type=['pdf', 'docx', 'txt', 'csv', 'png', 'jpg', 'jpeg'], 
-                key="seller_documents_uploader",
-                label_visibility="collapsed",
-                accept_multiple_files=True
-            )
-            
-            if seller_documents_upload and len(seller_documents_upload) > 0:
-                _handle_uploaded_documents(seller_state, seller_documents_upload)
+            # FILE UPLOAD - disable when locked
+            if not is_locked:
+                seller_documents_upload = st.file_uploader(
+                    label="Upload Seller Documents", 
+                    type=['pdf', 'docx', 'txt', 'csv', 'png', 'jpg', 'jpeg'], 
+                    key="seller_documents_uploader",
+                    label_visibility="collapsed",
+                    accept_multiple_files=True
+                )
+                
+                if seller_documents_upload and len(seller_documents_upload) > 0:
+                    _handle_uploaded_documents(seller_state, seller_documents_upload, is_locked)
+            else:
+                st.info("🔒 Document upload is disabled")
         
         with data_col:
             st.markdown('''
             <div class="tooltip-label">
-                Scraped Website Data
+                Seller Enterprise data
                 <div class="tooltip-icon" data-tooltip="This field displays the enterprise details and information extracted from the seller's website when you click the 'Get Details' button. The data includes company information, services, and business details automatically scraped from the provided website URL.">ⓘ</div>
             </div>
             ''', unsafe_allow_html=True)
@@ -716,11 +651,11 @@ def _render_document_upload_section(seller_state: SellerTabState,is_locked):
             scraped_data_display = st.text_area(
                 label="Scraped Website Data",
                 value=seller_state.seller_enterprise_details_content,
-                height=300,
-                placeholder="Website details will appear here after clicking 'Get Details' button...",
+                height=200,
+                placeholder="Enter or get the Details from the seller enterprise website",
                 key="scraped_data_display",
                 label_visibility="collapsed",
-                disabled=bool(seller_state.seller_enterprise_name and seller_state.seller_enterprise_name.strip()) or is_locked
+                disabled=is_locked or bool(seller_state.seller_enterprise_name and seller_state.seller_enterprise_name.strip())  # ADD is_locked condition
             )
             
             # Show additional info if data is available
@@ -732,22 +667,19 @@ def _render_document_upload_section(seller_state: SellerTabState,is_locked):
                 if seller_state.enterprise_logo:
                     st.image(seller_state.enterprise_logo, caption="Enterprise Logo", width=100)
                 
-                # Add a button to clear the scraped data
-                if st.button("🗑️ Clear Scraped Data", key="clear_scraped_data_btn", help="Clear the scraped website data"):
+                # Add a button to clear the scraped data - disable when locked
+                if not is_locked and st.button("🗑️ Clear Scraped Data", key="clear_scraped_data_btn", help="Clear the scraped website data"):
                     seller_state.update_field('seller_enterprise_details_content', '')
                     seller_state.update_field('last_analyzed_seller_url', None)
                     seller_state.update_field('enterprise_logo', '')
                     st.rerun()
-            
-            # Show a message if no data is available
-            if not seller_state.seller_enterprise_details_content:
-                st.info("💡 Enter a website URL above and click 'Get Details' to see scraped data here.")
                 
         logger.debug("Document upload section rendered successfully")
         
     except Exception as e:
         logger.error(f"Error rendering document upload section: {str(e)}", exc_info=True)
-        st.error("Error loading document upload section")
+        st.error('''🚨 Oops! Something went wrong. Please try again or contact support.''')
+        #st.error("Error loading document upload section")
 
 def _add_document_upload_css():
     """Add CSS for document upload section."""
@@ -801,7 +733,7 @@ def _add_document_upload_css():
         logger.error(f"Error adding document upload CSS: {str(e)}", exc_info=True)
 
 
-def _handle_uploaded_documents(seller_state: SellerTabState, seller_documents_upload,is_locked):
+def _handle_uploaded_documents(seller_state: SellerTabState, seller_documents_upload, is_locked: bool):
     """Handle uploaded documents display and processing."""
     try:
         logger.debug(f"Handling {len(seller_documents_upload)} uploaded documents")
@@ -809,24 +741,24 @@ def _handle_uploaded_documents(seller_state: SellerTabState, seller_documents_up
         st.markdown("**Uploaded Documents:**")
         
         # Display all uploaded files
-        _display_uploaded_files(seller_state, seller_documents_upload,is_locked)
+        _display_uploaded_files(seller_state, seller_documents_upload)
         
         # Single button to process all files
         st.markdown("---")
-        _render_process_all_button(seller_state, seller_documents_upload,is_locked)
+        _render_process_all_button(seller_state, seller_documents_upload, is_locked)  # Pass is_locked
         
-        # Handle processing when button is clicked
-        if seller_state.processing_all_seller_documents:
-            _process_all_documents(seller_state, seller_documents_upload,is_locked)
+        # Handle processing when button is clicked (only if not locked)
+        if seller_state.processing_all_seller_documents and not is_locked:
+            _process_all_documents(seller_state, seller_documents_upload)
             
         logger.debug("Uploaded documents handled successfully")
         
     except Exception as e:
         logger.error(f"Error handling uploaded documents: {str(e)}", exc_info=True)
-        st.error("Error processing uploaded documents")
+        st.error('''🚨 Oops! Something went wrong. Please try again or contact support.''')
+        #st.error("Error processing uploaded documents")
 
-
-def _display_uploaded_files(seller_state: SellerTabState, seller_documents_upload,is_locked):
+def _display_uploaded_files(seller_state: SellerTabState, seller_documents_upload):
     """Display information about uploaded files."""
     try:
         for idx, uploaded_file in enumerate(seller_documents_upload):
@@ -856,7 +788,7 @@ def _display_uploaded_files(seller_state: SellerTabState, seller_documents_uploa
     except Exception as e:
         logger.error(f"Error displaying uploaded files: {str(e)}", exc_info=True)
 
-def _render_process_all_button(seller_state: SellerTabState, seller_documents_upload,is_locked):
+def _render_process_all_button(seller_state: SellerTabState, seller_documents_upload, is_locked: bool):
     """Render button to process all documents."""
     try:
         all_processed = all(
@@ -866,7 +798,11 @@ def _render_process_all_button(seller_state: SellerTabState, seller_documents_up
         
         is_processing = seller_state.processing_all_seller_documents
         
-        if all_processed:
+        if is_locked:
+            button_color = "#6c757d"
+            button_text = "🔒 Processing Disabled"
+            button_disabled = True
+        elif all_processed:
             button_color = "#28a745"
             button_text = "All Documents Processed"
             button_disabled = True
@@ -893,24 +829,24 @@ def _render_process_all_button(seller_state: SellerTabState, seller_documents_up
         if st.button(
             button_text,
             key="analyze_all_seller_documents_btn",
-            help="Process all seller documents" if not button_disabled else "All documents processed" if all_processed else "Processing in progress...",
+            help="Processing disabled" if is_locked else "Process all seller documents" if not button_disabled else "All documents processed" if all_processed else "Processing in progress...",
             type="secondary",
-            disabled=button_disabled or is_locked,
+            disabled=button_disabled,
             use_container_width=True
         ):
-            if not seller_state.seller_enterprise_name:
-                st.error("❌ Please enter the Seller Enterprise Name first")
-                logger.warning("Analyze all clicked without seller enterprise name")
-            else:
-                seller_state.update_field('processing_all_seller_documents', True)
-                logger.info("Started processing all seller documents")
-                st.rerun()
+            if not is_locked:  # Only proceed if not locked
+                if not seller_state.seller_enterprise_name:
+                    st.error('''🚨 Oops! Something went wrong. Please try again or contact support.''')
+                    #st.error("❌ Please enter the Seller Enterprise Name first")
+                    logger.warning("Analyze all clicked without seller enterprise name")
+                else:
+                    seller_state.update_field('processing_all_seller_documents', True)
+                    logger.info("Started processing all seller documents")
+                    st.rerun()
 
     except Exception as e:
         logger.error(f"Error rendering process all button: {str(e)}", exc_info=True)
-
-
-def _process_all_documents(seller_state: SellerTabState, seller_documents_upload,is_locked):
+def _process_all_documents(seller_state: SellerTabState, seller_documents_upload):
     """Process all uploaded documents."""
     try:
         logger.info(f"Processing {len(seller_documents_upload)} documents")
@@ -935,10 +871,12 @@ def _process_all_documents(seller_state: SellerTabState, seller_documents_upload
                         logger.info(f"Successfully processed: {uploaded_file.name}")
                         processed_count += 1
                     else:
-                        st.error(f"❌ Error saving {uploaded_file.name}")
+                        st.error('''🚨 Oops! Something went wrong. Please try again or contact support.''')
+                        #st.error(f"❌ Error saving {uploaded_file.name}")
                         logger.error(f"File path invalid for {uploaded_file.name}")
                 except Exception as e:
-                    st.error(f"❌ Error processing {uploaded_file.name}: {str(e)}")
+                    st.error('''🚨 Oops! Something went wrong. Please try again or contact support.''')
+                    #st.error(f"❌ Error processing {uploaded_file.name}: {str(e)}")
                     logger.error(f"Error processing file {uploaded_file.name}: {str(e)}", exc_info=True)
 
         seller_state.update_field('processing_all_seller_documents', False)
@@ -948,7 +886,8 @@ def _process_all_documents(seller_state: SellerTabState, seller_documents_upload
         elif processed_count > 0:
             st.warning(f"⚠️ {processed_count} out of {total_files} documents processed.")
         else:
-            st.error("❌ No documents could be processed.")
+            st.error('''🚨 Oops! Something went wrong. Please try again or contact support.''')
+            #st.error("❌ No documents could be processed.")
 
         logger.info(f"Document processing completed: {processed_count}/{total_files}")
         st.rerun()
@@ -956,8 +895,9 @@ def _process_all_documents(seller_state: SellerTabState, seller_documents_upload
     except Exception as e:
         seller_state.update_field('processing_all_seller_documents', False)
         logger.error(f"Error processing documents: {str(e)}", exc_info=True)
-        st.error("Error occurred while processing documents")
-def _render_enterprise_details_section(seller_state: SellerTabState,is_locked):
+        st.error('''🚨 Oops! Something went wrong. Please try again or contact support.''')
+        #st.error("Error occurred while processing documents")
+def _render_enterprise_details_section(seller_state: SellerTabState, is_locked: bool):
     """Render the enterprise details section."""
     try:
         logger.debug("Rendering enterprise details section")
@@ -974,6 +914,7 @@ def _render_enterprise_details_section(seller_state: SellerTabState,is_locked):
             textarea_session_key="seller_enterprise_content",
             textarea_widget_key="seller_enterprise_textarea",
             
+            
             unified_section_title="Available Services",
             unified_section_tooltip="Select from available services and capabilities that represent your enterprise offerings. These can include technical services, consulting, products, or specialized business solutions.",
             
@@ -985,9 +926,8 @@ def _render_enterprise_details_section(seller_state: SellerTabState,is_locked):
             default_data=None,
             split_ratio=(3, 3),
 
-            client_enabled_condition=True,
-            client_name_provided=bool(seller_state.seller_enterprise_name),
-
+            client_enabled_condition=not is_locked,  # MODIFY THIS LINE
+            client_name_provided=bool(seller_state.seller_enterprise_name) and not is_locked,
             button_column_width=2.5,
             content_column_width=6.5,
             show_success_messages=False,
@@ -998,13 +938,13 @@ def _render_enterprise_details_section(seller_state: SellerTabState,is_locked):
             selected_color="#d2ebfb"
         )
 
-        # Update state
-        if seller_enterprise_details != seller_state.seller_enterprise_details_content:
+        # Update state (only if not locked)
+        if not is_locked and seller_enterprise_details != seller_state.seller_enterprise_details_content:
             seller_state.update_field("seller_enterprise_details_content", seller_enterprise_details)
 
         logger.debug("Enterprise details section rendered successfully")
 
     except Exception as e:
         logger.error(f"Error rendering enterprise details section: {str(e)}", exc_info=True)
-        st.error("Error loading enterprise details section")
-    
+        st.error('''🚨 Oops! Something went wrong. Please try again or contact support.''')
+        #st.error("Error loading enterprise details section")

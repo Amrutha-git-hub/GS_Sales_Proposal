@@ -95,17 +95,18 @@ def get_presentation(client , seller , project_specs ):
     # seller = parse_to_user(seller)
     #print(type(buyer),buyer)
     state = State(client = client , seller=seller , project_specs=project_specs,sections=[],final_result='')
-    #state = graph.invoke(state)
-    colors = [ '#4F4F4F', '#101213', '#DBDBDB', '#299E75']
+    # state = graph.invoke(state)
+    # colors = [ '#4F4F4F', '#101213', '#DBDBDB', '#299E75']
 
     client_logo = client.enterprise_logo
     seller_logo = seller.enterprise_logo
-    target = os.path.join(OUTPUT_FILE_DIRECTORY,client.enterprise_name)
-    file_path = os.path.join(target,"salesproposal.txt")
-    html = generate_modern_presentation(filename  = file_path ,logo_url=client_logo,logo_url_2 = seller_logo ,output_format='pdf')
-    inline_editable_html_component(html)
-    return html
+    # target = os.path.join(OUTPUT_FILE_DIRECTORY,client.enterprise_name)
+    # file_path = os.path.join(target,"salesproposal.txt")
+    # print(f"_______________________________________________File path is {file_path}")
+    file_path = '/home/shreyank/GS/GS_Sales_Proposal/SalesProposalsGenerated/benori.txt'
+    print("F--------------------Starting in main")
+    html_content,html_file_name = generate_modern_presentation(filename  = file_path ,logo_url=client_logo,logo_url_2 = seller_logo )
+    print("F--------------------Ending in main")
+    return html_content,html_file_name
 
 
-
-    

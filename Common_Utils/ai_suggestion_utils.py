@@ -211,11 +211,11 @@ def render_three_column_selector_unified(
     
     # LEFT COLUMN - Text Area
     with col_left:
-        # Title with tooltip and required indicator
-        required_asterisk = ' <span style="color:red;">*</span>' if left_required else ''
+        # Title with tooltip and required indicator - ONLY for left column
+        left_required_asterisk = ' <span style="color:red;">*</span>' if left_required else ''
         st.markdown(f'''
         <div class="section-tooltip">
-    <span>{left_title}{required_asterisk}<span class="tooltip-icon" data-tooltip="{left_tooltip}"> ⓘ</span></span>
+    <span>{left_title}{left_required_asterisk}<span class="tooltip-icon" data-tooltip="{left_tooltip}"> ⓘ</span></span>
 </div>
 
         ''', unsafe_allow_html=True)
@@ -240,10 +240,10 @@ def render_three_column_selector_unified(
     
     # MIDDLE COLUMN - First half of items
     with col_middle:
-        # Show unified title only in middle column (spans conceptually)
+        # Show unified title only in middle column (spans conceptually) - NO asterisk here
         st.markdown(f'''
         <div class="section-tooltip">
-    <span>{unified_section_title}{required_asterisk}<span class="tooltip-icon" data-tooltip="{unified_section_tooltip}"> ⓘ</span></span>
+    <span>{unified_section_title}<span class="tooltip-icon" data-tooltip="{unified_section_tooltip}"> ⓘ</span></span>
 </div>
 
         ''', unsafe_allow_html=True)
@@ -357,10 +357,10 @@ def render_three_column_selector_unified(
     
     # RIGHT COLUMN - Second half of items
     with col_right:
-        # Empty title space to align with middle column - use exact same height as title
+        # Empty title space to align with middle column - NO asterisk here either
         st.markdown(f'''
         <div class="section-tooltip">
-    <span>{unified_section_title}{required_asterisk}<span class="tooltip-icon" data-tooltip="{unified_section_tooltip}"> ⓘ</span></span>
+    <span>{unified_section_title}<span class="tooltip-icon" data-tooltip="{unified_section_tooltip}"> ⓘ</span></span>
 </div>
 
         ''', unsafe_allow_html=True)
@@ -475,44 +475,6 @@ def render_three_column_selector_unified(
     
     return client_requirements, client_requirements_provided
 
-
-# Example usage
-def example_usage():
-    """Example showing the fixed version"""
-    
-    business_challenges = {
-        "Revenue Decline": "**Revenue Decline** • Q4 revenue down 18% year-over-year\n• Customer acquisition costs increased 45%\n• Average deal size reduced by 30%\n\n",
-        
-        "Operational Inefficiency": "**Operational Inefficiency** • Manual processes consuming 60% more time\n• Employee productivity decreased 25%\n• Resource allocation suboptimal\n\n",
-        
-        "Market Competition": "**Market Competition** • New competitors capturing 35% market share\n• Price pressure from discount providers\n• Brand recognition declining in key segments\n\n",
-        
-        "Technology Gaps": "**Technology Gaps** • Legacy systems causing integration issues\n• Security vulnerabilities identified\n• Scalability limitations affecting growth\n\n",
-        
-        "Compliance Issues": "**Compliance Issues** • Regulatory requirements not fully met\n• Audit findings require immediate attention\n• Documentation processes outdated\n\n",
-        
-        "Workforce Challenges": "**Workforce Challenges** • High turnover rate at 32%\n• Skills gap in critical areas\n• Remote work productivity concerns\n\n"
-    }
-    
-    requirements, provided = render_three_column_selector_unified(
-        column_ratio=(2, 2, 2),
-        column_gap="large",
-        
-        left_title="Project Requirements",
-        textarea_height=200,
-        
-        unified_section_title="Business Challenges & Solutions",
-        unified_section_tooltip="Select relevant business challenges that will be incorporated into your project requirements.",
-        
-        default_data=business_challenges,
-        split_ratio=(3, 3),
-        
-        show_success_messages=True,
-        client_enabled_condition=True,
-        client_name_provided=True
-    )
-    
-    return requirements, provided
 
 def render_two_column_selector(
     # Column configuration
@@ -702,7 +664,7 @@ def render_two_column_selector(
             key=textarea_widget_key,
             label_visibility="collapsed",
             disabled=not client_name_provided,
-            placeholder=textarea_placeholder if not client_name_provided else ""
+            placeholder=textarea_placeholder 
         )
         
         # Update session state when text area changes

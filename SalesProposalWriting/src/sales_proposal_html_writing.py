@@ -872,7 +872,7 @@ def generate_modern_presentation(
         print(f"✅ Generated HTML proposal: {html_filename}")
         
         
-        return html_content
+        return html_content,html_filename
         
     except Exception as e:
         print(f"❌ Error generating proposal: {str(e)}")

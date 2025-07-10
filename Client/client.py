@@ -14,45 +14,56 @@ from .client_css import client_css
 from .client_dataclass import ClientData, ClientDataManager
 from datetime import datetime 
 # Configure logging
+from Common_Utils.common_utils import normalize_url
 
 
+def render_global_errors():
+    if "global_error_messages" in st.session_state:
+        print("global")
+        st.error(st.session_state.global_error_message)
+        # Clear immediately after showing — this removes it for future reruns
+        st.session_state.global_error_messages.clear()
+def raise_global_error(message):
+    if "global_error_messages" not in st.session_state:
+        st.session_state.global_error_messages = ""
+    st.session_state.global_error_messages= message
 
 
 
 def save_uploaded_file_and_get_path(uploaded_file, logger, client_enterprise_name):
     """Save uploaded file to a temporary directory and return the file path"""
-    logger.info(f"Starting file upload process for file: {uploaded_file.name if uploaded_file else 'None'}")
+    #logger.info(f"Starting file upload process for file: {uploaded_file.name if uploaded_file else 'None'}")
     
     try:
         if uploaded_file is not None:
-            logger.debug(f"File details - Name: {uploaded_file.name}, Size: {uploaded_file.size} bytes")
+            #logger.debug(f"File details - Name: {uploaded_file.name}, Size: {uploaded_file.size} bytes")
 
             # Base upload directory from environment
             base_upload_dir = os.getenv("FILE_SAVE_PATH")
-            logger.debug(f"Base upload directory path: {base_upload_dir}")
+            #logger.debug(f"Base upload directory path: {base_upload_dir}")
             
             # Full path including enterprise name
             enterprise_upload_dir = os.path.join(base_upload_dir, client_enterprise_name)
-            logger.debug(f"Enterprise-specific upload path: {enterprise_upload_dir}")
+            #logger.debug(f"Enterprise-specific upload path: {enterprise_upload_dir}")
             
             # Create the directory if it doesn't exist
             if not os.path.exists(enterprise_upload_dir):
                 try:
                     os.makedirs(enterprise_upload_dir)
-                    logger.info(f"Created directory: {enterprise_upload_dir}")
+                    #logger.info(f"Created directory: {enterprise_upload_dir}")
                 except OSError as e:
                     logger.error(f"Failed to create directory {enterprise_upload_dir}: {str(e)}")
                     raise
             
             # Full file path
             file_path = os.path.join(enterprise_upload_dir, uploaded_file.name)
-            logger.debug(f"Full file path: {file_path}")
+            #logger.debug(f"Full file path: {file_path}")
             
             # Save the file
             try:
                 with open(file_path, "wb") as f:
                     f.write(uploaded_file.getbuffer())
-                logger.info(f"Successfully saved file to: {file_path}")
+                #logger.info(f"Successfully saved file to: {file_path}")
                 return file_path
             except IOError as e:
                 logger.error(f"Failed to save file {file_path}: {str(e)}")
@@ -63,7 +74,9 @@ def save_uploaded_file_and_get_path(uploaded_file, logger, client_enterprise_nam
             return None
             
     except Exception as e:
-        st.error(str(e))
+        st.error('''🚨 Oops! Something went wrong. Please try again or contact support.''')
+        raise_global_error(e)
+        #st.error(str(e))
         logger.error(f"Unexpected error in save_uploaded_file_and_get_path: {str(e)}")
         raise
 
@@ -73,7 +86,7 @@ def validate_client_mandatory_fields():
     
     try:
         client_data = ClientDataManager.get_client_data()
-        #logger.debug("Retrieved client data for validation")
+        ##logger.debug("Retrieved client data for validation")
         
         # Temporarily return True - validation disabled
         #st.info("Validation bypassed - returning True")
@@ -84,41 +97,47 @@ def validate_client_mandatory_fields():
         return result
         
     except Exception as e:
-        st.error(f"Error in validate_client_mandatory_fields: {str(e)}")
+        st.error('''🚨 Oops! Something went wrong. Please try again or contact support.''')
+        raise_global_error(e)
+        #st.error(f"Error in validate_client_mandatory_fields: {str(e)}")
         return False
 
 
 def client_tab(st,logger,is_locked):
-    logger.info("Starting client_tab function")
+    #logger.info("Starting client_tab function")
     
     try:
         # Get client data from dataclass manager
         client_data = ClientDataManager.get_client_data()
-        logger.debug("Retrieved client data from dataclass manager")
+        #logger.debug("Retrieved client data from dataclass manager")
+        
         
         # Apply CSS only once
         try:
             # if not client_data.css_applied:
-            #     logger.debug("Applying CSS for the first time")
+            #     #logger.debug("Applying CSS for the first time")
             #     st.markdown(client_css, unsafe_allow_html=True)
             #     ClientDataManager.update_client_data(css_applied=True)
-            #     logger.info("CSS applied and updated in client data")
+            #     #logger.info("CSS applied and updated in client data")
             
             # Re-apply CSS after every rerun to ensure persistence
             st.markdown(client_css, unsafe_allow_html=True)
-            logger.debug("CSS re-applied for persistence")
+            #logger.debug("CSS re-applied for persistence")
             
         except Exception as e:
             logger.error(f"Error applying CSS: {str(e)}")
-            st.error("Error loading page styles")
+            raise_global_error("Error applying CSS")
+
+            #st.error("Error loading page styles")
         
         # Top section with client name and URLs
-        logger.debug("Creating top section with client name and URLs")
+        #logger.debug("Creating top section with client name and URLs")
+        render_global_errors()
         col1, col2 = st.columns([1, 1])
         
         with col1:
             try:
-                logger.debug("Processing client enterprise name section")
+                #logger.debug("Processing client enterprise name section")
                 
                 st.markdown("""
                     <div class="tooltip-label">
@@ -144,7 +163,7 @@ def client_tab(st,logger,is_locked):
                     if client_enterprise_name != client_data.enterprise_name:
                         try:
                             ClientDataManager.update_client_data(enterprise_name=client_enterprise_name)
-                            logger.info(f"Updated enterprise name: {client_enterprise_name}")
+                            #logger.info(f"Updated enterprise name: {client_enterprise_name}")
                         except Exception as e:
                             logger.error(f"Error updating enterprise name: {str(e)}")
                 
@@ -152,7 +171,7 @@ def client_tab(st,logger,is_locked):
                     try:
                         # Find URLs button - only enabled when client name has more than 2 characters
                         find_urls_disabled = not (client_enterprise_name and len(client_enterprise_name.strip()) > 2)
-                        logger.debug(f"Find URLs button disabled: {find_urls_disabled}")
+                        #logger.debug(f"Find URLs button disabled: {find_urls_disabled}")
                         
                         find_urls_clicked = st.button("🔍 Find Website",
                                     disabled=find_urls_disabled,
@@ -166,52 +185,59 @@ def client_tab(st,logger,is_locked):
                 
                 # Handle the Find URLs button click with spinner under the whole first column
                 if find_urls_clicked:
-                    logger.info(f"Find URLs button clicked for: {client_enterprise_name.strip()}")
+                    #logger.info(f"Find URLs button clicked for: {client_enterprise_name.strip()}")
                     
                     # Add spinner under the whole first column
                     with st.spinner(f"Finding Websites for '{client_enterprise_name.strip()}'..."):
                         try:
                             urls_list = get_urls_list(client_enterprise_name.strip())
-                            logger.info(f"Found {len(urls_list)} URLs for {client_enterprise_name.strip()}")
+                            #logger.info(f"Found {len(urls_list)} URLs for {client_enterprise_name.strip()}")
                             
                             ClientDataManager.update_client_data(
                                 website_urls_list=urls_list,
                                 enterprise_name=client_enterprise_name
                             )
-                            logger.debug("Updated client data with URLs list")
+                            #logger.debug("Updated client data with URLs list")
                             
                         except Exception as e:
                             logger.error(f"Error finding URLs for {client_enterprise_name.strip()}: {str(e)}")
                             ClientDataManager.update_client_data(website_urls_list=[])
-                            st.error(f"Error finding URLs: {str(e)}")
+                            st.error('''🚨 Oops! Something went wrong. Please try again or contact support.''')
+                            raise_global_error(e)
+                            print(e,"------------")
+                            #st.error(f"Error finding URLs: {str(e)}")
                 
                 # Clear URLs if company name is cleared
                 try:
                     if not client_enterprise_name and client_data.enterprise_name:
-                        logger.info("Company name cleared, clearing URLs list")
+                        #logger.info("Company name cleared, clearing URLs list")
                         ClientDataManager.update_client_data(
                             website_urls_list=[],
                             enterprise_name=""
                         )
                 except Exception as e:
                     logger.error(f"Error clearing URLs when company name cleared: {str(e)}")
-                    st.error(e)
+                    st.error('''🚨 Oops! Something went wrong. Please try again or contact support.''')
+                    raise_global_error(e)
+                    #st.error(e)
                 
                 # Show validation warning if triggered and field is empty
                 try:
                     if client_data.show_validation and check_field_validation("Client Enterprise Name", client_enterprise_name, True):
                         show_field_warning("Client Enterprise Name")
-                        logger.debug("Showed validation warning for Client Enterprise Name")
+                        #logger.debug("Showed validation warning for Client Enterprise Name")
                 except Exception as e:
                     logger.error(f"Error showing validation warning: {str(e)}")
             
             except Exception as e:
                 logger.error(f"Error in client enterprise name column: {str(e)}")
-                st.error("Error in client name section")
+                st.error('''🚨 Oops! Something went wrong. Please try again or contact support.''')
+                raise_global_error(e)
+                #st.error("Error in client name section")
         
         with col2:
             try:
-                logger.debug("Processing client website URL section")
+                #logger.debug("Processing client website URL section")
                 
                 # Label row with inline emoji and tooltip
                 st.markdown('''
@@ -228,14 +254,14 @@ def client_tab(st,logger,is_locked):
                     try:
                         # URL selection logic
                         client_name_provided = bool(client_enterprise_name and client_enterprise_name.strip())
-                        logger.debug(f"Client name provided: {client_name_provided}")
+                        #logger.debug(f"Client name provided: {client_name_provided}")
                         
                         if not client_data.website_urls_list:
                             url_options = ["Select client website URL"]
                         else:
                             url_options = ["Select client website URL"] + client_data.website_urls_list
                         
-                        logger.debug(f"URL options count: {len(url_options)}")
+                        #logger.debug(f"URL options count: {len(url_options)}")
                         
                         # Set default selection
                         default_index = 0
@@ -256,11 +282,12 @@ def client_tab(st,logger,is_locked):
                         if client_website_url == "Select client website URL":
                             client_website_url = ""
                         
+                        client_website_url = normalize_url(client_website_url)
                         # Update dataclass when URL changes
                         if client_website_url != client_data.website_url:
                             try:
                                 ClientDataManager.update_client_data(website_url=client_website_url)
-                                logger.info(f"Updated website URL: {client_website_url}")
+                                #logger.info(f"Updated website URL: {client_website_url}")
                             except Exception as e:
                                 logger.error(f"Error updating website URL: {str(e)}")
                                 
@@ -283,7 +310,7 @@ def client_tab(st,logger,is_locked):
                                                   use_container_width=True, disabled=not client_website_url)
                         
                         if scrape_clicked and client_website_url:
-                            logger.info(f"Scrape button clicked for URL: {client_website_url}")
+                            #logger.info(f"Scrape button clicked for URL: {client_website_url}")
                             ClientDataManager.update_client_data(
                                 pending_scrape_url=client_website_url,
                                 scraping_in_progress=True
@@ -300,21 +327,23 @@ def client_tab(st,logger,is_locked):
                 # Handle refresh action
                 if refresh_clicked and client_name_provided:
                     try:
-                        logger.info(f"Refreshing URLs for: {client_enterprise_name}")
+                        #logger.info(f"Refreshing URLs for: {client_enterprise_name}")
                         with st.spinner("Refreshing website URLs..."):
                             urls_list = get_urls_list(client_enterprise_name)
                             ClientDataManager.update_client_data(website_urls_list=urls_list)
-                            logger.info(f"Successfully refreshed URLs, found {len(urls_list)} URLs")
+                            #logger.info(f"Successfully refreshed URLs, found {len(urls_list)} URLs")
                             st.success("Website URLs refreshed!")
                             st.rerun()
                     except Exception as e:
                         logger.error(f"Error refreshing URLs: {str(e)}")
-                        st.error(f"Error refreshing URLs: {str(e)}")
+                        st.error('''🚨 Oops! Something went wrong. Please try again or contact support.''')
+                        raise_global_error(e)
+                        #st.error(f"Error refreshing URLs: {str(e)}")
 
                 # Handle pending scraping operation
                 if client_data.scraping_in_progress and client_data.pending_scrape_url:
                     try:
-                        logger.info(f"Starting website scraping for: {client_data.pending_scrape_url}")
+                        #logger.info(f"Starting website scraping for: {client_data.pending_scrape_url}")
                         with st.spinner(f"Scraping website details from {client_data.pending_scrape_url}..."):
                             try:
                                 # Get both website details and logo from the URL
@@ -336,7 +365,7 @@ def client_tab(st,logger,is_locked):
                                 # Update client data with logo if available
                                 if logo_url:
                                     client_data.logo = logo_url
-                                    logger.info(f"Logo found and saved: {logo_url}")
+                                    #logger.info(f"Logo found and saved: {logo_url}")
                                 
                                 # Check if scraping returned empty or no data
                                 if not website_details or len(website_details.strip()) <10:
@@ -345,11 +374,13 @@ def client_tab(st,logger,is_locked):
                                         scraping_in_progress=False,
                                         pending_scrape_url=None
                                     )
-                                    st.error("⚠️ Website scraping failed - No content could be extracted from the website. Please check if the URL is accessible and contains readable content.")
+                                    st.error('''🚨 Oops! Something went wrong. Please try again or contact support.''')
+                                    raise_global_error(e)
+                                    #st.error("⚠️ Website scraping failed - No content could be extracted from the website. Please check if the URL is accessible and contains readable content.")
                                     time.sleep(3)
                                     st.rerun()
                                 else:
-                                    logger.info(f"Successfully scraped website details, length: {len(website_details)}")
+                                    #logger.info(f"Successfully scraped website details, length: {len(website_details)}")
                                     
                                     
                                     # Prepare update parameters
@@ -380,7 +411,9 @@ def client_tab(st,logger,is_locked):
                                     scraping_in_progress=False,
                                     pending_scrape_url=None
                                 )
-                                st.error(f"❌ Error scraping website: {str(scrape_error)}")
+                                st.error('''🚨 Oops! Something went wrong. Please try again or contact support.''')
+                                raise_global_error(e)
+                                #st.error(f"❌ Error scraping website: {str(scrape_error)}")
                                 time.sleep(3)
                                 st.rerun()
                                 
@@ -395,21 +428,25 @@ def client_tab(st,logger,is_locked):
                         except Exception as cleanup_error:
                             logger.error(f"Error during cleanup: {str(cleanup_error)}")
                         
-                        st.error("❌ A critical error occurred during website scraping. Please try again.")
+                        st.error('''🚨 Oops! Something went wrong. Please try again or contact support.''')
+                        raise_global_error(e)
+                        #st.error("❌ A critical error occurred during website scraping. Please try again.")
                         time.sleep(3)
                         st.rerun()
                                     
             except Exception as e:
                 logger.error(f"Error in scraping operation: {str(e)}")
-                st.error(f"❌ Error scraping website: {str(e)}")
+                st.error('''🚨 Oops! Something went wrong. Please try again or contact support.''')
+                raise_global_error(e)
+                #st.error(f"❌ Error scraping website: {str(e)}")
         
         # File upload and enterprise details section
-        logger.debug("Creating file upload and enterprise details section")
+        #logger.debug("Creating file upload and enterprise details section")
         col3, col4 = st.columns([1, 1])
         
         with col3:
             try:
-                logger.debug("Processing file upload section")
+                #logger.debug("Processing file upload section")
                 
                 st.markdown('''
                 <div class="tooltip-label">
@@ -459,7 +496,8 @@ def client_tab(st,logger,is_locked):
                     )
                     
                     if rfi_document_upload is not None:
-                        logger.info(f"File uploaded: {rfi_document_upload.name}")
+                        pass
+                        #logger.info(f"File uploaded: {rfi_document_upload.name}")
                         
                 except Exception as e:
                     logger.error(f"Error creating file uploader: {str(e)}")
@@ -470,7 +508,7 @@ def client_tab(st,logger,is_locked):
                     try:
                         file_size_kb = round(rfi_document_upload.size / 1024, 1)
                         file_size_display = f"{file_size_kb}KB" if file_size_kb < 1024 else f"{round(file_size_kb/1024, 1)}MB"
-                        logger.debug(f"File size: {file_size_display}")
+                        #logger.debug(f"File size: {file_size_display}")
                         
                         # Single compact row
                         col_info, col_btn = st.columns([2.5, 1])
@@ -519,9 +557,11 @@ def client_tab(st,logger,is_locked):
                             try:
                                 if not client_enterprise_name:
                                     logger.warning("Analyze clicked but no client enterprise name provided")
-                                    st.error("❌ Please enter the Client Enterprise Name first")
+                                    st.error('''🚨 Oops! Something went wrong. Please try again or contact support.''')
+                                    raise_global_error(e)
+                                    #st.error("❌ Please enter the Client Enterprise Name first")
                                 else:
-                                    logger.info("Starting RFI analysis process")
+                                    #logger.info("Starting RFI analysis process")
                                     ClientDataManager.update_client_data(processing_rfi=True)
                                     st.rerun()
                             except Exception as e:
@@ -540,13 +580,13 @@ def client_tab(st,logger,is_locked):
                                 
                                 # Perform the actual processing
                                 try:
-                                    logger.info("Starting RFI document processing")
+                                    #logger.info("Starting RFI document processing")
                                     file_path = save_uploaded_file_and_get_path(rfi_document_upload,logger,client_enterprise_name)
                                     
                                     if file_path and client_enterprise_name:
-                                        logger.info(f"Processing RFI file: {file_path}")
+                                        #logger.info(f"Processing RFI file: {file_path}")
                                         pain_points_data = get_pain_points(file_path, client_enterprise_name)
-                                        logger.info(f"Successfully extracted pain points, count: {len(pain_points_data) if pain_points_data else 0}")
+                                        #logger.info(f"Successfully extracted pain points, count: {len(pain_points_data) if pain_points_data else 0}")
                                         
                                         ClientDataManager.update_client_data(
                                             uploaded_file_path=file_path,
@@ -558,12 +598,16 @@ def client_tab(st,logger,is_locked):
                                         st.rerun()
                                     else:
                                         logger.error("Error saving the uploaded file or missing client name")
-                                        st.error("❌ Error saving the uploaded file")
+                                        st.error('''🚨 Oops! Something went wrong. Please try again or contact support.''')
+                                        raise_global_error(e)
+                                        #st.error("❌ Error saving the uploaded file")
                                         ClientDataManager.update_client_data(processing_rfi=False)
                                         
                                 except Exception as e:
                                     logger.error(f"Error analyzing RFI document: {str(e)}")
-                                    st.error(f"❌ Error analyzing RFI document: {str(e)}")
+                                    st.error('''🚨 Oops! Something went wrong. Please try again or contact support.''')
+                                    raise_global_error(e)
+                                    #st.error(f"❌ Error analyzing RFI document: {str(e)}")
                                     ClientDataManager.update_client_data(
                                         rfi_pain_points_items={},
                                         document_analyzed=False,
@@ -578,11 +622,13 @@ def client_tab(st,logger,is_locked):
                         
             except Exception as e:
                 logger.error(f"Error in file upload column: {str(e)}")
-                st.error("Error in file upload section")
+                st.error('''🚨 Oops! Something went wrong. Please try again or contact support.''')
+                raise_global_error(e)
+                #st.error("Error in file upload section")
 
         with col4:
             try:
-                logger.debug("Processing enterprise details section")
+                #logger.debug("Processing enterprise details section")
                 
                 st.markdown('''
                 <div class="tooltip-label">
@@ -608,7 +654,7 @@ def client_tab(st,logger,is_locked):
                     if client_name_provided and enterprise_details != client_data.enterprise_details_content:
                         try:
                             ClientDataManager.update_client_data(enterprise_details_content=enterprise_details)
-                            logger.debug("Updated enterprise details content")
+                            #logger.debug("Updated enterprise details content")
                         except Exception as e:
                             logger.error(f"Error updating enterprise details: {str(e)}")
                             
@@ -617,15 +663,17 @@ def client_tab(st,logger,is_locked):
                     
             except Exception as e:
                 logger.error(f"Error in enterprise details column: {str(e)}")
-                st.error("Error in enterprise details section")
+                st.error('''🚨 Oops! Something went wrong. Please try again or contact support.''')
+                raise_global_error(e)
+                #st.error("Error in enterprise details section")
 
         # Client Requirements and Pain Points Row
-        logger.debug("Creating client requirements and pain points section")
+        #logger.debug("Creating client requirements and pain points section")
         col5, col6 = st.columns([1, 1])
 
         with col5:
             try:
-                logger.debug("Processing client requirements section")
+                #logger.debug("Processing client requirements section")
                 
                 st.markdown('''
                 <div class="tooltip-label">
@@ -649,12 +697,12 @@ def client_tab(st,logger,is_locked):
                     if client_name_provided:
                         try:
                             ClientDataManager.update_client_data(client_requirements_content=client_requirements)
-                            logger.debug("Updated client requirements content")
+                            #logger.debug("Updated client requirements content")
                         except Exception as e:
                             logger.error(f"Error updating client requirements: {str(e)}")
                     
                     client_requirements_provided = bool(client_name_provided and client_requirements.strip())
-                    logger.debug(f"Client requirements provided: {client_requirements_provided}")
+                    #logger.debug(f"Client requirements provided: {client_requirements_provided}")
                     
                 except Exception as e:
                     logger.error(f"Error creating client requirements textarea: {str(e)}")
@@ -663,13 +711,15 @@ def client_tab(st,logger,is_locked):
                     
             except Exception as e:
                 logger.error(f"Error in client requirements column: {str(e)}")
-                st.error("Error in client requirements section")
+                st.error('''🚨 Oops! Something went wrong. Please try again or contact support.''')
+                raise_global_error(e)
+                #st.error("Error in client requirements section")
                 
         
             # Continue from COL6 with enhanced logging and error handling
             with col6:
                 try:
-                    logger.info("Starting COL6 - Client Pain Points section rendering")
+                    #logger.info("Starting COL6 - Client Pain Points section rendering")
                     
                     # Title with tooltip only (no buttons)
                     st.markdown('''
@@ -683,7 +733,7 @@ def client_tab(st,logger,is_locked):
                         # Get RFI pain points items from client data or use dummy data
                         if client_name_provided and client_data.rfi_pain_points_items:
                             rfi_pain_points_items = client_data.rfi_pain_points_items
-                            logger.info(f"Using client RFI pain points data with {len(rfi_pain_points_items)} items")
+                            #logger.info(f"Using client RFI pain points data with {len(rfi_pain_points_items)} items")
                         else:
                             # Dummy data when no client name or no file uploaded
                             rfi_pain_points_items = {
@@ -694,27 +744,29 @@ def client_tab(st,logger,is_locked):
                                     "Market Expansion and Customer Acquisition": "**Market Expansion and Customer Acquisition**\n\n • Win rate on new business opportunities dropped from XX to XX\n• Customer acquisition cost increased XX while customer lifetime value declined\n• Expansion into new geographic markets yielding only XX of projected results\n• Lack of local market knowledge resulting in XX longer sales cycles\n• Digital marketing campaigns generating XX fewer qualified leads\n• Competition from new market entrants capturing XX of target customer segment\n• Limited brand recognition in new markets requiring XX marketing investment\n• Difficulty penetrating enterprise accounts with average sales cycle extending to XX months\n\n"
                                 }
 
-                            logger.info("Using dummy pain points data as fallback")
+                            #logger.info("Using dummy pain points data as fallback")
 
                     except Exception as e:
                         logger.error(f"Error retrieving pain points data: {str(e)}")
                         rfi_pain_points_items = {}
-                        st.error("Error loading pain points data")
+                        st.error('''🚨 Oops! Something went wrong. Please try again or contact support.''')
+                        raise_global_error(e)
+                        #st.error("Error loading pain points data")
 
                     # Use a single container for all pain points items
                     try:
                         with st.container():
-                            logger.debug(f"Rendering {len(rfi_pain_points_items)} pain point items")
+                            #logger.debug(f"Rendering {len(rfi_pain_points_items)} pain point items")
                             
                             # Display pain points items with add/remove buttons
                             for i, (key, value) in enumerate(rfi_pain_points_items.items()):
                                 try:
-                                    logger.debug(f"Processing pain point item {i}: {key}")
+                                    #logger.debug(f"Processing pain point item {i}: {key}")
                                     
                                     # Check if this item is selected
                                     try:
                                         is_selected = key in client_data.selected_pain_points
-                                        logger.debug(f"Pain point '{key}' selection status: {is_selected}")
+                                        #logger.debug(f"Pain point '{key}' selection status: {is_selected}")
                                     except Exception as e:
                                         logger.error(f"Error checking selection status for '{key}': {str(e)}")
                                         is_selected = False
@@ -787,21 +839,21 @@ def client_tab(st,logger,is_locked):
                                                     type=button_type,
                                                     disabled=not client_name_provided or is_locked):
                                                 
-                                                logger.info(f"Pain point button clicked for '{key}', current selection: {is_selected}")
+                                                #logger.info(f"Pain point button clicked for '{key}', current selection: {is_selected}")
                                                 
                                                 try:
                                                     if is_selected:
                                                         # REMOVE FUNCTIONALITY
-                                                        logger.info(f"Removing pain point '{key}' from requirements")
+                                                        #logger.info(f"Removing pain point '{key}' from requirements")
                                                         
                                                         try:
                                                             # Get current content from the client data
                                                             current_content = client_data.client_requirements_content
-                                                            logger.debug(f"Current content length: {len(current_content) if current_content else 0}")
+                                                            #logger.debug(f"Current content length: {len(current_content) if current_content else 0}")
                                                             
                                                             # Get the original content that was added for this key
                                                             original_content = client_data.pain_point_content_map.get(key, value)
-                                                            logger.debug(f"Original content to remove length: {len(original_content)}")
+                                                            #logger.debug(f"Original content to remove length: {len(original_content)}")
                                                             
                                                             # Remove this specific pain point section from content
                                                             patterns_to_remove = [
@@ -814,7 +866,7 @@ def client_tab(st,logger,is_locked):
                                                             for pattern in patterns_to_remove:
                                                                 if pattern in updated_content:
                                                                     updated_content = updated_content.replace(pattern, "")
-                                                                    logger.debug(f"Removed pattern from content")
+                                                                    #logger.debug(f"Removed pattern from content")
                                                                     break
                                                             
                                                             # Clean up any excessive newlines
@@ -831,24 +883,26 @@ def client_tab(st,logger,is_locked):
                                                                 pain_point_content_map=client_data.pain_point_content_map
                                                             )
                                                             
-                                                            logger.info(f"Successfully removed pain point '{key}'")
+                                                            #logger.info(f"Successfully removed pain point '{key}'")
                                                             
                                                         except Exception as e:
                                                             logger.error(f"Error in remove functionality for '{key}': {str(e)}")
-                                                            st.error(f"Error removing pain point: {str(e)}")
+                                                            st.error('''🚨 Oops! Something went wrong. Please try again or contact support.''')
+                                                            raise_global_error(e)
+                                                            #st.error(f"Error removing pain point: {str(e)}")
                                                         
                                                     else:
                                                         # ADD FUNCTIONALITY
-                                                        logger.info(f"Adding pain point '{key}' to requirements")
+                                                        #logger.info(f"Adding pain point '{key}' to requirements")
                                                         
                                                         try:
                                                             # Get current content from client data
                                                             current_content = client_data.client_requirements_content
-                                                            logger.debug(f"Current content length before add: {len(current_content) if current_content else 0}")
+                                                            #logger.debug(f"Current content length before add: {len(current_content) if current_content else 0}")
                                                             
                                                             # Append the value to the content
                                                             new_content = current_content + f"\n\n{value}" if current_content else value
-                                                            logger.debug(f"New content length after add: {len(new_content)}")
+                                                            #logger.debug(f"New content length after add: {len(new_content)}")
                                                             
                                                             # Update client data
                                                             client_data.selected_pain_points.add(key)
@@ -860,21 +914,27 @@ def client_tab(st,logger,is_locked):
                                                                 pain_point_content_map=client_data.pain_point_content_map
                                                             )
                                                             
-                                                            logger.info(f"Successfully added pain point '{key}'")
+                                                            #logger.info(f"Successfully added pain point '{key}'")
                                                             
                                                         except Exception as e:
                                                             logger.error(f"Error in add functionality for '{key}': {str(e)}")
-                                                            st.error(f"Error adding pain point: {str(e)}")
+                                                            st.error('''🚨 Oops! Something went wrong. Please try again or contact support.''')
+                                                            raise_global_error(e)
+                                                            #st.error(f"Error adding pain point: {str(e)}")
                                                     
                                                     st.rerun()
                                                     
                                                 except Exception as e:
                                                     logger.error(f"Error handling button click for '{key}': {str(e)}")
-                                                    st.error(f"Error processing pain point selection: {str(e)}")
+                                                    st.error('''🚨 Oops! Something went wrong. Please try again or contact support.''')
+                                                    raise_global_error(e)
+                                                    #st.error(f"Error processing pain point selection: {str(e)}")
                                                     
                                         except Exception as e:
                                             logger.error(f"Error rendering button for pain point '{key}': {str(e)}")
-                                            st.error(f"Error rendering button: {str(e)}")
+                                            st.error('''🚨 Oops! Something went wrong. Please try again or contact support.''')
+                                            raise_global_error(e)
+                                            #st.error(f"Error rendering button: {str(e)}")
 
                                     with col_content:
                                         try:
@@ -911,23 +971,31 @@ def client_tab(st,logger,is_locked):
                                             </div>
                                             """, unsafe_allow_html=True)
                                             
-                                            logger.debug(f"Successfully rendered content box for '{key}'")
+                                            #logger.debug(f"Successfully rendered content box for '{key}'")
                                             
                                         except Exception as e:
                                             logger.error(f"Error rendering content box for '{key}': {str(e)}")
-                                            st.error(f"Error rendering content: {str(e)}")
+                                            st.error('''🚨 Oops! Something went wrong. Please try again or contact support.''')
+                                            raise_global_error(e)
+                                            #st.error(f"Error rendering content: {str(e)}")
                                             
                                 except Exception as e:
                                     logger.error(f"Error processing pain point item {i} ('{key}'): {str(e)}")
-                                    st.error(f"Error processing pain point item: {str(e)}")
+                                    st.error('''🚨 Oops! Something went wrong. Please try again or contact support.''')
+                                    raise_global_error(e)
+                                    #st.error(f"Error processing pain point item: {str(e)}")
                                     
                     except Exception as e:
                         logger.error(f"Error rendering pain points container: {str(e)}")
-                        st.error("Error loading pain points section")
+                        st.error('''🚨 Oops! Something went wrong. Please try again or contact support.''')
+                        raise_global_error(e)
+                        #st.error("Error loading pain points section")
                         
                 except Exception as e:
                     logger.error(f"Critical error in COL6 rendering: {str(e)}")
-                    st.error("Critical error in pain points section")
+                    st.error('''🚨 Oops! Something went wrong. Please try again or contact support.''')
+                    raise_global_error(e)
+                    #st.error("Critical error in pain points section")
 
             # SPOC Row
     except Exception as e:
@@ -947,7 +1015,7 @@ def client_tab(st,logger,is_locked):
             <div class="tooltip-icon" data-tooltip="Enter the Single Point of Contact (SPOC) name - the primary person responsible for communication and decision-making on the client side. This person will be your main contact throughout the project lifecycle.">ⓘ</div>
         </div>
         ''', unsafe_allow_html=True)
-        
+        client_name_provided = bool(client_enterprise_name and client_enterprise_name.strip())
         spoc_name = st.text_input(
             label="SPOC Name", 
             value=client_data.spoc_name,
@@ -1240,86 +1308,99 @@ def client_tab(st,logger,is_locked):
         current_role = getattr(client_data, 'selected_target_role', None)
         session_key = "last_role_for_priorities"
         priorities_session_key = "current_business_priorities_list"
+        loading_session_key = "priorities_loading"
 
         # Initialize session state tracking for last role
         if session_key not in st.session_state:
             st.session_state[session_key] = None
         if priorities_session_key not in st.session_state:
             st.session_state[priorities_session_key] = default_priorities
+        if loading_session_key not in st.session_state:
+            st.session_state[loading_session_key] = False
 
         # Load role-based priorities only when role changes or is first loaded
         if current_role and current_role != "Select a role..." and current_role != st.session_state[session_key]:
-            try:
-                role_priorities = get_ai_business_priorities(current_role)
-                if role_priorities:
-                    business_priorities_list = role_priorities
-                    ClientDataManager.update_client_data(current_role_priorities=role_priorities)
-                else:
-                    business_priorities_list = default_priorities
-                    ClientDataManager.update_client_data(current_role_priorities=default_priorities)
-                
-                # Store in session state
-                st.session_state[priorities_session_key] = business_priorities_list
-                st.session_state[session_key] = current_role
-                
-                # Clear previous selections when role changes
-                ClientDataManager.update_client_data(selected_business_priorities=[])
-                
-                # Clear checkbox initialization flags when role changes
-                keys_to_remove = [key for key in st.session_state.keys() if key.startswith("business_priority_checkbox_")]
-                for key in keys_to_remove:
-                    del st.session_state[key]
+            # Set loading state
+            st.session_state[loading_session_key] = True
+            
+            # Show spinner while loading
+            with st.spinner('Loading business priorities for selected role...'):
+                try:
+                    role_priorities = get_ai_business_priorities(current_role)
+                    if role_priorities:
+                        business_priorities_list = role_priorities
+                        ClientDataManager.update_client_data(current_role_priorities=role_priorities)
+                    else:
+                        business_priorities_list = default_priorities
+                        ClientDataManager.update_client_data(current_role_priorities=default_priorities)
                     
-            except Exception as e:
-                business_priorities_list = default_priorities
-                st.session_state[priorities_session_key] = default_priorities
-                ClientDataManager.update_client_data(current_role_priorities=default_priorities)
-                st.session_state[session_key] = current_role
+                    # Store in session state
+                    st.session_state[priorities_session_key] = business_priorities_list
+                    st.session_state[session_key] = current_role
+                    
+                    # Clear previous selections when role changes
+                    ClientDataManager.update_client_data(selected_business_priorities=[])
+                    
+                    # Clear checkbox initialization flags when role changes
+                    keys_to_remove = [key for key in st.session_state.keys() if key.startswith("business_priority_checkbox_")]
+                    for key in keys_to_remove:
+                        del st.session_state[key]
+                        
+                except Exception as e:
+                    business_priorities_list = default_priorities
+                    st.session_state[priorities_session_key] = default_priorities
+                    ClientDataManager.update_client_data(current_role_priorities=default_priorities)
+                    st.session_state[session_key] = current_role
+                finally:
+                    # Clear loading state
+                    st.session_state[loading_session_key] = False
         else:
             # Use cached priorities from session state
             business_priorities_list = st.session_state.get(priorities_session_key, default_priorities)
 
-        # Collect checkbox states without immediate updates
-        checkbox_states = {}
-        selected_priorities = []
-        
-        # Show checkboxes for priorities
-        for i, priority in enumerate(business_priorities_list):
-            priority_title = priority.get('title') if isinstance(priority, dict) else str(priority)
-            priority_icon = priority.get('icon', '📋') if isinstance(priority, dict) else '📋'
-            display_text = f"{priority_icon} **{priority_title}**"
+        # Only show checkboxes if not loading
+        if not st.session_state[loading_session_key]:
+            # Collect checkbox states without immediate updates
+            checkbox_states = {}
+            selected_priorities = []
             
-            # Create unique key for this checkbox based on role and index
-            checkbox_key = f"business_priority_checkbox_{i}_{hash(current_role or 'none')}"
-            
-            is_enabled = (
-                spoc_name_provided and 
-                current_role and 
-                current_role != "Select a role..."
-            )
-            
-            # Get checkbox state - let Streamlit handle the initial value
-            is_checked = st.checkbox(
-                display_text,
-                key=checkbox_key,
-                disabled=not is_enabled,
-                value=priority_title in client_data.selected_business_priorities
-            )
-            
-            # Store the state for batch update
-            checkbox_states[priority_title] = is_checked
-            if is_checked:
-                selected_priorities.append(priority_title)
+            # Show checkboxes for priorities
+            for i, priority in enumerate(business_priorities_list):
+                priority_title = priority.get('title') if isinstance(priority, dict) else str(priority)
+                priority_icon = priority.get('icon', '📋') if isinstance(priority, dict) else '📋'
+                display_text = f"{priority_icon} **{priority_title}**"
+                
+                # Create unique key for this checkbox based on role and index
+                checkbox_key = f"business_priority_checkbox_{i}_{hash(current_role or 'none')}"
+                
+                is_enabled = (
+                    spoc_name_provided and 
+                    current_role and 
+                    current_role != "Select a role..."
+                )
+                
+                # Get checkbox state - let Streamlit handle the initial value
+                is_checked = st.checkbox(
+                    display_text,
+                    key=checkbox_key,
+                    disabled=not is_enabled,
+                    value=priority_title in client_data.selected_business_priorities
+                )
+                
+                # Store the state for batch update
+                checkbox_states[priority_title] = is_checked
+                if is_checked:
+                    selected_priorities.append(priority_title)
 
-        # Batch update client data only if there are actual changes
-        current_selections = set(client_data.selected_business_priorities)
-        new_selections = set(selected_priorities)
-        
-        if current_selections != new_selections:
-            ClientDataManager.update_client_data(selected_business_priorities=selected_priorities)
+            # Batch update client data only if there are actual changes
+            current_selections = set(client_data.selected_business_priorities)
+            new_selections = set(selected_priorities)
+            
+            if current_selections != new_selections:
+                ClientDataManager.update_client_data(selected_business_priorities=selected_priorities)
     try:
         col9, col10 = st.columns([1, 1])
-        logger.info("Created additional requirements columns")
+        #logger.info("Created additional requirements columns")
     except Exception as e:
         logger.error(f"Error creating additional requirements columns: {str(e)}")
 
@@ -1331,7 +1412,7 @@ def client_tab(st,logger,is_locked):
                 <div class="tooltip-icon" data-tooltip="Document any additional specific requirements, constraints, expectations, compliance requirements, budget limitations, timeline constraints, or special considerations mentioned by the client that are not covered in the main requirements section.">ⓘ</div>
             </div>
             ''', unsafe_allow_html=True)
-            logger.info("Rendered additional client requirements tooltip")
+            #logger.info("Rendered additional client requirements tooltip")
         except Exception as e:
             logger.error(f"Error rendering additional client requirements tooltip: {str(e)}")
         
@@ -1346,7 +1427,7 @@ def client_tab(st,logger,is_locked):
                 label_visibility="collapsed",
                 disabled=not client_name_provided or is_locked,
             )
-            logger.info(f"Additional requirements text area rendered with {len(client_additional_requirements)} characters")
+            #logger.info(f"Additional requirements text area rendered with {len(client_additional_requirements)} characters")
         except Exception as e:
             logger.error(f"Error creating additional requirements text area: {str(e)}")
             client_additional_requirements = ""
@@ -1356,13 +1437,13 @@ def client_tab(st,logger,is_locked):
             if client_name_provided and client_additional_requirements != client_data.client_additional_requirements_content:
                 ClientDataManager.update_client_data(client_additional_requirements_content=client_additional_requirements)
                 client_data = ClientDataManager.get_client_data()  # Refresh reference
-                logger.info("Updated additional client requirements content")
+                #logger.info("Updated additional client requirements content")
         except Exception as e:
             logger.error(f"Error updating additional client requirements: {str(e)}")
         
         try:
             client_additional_requirements_provided = bool(client_name_provided and client_additional_requirements.strip())
-            logger.info(f"Additional requirements provided status: {client_additional_requirements_provided}")
+            #logger.info(f"Additional requirements provided status: {client_additional_requirements_provided}")
         except Exception as e:
             logger.error(f"Error checking additional requirements provided status: {str(e)}")
             client_additional_requirements_provided = False
@@ -1376,7 +1457,7 @@ def client_tab(st,logger,is_locked):
                 <div class="tooltip-icon" data-tooltip="AI-generated additional specifications and technical requirements based on RFI analysis. These are supplementary specs that complement the main requirements and help ensure comprehensive proposal coverage.">ⓘ</div>
             </div>
             ''', unsafe_allow_html=True)
-            logger.info("Rendered additional specifications tooltip")
+            #logger.info("Rendered additional specifications tooltip")
         except Exception as e:
             logger.error(f"Error rendering additional specifications tooltip: {str(e)}")
         
@@ -1384,7 +1465,7 @@ def client_tab(st,logger,is_locked):
             # Get additional specs items from client data or use dummy data
             if client_name_provided and client_data.additional_specs_items:
                 additional_specs_items = client_data.additional_specs_items
-                logger.info(f"Using {len(additional_specs_items)} client-specific additional specs")
+                #logger.info(f"Using {len(additional_specs_items)} client-specific additional specs")
             else:
                 # Dummy data when no client name or no specific data
                 additional_specs_items = {
@@ -1394,7 +1475,7 @@ def client_tab(st,logger,is_locked):
                     
                     "Performance and Scalability Metrics": "**Performance and Scalability Metrics**\n• System response time under 2 seconds for 95% of user interactions\n• Concurrent user capacity of 10,000+ with linear scaling capability\n• Database query optimization with indexing and caching strategies\n• Mobile application performance with offline synchronization\n• Bandwidth optimization for low-connectivity environments\n• Real-time analytics and reporting with sub-minute data refresh\n• Automated performance monitoring with threshold-based alerting\n• Capacity planning with predictive scaling based on usage patterns\n\n"
                 }
-                logger.info("Using default additional specs items")
+                #logger.info("Using default additional specs items")
         except Exception as e:
             logger.error(f"Error preparing additional specs items: {str(e)}")
             additional_specs_items = {}
@@ -1465,7 +1546,7 @@ def client_tab(st,logger,is_locked):
                                         
                                         # Save changes to session state
                                         ClientDataManager.save_client_data(client_data)
-                                        logger.info(f"Removed additional spec: {key}")
+                                        #logger.info(f"Removed additional spec: {key}")
                                     except Exception as remove_error:
                                         logger.error(f"Error removing additional spec '{key}': {str(remove_error)}")
                                         
@@ -1485,7 +1566,7 @@ def client_tab(st,logger,is_locked):
                                         
                                         # Save changes to session state
                                         ClientDataManager.save_client_data(client_data)
-                                        logger.info(f"Added additional spec: {key}")
+                                        #logger.info(f"Added additional spec: {key}")
                                     except Exception as add_error:
                                         logger.error(f"Error adding additional spec '{key}': {str(add_error)}")
                                 
@@ -1537,7 +1618,7 @@ def client_tab(st,logger,is_locked):
         # Handle validation trigger from main app
         if client_data.show_validation:
             # Your validation logic here
-            logger.info("Validation triggered")
+            #logger.info("Validation triggered")
             pass
     except Exception as e:
         logger.error(f"Error handling validation: {str(e)}")

@@ -4,7 +4,7 @@ import time
 from datetime import datetime
 import os
 from Generate_proposal.generate_proposal_css import *
-from SalesProposalWriting.src.main import get_presentation
+from SalesProposalWriting.src.main import get_presentation,inline_editable_html_component
 from Common_Utils.logo_creator import create_text_image
 
 def render_template_preview(template_name, template_key):
@@ -100,7 +100,6 @@ def render_template_preview(template_name, template_key):
 
 def render_preview_tab(client_data, seller_data, project_specs):
     
- 
     with st.container():
         st.markdown("""
                                                 <style>
@@ -157,7 +156,7 @@ def render_preview_tab(client_data, seller_data, project_specs):
         # Progress stages with actual timing
         stages = [
             ("🔍 Validating project details...", 0.2),
-            (f"🎨 Applying proffessional template...", 0.4),
+            (f"🎨 Applying professional template...", 0.4),
             ("📝 Generating proposal content...", 0.6),
             ("⚖️ Adding terms and conditions...", 0.8),
             ("✨ Final review and formatting...", 1.0)
@@ -166,18 +165,25 @@ def render_preview_tab(client_data, seller_data, project_specs):
         output_file = None
         
         try:
+            # Show progress stages with realistic timing
             for i, (stage_text, progress) in enumerate(stages):
                 status_text.text(stage_text)
                 progress_bar.progress(progress)
                 
                 # Add realistic delay for user experience
-                time.sleep(0.5)
+                time.sleep(0.6)
                 
-                output_file = get_presentation(
-                    client=client_data,
-                    seller=seller_data,
-                    project_specs=project_specs
-                )
+                # Generate the file only once at the end of the progress
+                if i == len(stages) - 1:  # Last stage
+                    output_file,file_path = get_presentation(
+                        client=client_data,
+                        seller=seller_data,
+                        project_specs=project_specs
+                    )
+                    output_file = inline_editable_html_component(output_file)
+                    with open(file_path, "w", encoding="utf-8") as file:
+                        file.write(output_file)
+                    
             
             # Complete the progress
             progress_bar.progress(1.0)
@@ -189,8 +195,8 @@ def render_preview_tab(client_data, seller_data, project_specs):
             status_text.empty()
             
             # Store the output file path in session state for download
-            if output_file and os.path.exists(output_file):
-                st.session_state.proposal_file_path = output_file
+            if output_file and os.path.exists(file_path):
+                st.session_state.proposal_file_path = file_path
                 st.session_state.proposal_generation_success = True
             else:
                 st.error("❌ Error generating proposal file. Please try again.")
@@ -207,25 +213,8 @@ def render_preview_tab(client_data, seller_data, project_specs):
         # Success message
         st.success("✅ **Proposal Generated Successfully!**")
         
-        # Current time for generation timestamp
-        current_time = datetime.now().strftime('%B %d, %Y at %I:%M %p')
         
-        # Success summary
-        st.markdown(f"""
-        <div style="background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); 
-                    padding: 25px; border-radius: 12px; border: 1px solid #10b981; margin: 20px 0;">
-            <h3 style="color: #065f46; margin-bottom: 15px;">📋 Proposal Ready</h3>
-            <div style="background: white; padding: 20px; border-radius: 8px;">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                    <div><strong>Client:</strong> {st.session_state.get('proposal_client_name', 'N/A')}</div>
-                    <div><strong>Template:</strong> {st.session_state.get('proposal_selected_format', 'N/A')}</div>
-                    <div><strong>Value:</strong> ${st.session_state.get('proposal_project_value', 0):,}</div>
-                    <div><strong>Generated:</strong> {current_time}</div>
-                </div>
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-        
+
         # Action buttons
         action_col1, action_col2, action_col3 = st.columns(3)
         
@@ -245,7 +234,8 @@ def render_preview_tab(client_data, seller_data, project_specs):
                     file_name=filename,
                     mime="application/pdf",
                     use_container_width=True,
-                    type="primary"
+                    type="primary",
+                    key="proposal_pdf_download_button"
                 )
             else:
                 st.error("❌ File not found. Please regenerate the proposal.")

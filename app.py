@@ -312,13 +312,9 @@ def refresh_all_data():
     logger_initialized = st.session_state.get('logger_initialized', False)
     
     # Clear all session state variables
-    keys_to_clear = [
-        'client_name_input', 'url_selector', 'pain_points', 'pain_points_extracted',
-        'pain_points_placeholder', 'editable_content_area', 'pain_points_summary',
-        'selected_roles', 'selected_priorities', 'problem_statement'
-    ]
+
     
-    for key in keys_to_clear:
+    for key in list(st.session_state.keys()):
         if key in st.session_state:
             del st.session_state[key]
     
@@ -365,7 +361,19 @@ def validate_project_mandatory_fields():
 
 def show_validation_popup(missing_tab_name, missing_fields=None):
     """Show validation error popup"""
-    st.toast(f" Please complete all mandatory fields in {missing_tab_name} tab first!",icon ="⚠️", )
+    toast = st.toast(f"⚠️ Please complete all mandatory fields in {missing_tab_name} tab first!")
+
+    # Inject JavaScript to auto-dismiss the toast after 3 seconds (3000 ms)
+    # st.markdown("""
+    #     <script>
+    #     setTimeout(function() {
+    #         let toasts = window.parent.document.querySelectorAll('div[data-testid="stToast"]');
+    #         if (toasts.length > 0) {
+    #             toasts[0].style.display = 'none';
+    #         }
+    #     }, 10000);
+    #     </script>
+    # """, unsafe_allow_html=True)
     if missing_fields:
         st.error(f"Missing required fields: {missing_fields}")
 
@@ -393,29 +401,33 @@ def is_tab_accessible(tab_index):
                 validate_seller_mandatory_fields() and 
                 validate_project_mandatory_fields())
     return False
-
 def show_lock_confirmation_popup(tab_index):
-    """Show professional popup-style confirmation dialog for locking a tab"""
+    """Show compact popup-style confirmation dialog for locking a tab"""
     tab_names = ["Client Information", "Seller Information", "Project Specifications", "Generate Proposal"]
-    
-    # Create professional popup modal
+    st.markdown("")
+    st.markdown("")
+    st.markdown("")
+    # Create compact popup modal
     with stylable_container(
         f"confirmation_popup_{tab_index}",
         css_styles="""
         div[data-testid="stBlock"] {
             position: fixed !important;
-            top: 20% !important;
+            top: 75% !important;
             left: 50% !important;
-            transform: translateX(-50%) !important;
+            transform: translate(-50%, -50%) !important;
             z-index: 9999 !important;
             background: white !important;
-            border: 1px solid #ddd !important;
-            border-radius: 12px !important;
-            padding: 30px !important;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15) !important;
-            width: 420px !important;
+            border: 2px solid #e74c3c !important;
+            border-radius: 8px !important;
+            padding: 20px !important;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15) !important;
+            width: 60px !important;
+            height: 180px !important;
             max-width: 90vw !important;
-            border-top: 4px solid #e74c3c !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: space-between !important;
         }
         div[data-testid="stBlock"]:before {
             content: '' !important;
@@ -429,102 +441,96 @@ def show_lock_confirmation_popup(tab_index):
         }
         """,
     ):
-        # Header with icon and title
+        # Text message
         st.markdown(
-            f"""
-            <div style="text-align: center; margin-bottom: 20px;">
-                <div style="background: #fff5f5; border-radius: 50%; width: 60px; height: 60px; 
-                           display: flex; align-items: center; justify-content: center; 
-                           margin: 0 auto 15px auto; border: 2px solid #fed7d7;">
-                    <span style="font-size: 24px; color: #e74c3c;">⚠️</span>
-                </div>
-                <h3 style="color: #2d3748; margin: 0; font-size: 20px; font-weight: 600;">
-                    Confirm Tab Lock
-                </h3>
-            </div>
-            """, 
-            unsafe_allow_html=True
-        )
-        
-        # Warning message
-        st.markdown(
-            f"""
-            <div style="text-align: center; margin-bottom: 25px;">
-                <p style="font-size: 15px; color: #4a5568; line-height: 1.6; margin-bottom: 10px;">
-                    You're about to lock the <strong>"{tab_names[tab_index]}"</strong> tab.
-                </p>
-                <p style="font-size: 14px; color: #718096; line-height: 1.5;">
-                    Once locked, you won't be able to modify the information in this tab.
-                </p>
-            </div>
-            """, 
-            unsafe_allow_html=True
-        )
-        
-        # Action buttons
-        col1, col2 = st.columns(2, gap="medium")
-        
-        with col1:
-            with stylable_container(
-                f"cancel_btn_{tab_index}",
-                css_styles="""
-                button {
-                    background-color: #f7fafc !important;
-                    color: #4a5568 !important;
-                    border: 1px solid #e2e8f0 !important;
-                    border-radius: 6px !important;
-                    padding: 8px 16px !important;
-                    font-weight: 500 !important;
-                    width: 100% !important;
-                    transition: all 0.2s ease !important;
-                    font-size: 14px !important;
-                }
-                button:hover {
-                    background-color: #edf2f7 !important;
-                    border-color: #cbd5e0 !important;
-                    transform: translateY(-1px) !important;
-                }
-                """,
-            ):
-                if st.button("Cancel", key=f"cancel_lock_{tab_index}"):
-                    # Clear confirmation state
-                    if f"show_confirmation_{tab_index}" in st.session_state:
-                        del st.session_state[f"show_confirmation_{tab_index}"]
-                    st.rerun()
-        
-        with col2:
-            with stylable_container(
-                f"confirm_btn_{tab_index}",
-                css_styles="""
-                button {
-                    background-color: #e74c3c !important;
-                    color: white !important;
-                    border: 1px solid #e74c3c !important;
-                    border-radius: 6px !important;
-                    padding: 8px 16px !important;
-                    font-weight: 500 !important;
-                    width: 100% !important;
-                    transition: all 0.2s ease !important;
-                    font-size: 14px !important;
-                }
-                button:hover {
-                    background-color: #c53030 !important;
-                    border-color: #c53030 !important;
-                    transform: translateY(-1px) !important;
-                }
-                """,
-            ):
-                if st.button("Lock & Continue", key=f"confirm_lock_{tab_index}"):
-                    # Clear confirmation state
-                    if f"show_confirmation_{tab_index}" in st.session_state:
-                        del st.session_state[f"show_confirmation_{tab_index}"]
-                    # Lock the current tab
-                    st.session_state.locked_tabs.add(tab_index)
-                    # Move to next tab
-                    st.session_state.active_tab = tab_index + 1
-                    st.session_state.highest_reached_tab = max(st.session_state.highest_reached_tab, st.session_state.active_tab)
-                    st.rerun()
-    
+    """
+    <div style="
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        padding: 15px;
+        margin-bottom: 15px;
+        background-color: #f8f9fa;
+        width:40%;
+        text-align: center;
+        margin: 0 auto;
+    ">
+        <h4 style="color: #e74c3c; margin: 0 0 10px 0; font-size: 18px; font-weight: 600;">
+            ⚠️ Confirm Tab Lock
+        </h4>
+        <p style="font-size: 14px; color: #4a5568; line-height: 1.4; margin: 0 0 15px 0;">
+            Lock <strong>tab</strong>?<br>
+            <span style="color: #718096; font-size: 13px;">You won't be able to modify this tab once locked.</span>
+        </p>
+    </div>
+    """, 
+    unsafe_allow_html=True
+)
+
+# Action buttons in the same container, positioned right under the box
+    col1, col2 = st.columns(2, gap="small")
+
+    with col1:
+        with stylable_container(
+            f"cancel_btn_{tab_index}",
+            css_styles="""
+            button {
+                background-color: #f7fafc !important;
+                color: #4a5568 !important;
+                border: 1px solid #e2e8f0 !important;
+                border-radius: 6px !important;
+                padding: 8px 16px !important;
+                font-weight: 500 !important;
+                width: 40% !important;
+                font-size: 14px !important;
+                height: 40px !important;
+                margin-left: auto !important;
+display: block !important;
+                
+            }
+            button:hover {
+                background-color: #edf2f7 !important;
+                border-color: #cbd5e0 !important;
+            }
+            """,
+        ):
+            if st.button("Cancel", key=f"cancel_lock_{tab_index}"):
+                # Clear confirmation state
+                if f"show_confirmation_{tab_index}" in st.session_state:
+                    del st.session_state[f"show_confirmation_{tab_index}"]
+                st.rerun()
+
+    with col2:
+        with stylable_container(
+            f"confirm_btn_{tab_index}",
+            css_styles="""
+            button {
+                background-color: #e74c3c !important;
+                color: white !important;
+                border: 1px solid #e74c3c !important;
+                border-radius: 6px !important;
+                padding: 8px 16px !important;
+                font-weight: 500 !important;
+                width: 40% !important;
+                font-size: 14px !important;
+                height: 40px !important;
+            }
+            button:hover {
+                background-color: #c53030 !important;
+                border-color: #c53030 !important;
+            }
+            """,
+        ):
+            if st.button("Lock & Continue", key=f"confirm_lock_{tab_index}"):
+                # Clear confirmation state
+                if f"show_confirmation_{tab_index}" in st.session_state:
+                    del st.session_state[f"show_confirmation_{tab_index}"]
+                # Lock the current tab
+                st.session_state.locked_tabs.add(tab_index)
+                # Move to next tab
+                st.session_state.active_tab = tab_index + 1
+                st.session_state.highest_reached_tab = max(st.session_state.highest_reached_tab, st.session_state.active_tab)
+                st.rerun()
+
     return True
 
 def navigate_to_next_tab():
@@ -647,7 +653,7 @@ for i, tab_name in enumerate(tab_names):
                 }
                 """,
             ):
-                if st.button(display_name, key=f"tab_{i}", use_container_width=True,disabled = True):
+                if st.button(display_name, key=f"tab_{i}", use_container_width=True,disabled = False):
                     st.session_state.active_tab = i
                     st.rerun()
         elif tab_enabled:
@@ -667,7 +673,7 @@ for i, tab_name in enumerate(tab_names):
                 }
                 """,
             ):
-                if st.button(display_name, key=f"tab_{i}", use_container_width=True,disabled=True):
+                if st.button(display_name, key=f"tab_{i}", use_container_width=True,disabled=False):
                     st.session_state.active_tab = i
                     st.rerun()
         else:
@@ -689,7 +695,7 @@ for i, tab_name in enumerate(tab_names):
                 }
                 """,
             ):
-                st.button(display_name, key=f"tab_{i}", use_container_width=True, disabled=True)
+                st.button(display_name, key=f"tab_{i}", use_container_width=True, disabled=False)
 
 # Handle confirmation dialogs - POPUP STYLE
 current_tab = st.session_state.active_tab

@@ -20,7 +20,21 @@ def show_field_warning(field_name: str):
     """Show warning message for mandatory fields"""
     st.markdown(f'<div class="field-warning">⚠️ {field_name} is mandatory and cannot be empty!</div>', unsafe_allow_html=True)
 
+import re
 
+def normalize_url(url):
+    """
+    Ensure the URL has a valid scheme (http/https).
+    """
+    if not url:
+        return ""
+    
+    # If it already starts with http:// or https:// — keep it
+    if re.match(r"^https?://", url.strip(), re.IGNORECASE):
+        return url.strip()
+    
+    # Otherwise, prepend https://
+    return f"https://{url.strip()}"
 
 
 def save_uploaded_file_and_get_path(uploaded_file, logger, client_enterprise_name):
