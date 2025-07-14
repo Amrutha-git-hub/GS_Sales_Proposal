@@ -13,6 +13,158 @@ import logging
 import uuid
 import random
 
+
+import time
+from datetime import datetime, timedelta
+
+
+def clear_global_error():
+    """Clear the global error message"""
+    if 'global_message' in st.session_state:
+        del st.session_state.global_message
+
+def is_message_expired():
+    """Check if the current message has expired"""
+    if 'global_message' not in st.session_state:
+        return True
+    
+    message_data = st.session_state.global_message
+    elapsed_time = (datetime.now() - message_data['timestamp']).total_seconds()
+    return elapsed_time > message_data['duration']
+
+def display_global_message():
+    """Display the global message under the tabs if it exists and hasn't expired"""
+    if 'global_message' not in st.session_state:
+        return
+    
+
+    # Check if message has expired
+    if is_message_expired():
+        clear_global_error()
+        return
+    
+    message_data = st.session_state.global_message
+    message_type = message_data['type']
+    message_text = message_data['message']
+    
+    # Define styling and colors based on message type
+    if message_type == "error":
+        bg_color = "#fef2f2"
+        border_color = "#ef4444"
+        text_color = "#dc2626"
+        icon = '<img src="https://e7.pngegg.com/pngimages/144/379/png-clipart-computer-icons-red-alert-angle-text-thumbnail.png" style="width: 20px; height: 20px; margin-right: 5px;">'
+        container_class = "error_message"
+    elif message_type == "warning":
+        bg_color = "#fffbeb"
+        border_color = "#f59e0b"
+        text_color = "#d97706"
+        icon = "⚠️"
+        container_class = "warning_message"
+    elif message_type == "info":
+        bg_color = "#eff6ff"
+        border_color = "#3b82f6"
+        text_color = "#2563eb"
+        icon = "ℹ️"
+        container_class = "info_message"
+    elif message_type == "success":
+        bg_color = "#f0fdf4"
+        border_color = "#10b981"
+        text_color = "#059669"
+        icon = "✅"
+        container_class = "success_message"
+    else:
+        bg_color = "#f8fafc"
+        border_color = "#64748b"
+        text_color = "#475569"
+        icon = "📢"
+        container_class = "default_message"
+    
+    # Calculate remaining time for progress
+    elapsed_time = (datetime.now() - message_data['timestamp']).total_seconds()
+    remaining_time = max(0, message_data['duration'] - elapsed_time)
+    progress_percentage = remaining_time / message_data['duration']
+    # Create the message container with proper styling
+    st.markdown("")
+    with stylable_container(
+        key=container_class,
+        css_styles=f"""
+    div[data-testid="stBlock"] > div {{
+        background-color: {bg_color} !important;
+        border: 2px solid {border_color} !important;
+        border-radius: 12px !important;
+        padding: 1.2rem 1.2rem 0 1.2rem !important;
+        margin: 0.8rem 0 !important;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
+        position: relative !important;
+    }}
+    div[data-testid="stBlock"] > div::before {{
+        content: '' !important;
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        height: 4px !important;
+        background-color: {border_color} !important;
+        width: {progress_percentage * 100}% !important;
+        border-radius: 12px 12px 0 0 !important;
+        transition: width 0.1s ease !important;
+    }}
+"""
+
+    ):
+        # Create columns for message content and close button
+        col1, col2 = st.columns([0.9, 0.1])
+        
+        with col1:
+            # Display message with icon and colored text
+            st.markdown(
+                f'<div style="color: {text_color}; font-weight: 600; font-size: 18px; display: flex; align-items: center; gap: 8px;">'
+                f'<span>{icon}</span>'
+                f'<span>{message_text}</span>'
+                f'</div>',
+                unsafe_allow_html=True
+            )
+            
+            # Show progress bar for remaining time
+            if remaining_time > 0:
+                st.progress(progress_percentage, text=f"Auto-dismiss in {int(remaining_time)}s")
+        
+        with col2:
+            # Close button with custom styling
+            with stylable_container(
+                key=f"close_btn_{container_class}",
+                css_styles=f"""
+                button {{
+                    background-color: {border_color} !important;
+                    color: white !important;
+                    border: none !important;
+                    border-radius: 50% !important;
+                    width: 30px !important;
+                    height: 30px !important;
+                    font-size: 16px !important;
+                    font-weight: bold !important;
+                    cursor: pointer !important;
+                    display: flex !important;
+                    align-items: center !important;
+                    justify-content: center !important;
+                    margin-top: 8px !important;
+                    
+                }}
+                button:hover {{
+                    opacity: 0.8 !important;
+                    transform: scale(1.05) !important;
+                }}
+                """
+            ):
+                if st.button("✕", key="close_global_message", help="Close message"):
+                    clear_global_error()
+                    st.rerun()
+    
+    # Auto-refresh to update progress and remove expired message
+    if remaining_time > 0:
+        time.sleep(0.1)
+        st.rerun()
+
+
 def generate_session_id():
     """Generate a unique session ID for the user"""
     return str(uuid.uuid4())
@@ -168,7 +320,7 @@ def show_validation_popup(missing_tab_name, missing_fields=None):
             top: 0 !important;
             left: 0 !important;
             width: 100vw !important;
-            height: 100vh !important;
+            height: 180vh !important;
             background: rgba(0, 0, 0, 0.4) !important;
             z-index: -1 !important;
         }
@@ -349,9 +501,11 @@ def refresh_all_data():
 
 def validate_seller_mandatory_fields():
     """Validate seller mandatory fields"""
-    # Add your seller validation logic here
-    # For now, returning True as placeholder
-    return True
+    seller = st.session_state.seller_data_from_tab
+
+    # Ensure both fields are non-empty after stripping whitespace
+    return seller is not None and bool(seller.seller_enterprise_name.strip()) and bool(seller.seller_enterprise_details_content.strip())
+
 
 def validate_project_mandatory_fields():
     """Validate project specification mandatory fields"""
@@ -401,46 +555,133 @@ def is_tab_accessible(tab_index):
                 validate_seller_mandatory_fields() and 
                 validate_project_mandatory_fields())
     return False
+import streamlit as st
+
+# @st.dialog("Confirm Tab Lock", width="small")
+# def show_lock_confirmation_popup(tab_index):
+#     """Show confirmation dialog for locking a tab using st.dialog"""
+#     tab_names = ["Client Information", "Seller Information", "Project Specifications", "Generate Proposal"]
+    
+#     # Ensure tab_index is an integer
+#     if isinstance(tab_index, str):
+#         tab_index = int(tab_index)
+    
+#     # # Custom CSS for the dialog content
+#     st.markdown("""
+#     <style>
+#     .dialog-content {
+#         text-align: center;
+#         padding: 0px 20px;
+#         display: flex;
+#         flex-direction: column;
+#         align-items: center;
+#         justify-content: center;
+#     }
+    
+#     .dialog-icon {
+#         font-size: 44px;
+#         margin-bottom: 25px;
+#         display: block;
+#         width: 100%;
+#         text-align: center;
+#     }
+#                     </style>
+#     """, unsafe_allow_html=True)
+    
+#     # .dialog-message {
+#     #     font-size: 18px;
+#     #     color: #2d3748;
+#     #     margin-bottom: 15px;
+#     #     text-align: center;
+#     #     line-height: 1.5;
+#     # }
+    
+#     # .dialog-sub-message {
+#     #     font-size: 14px;
+#     #     color: #718096;
+#     #     margin-bottom: 30px;
+#     #     text-align: center;
+#     #     line-height: 1.4;
+#     # }
+
+#     st.markdown('<div class="dialog-icon">⚠️</div>', unsafe_allow_html=True)
+#     st.markdown(f'<div class="dialog-message">Are you sure you want to lock the <strong>{tab_names[tab_index]}</strong> tab?</div>', unsafe_allow_html=True)
+#     st.markdown('<div class="dialog-sub-message">You won\'t be able to modify this tab once it\'s locked.</div>', unsafe_allow_html=True)
+#     st.markdown("")
+#     # Create button columns
+#     col1, col2 = st.columns(2)
+    
+#     with col1:
+#         if st.button("Cancel", key=f"cancel_lock_{tab_index}", use_container_width=True,type  = 'primary'):
+#             # Clear confirmation state and close dialog
+#             if f"show_confirmation_{tab_index}" in st.session_state:
+#                 del st.session_state[f"show_confirmation_{tab_index}"]
+#             st.rerun()
+    
+#     with col2:
+#         if st.button("Lock & Continue", key=f"confirm_lock_{tab_index}", type="secondary", use_container_width=True):
+#             # Clear confirmation state
+#             if f"show_confirmation_{tab_index}" in st.session_state:
+#                 del st.session_state[f"show_confirmation_{tab_index}"]
+            
+#             # Initialize locked_tabs if it doesn't exist
+#             if not hasattr(st.session_state, 'locked_tabs'):
+#                 st.session_state.locked_tabs = set()
+            
+#             # Lock the current tab
+#             st.session_state.locked_tabs.add(tab_index)
+            
+#             # Move to next tab
+#             st.session_state.active_tab = tab_index + 1
+            
+#             # Initialize and update highest_reached_tab
+#             if not hasattr(st.session_state, 'highest_reached_tab'):
+#                 st.session_state.highest_reached_tab = 0
+#             st.session_state.highest_reached_tab = max(st.session_state.highest_reached_tab, st.session_state.active_tab)
+            
+#             st.rerun()
+
+#     return True
 def show_lock_confirmation_popup(tab_index):
     """Show compact popup-style confirmation dialog for locking a tab"""
     tab_names = ["Client Information", "Seller Information", "Project Specifications", "Generate Proposal"]
-    st.markdown("")
-    st.markdown("")
-    st.markdown("")
+    for i in range(5):
+        st.markdown(" ")
     # Create compact popup modal
     with stylable_container(
-        f"confirmation_popup_{tab_index}",
-        css_styles="""
-        div[data-testid="stBlock"] {
-            position: fixed !important;
-            top: 75% !important;
-            left: 50% !important;
-            transform: translate(-50%, -50%) !important;
-            z-index: 9999 !important;
-            background: white !important;
-            border: 2px solid #e74c3c !important;
-            border-radius: 8px !important;
-            padding: 20px !important;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15) !important;
-            width: 60px !important;
-            height: 180px !important;
-            max-width: 90vw !important;
-            display: flex !important;
-            flex-direction: column !important;
-            justify-content: space-between !important;
-        }
-        div[data-testid="stBlock"]:before {
-            content: '' !important;
-            position: fixed !important;
-            top: 0 !important;
-            left: 0 !important;
-            width: 100vw !important;
-            height: 100vh !important;
-            background: rgba(0, 0, 0, 0.4) !important;
-            z-index: -1 !important;
-        }
-        """,
-    ):
+    f"confirmation_popup_{tab_index}",
+    css_styles="""
+    div[data-testid="stBlock"] {
+        position: fixed !important;
+        top: 75% !important;
+        left: 50% !important;
+        transform: translate(-50%, -50%) !important;
+        z-index: 9999 !important;
+        background: white !important;
+        border: 7px solid #e74c3c !important;
+        border-radius: 10px !important;
+        padding: 20px !important;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3) !important;
+        width: 60px !important;
+        height: 180px !important;
+        max-width: 90vw !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
+    }
+    div[data-testid="stBlock"]:before {
+        content: '' !important;
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        background: rgba(0, 0, 0, 0.4) !important;
+        z-index: -1 !important;
+    }
+    """
+):
+
         # Text message
         st.markdown(
     """
@@ -562,6 +803,35 @@ def navigate_to_next_tab():
     st.session_state[confirmation_key] = True
     st.rerun()
 
+def navigate_to_next_tab():
+    """Navigate to the next tab with validation and locking"""
+    current_tab = st.session_state.active_tab
+    
+    # Get validation function for current tab
+    validation_func = get_validation_function(current_tab)
+    
+    if not validation_func():
+        tab_names = ["Client Information", "Seller Information", "Project Specifications", "Generate Proposal"]
+        show_validation_popup(tab_names[current_tab])
+        return
+    
+    # If tab is already locked, just navigate
+    if current_tab in st.session_state.locked_tabs:
+        if current_tab < 3:
+            st.session_state.active_tab = current_tab + 1
+            st.session_state.highest_reached_tab = max(st.session_state.highest_reached_tab, st.session_state.active_tab)
+            st.rerun()
+        return
+    
+    # If this is the last tab, don't show confirmation
+    if current_tab >= 3:
+        return
+    
+    # Show confirmation dialog
+    confirmation_key = f"show_confirmation_{current_tab}"
+    st.session_state[confirmation_key] = True
+    st.rerun()
+
 def navigate_to_previous_tab():
     """Navigate to the previous tab"""
     if st.session_state.active_tab > 0:
@@ -602,6 +872,158 @@ logger = setup_logging()
         
 from main_css import *
 st.markdown(app_css, unsafe_allow_html=True)
+content_area_css = """
+<style>
+/* More aggressive targeting for Streamlit's structure */
+.stApp > div:first-child > div:first-child > div:first-child {
+    background-color: #f7f7f7 !important;
+}
+
+/* Target the main content area */
+.main {
+    background-color: #f7f7f7 !important;
+}
+
+/* Primary targeting for block container with full height and width control */
+[data-testid="block-container"] {
+    background-color: #f7f7f7 !important;
+    padding: 2rem !important;
+    border-radius: 8px !important;
+    margin-top: 1rem !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    width: 80% !important;
+    max-width: 80% !important;
+    min-height: 110vh !important;
+    height: auto !important;
+    padding-bottom: 5rem !important;
+}
+
+/* Alternative targeting for older Streamlit versions */
+.block-container {
+    background-color: #f7f7f7 !important;
+    padding: 2rem !important;
+    border-radius: 8px !important;
+    margin-top: 1rem !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    width: 80% !important;
+    max-width: 80% !important;
+    min-height: 110vh !important;
+    height: auto !important;
+    padding-bottom: 5rem !important;
+}
+
+/* Target the element that contains your tab content */
+.stApp .main .block-container {
+    background-color: #f7f7f7 !important;
+    padding: 2rem !important;
+    border-radius: 8px !important;
+    margin-top: 1rem !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    width: 80% !important;
+    max-width: 80% !important;
+    min-height: 110vh !important;
+    height: auto !important;
+    padding-bottom: 5rem !important;
+}
+
+/* Ensure the main container expands to content */
+.main > div {
+    min-height: 110vh !important;
+    height: auto !important;
+}
+
+/* Target specific Streamlit containers that might override height */
+div[data-testid="stVerticalBlock"] {
+    min-height: inherit !important;
+    height: auto !important;
+}
+
+/* Ensure tabs container has proper height */
+.stTabs [data-baseweb="tab-panel"] {
+    min-height: 110vh !important;
+    height: auto !important;
+    padding-bottom: 3rem !important;
+}
+
+/* Style form elements */
+.stSelectbox > div,
+.stTextInput > div,
+.stTextArea > div,
+.stNumberInput > div,
+.stDateInput > div,
+.stTimeInput > div {
+    background-color: white !important;
+    border-radius: 4px !important;
+}
+
+/* Style expander containers */
+.streamlit-expanderHeader,
+.streamlit-expanderContent {
+    background-color: rgba(255, 255, 255, 0.9) !important;
+    border-radius: 4px !important;
+}
+
+/* Style metric containers */
+[data-testid="metric-container"] {
+    background-color: rgba(255, 255, 255, 0.9) !important;
+    border-radius: 4px !important;
+    padding: 8px !important;
+}
+
+/* Additional fallback for main content area */
+section[data-testid="stSidebar"] ~ div {
+    background-color: #f7f7f7 !important;
+    width: 80% !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    min-height: 110vh !important;
+    height: auto !important;
+}
+
+/* Ensure columns maintain proper height */
+div[data-testid="column"] {
+    min-height: inherit !important;
+    height: auto !important;
+}
+
+/* Expand entire app area */
+.stApp {
+    min-height: 110vh !important;
+    height: auto !important;
+}
+
+/* Media queries */
+@media screen and (min-height: 800px) {
+    [data-testid="block-container"],
+    .block-container,
+    .stApp .main .block-container {
+        min-height: 110vh !important;
+    }
+}
+
+@media screen and (min-height: 1100px) {
+    [data-testid="block-container"],
+    .block-container,
+    .stApp .main .block-container {
+        min-height: 150vh !important;
+    }
+}
+</style>
+"""
+st.markdown(content_area_css,unsafe_allow_html=True)
+
+# Add title - place this after your CSS but before the tab buttons
+st.markdown("""
+    <div style="text-align: center; margin-bottom: 30px;">
+        <h1 style="color: #2c3e50; font-size: 48px; font-weight: bold; margin: 0; text-shadow: 2px 2px 4px rgba(0,0,0,0.1);">
+            CoXprt
+        </h1>
+    </div>
+""", unsafe_allow_html=True)
+# Add this CSS after your existing st.markdown(app_css, unsafe_allow_html=True)
 
 # Initialize session state for active tab - ENSURE CLIENT TAB IS DEFAULT
 if 'active_tab' not in st.session_state:
@@ -697,6 +1119,9 @@ for i, tab_name in enumerate(tab_names):
             ):
                 st.button(display_name, key=f"tab_{i}", use_container_width=True, disabled=False)
 
+
+display_global_message()
+
 # Handle confirmation dialogs - POPUP STYLE
 current_tab = st.session_state.active_tab
 confirmation_key = f"show_confirmation_{current_tab}"
@@ -705,12 +1130,67 @@ if confirmation_key in st.session_state and st.session_state[confirmation_key]:
     show_lock_confirmation_popup(current_tab)
     st.stop()  # Stop execution to show only the popup
 
+
 # Set is_active flag for current tab
 st.session_state.is_active = True
 
 # Show lock status message for locked tabs
 if is_tab_locked(current_tab):
     st.info(f"🔒 This tab is locked. You cannot modify the data in this tab.")
+
+
+st.markdown("""
+                    <style>
+                    /* Force override all button styling */
+                    button[kind="secondary"] {
+                        height: 48px !important;
+                        border: 2.2px solid #618f8f !important;
+                        border-radius: 4px !important;
+                        margin-top: -5px !important;  /* Move button up */
+                        transform: translateY(-3px) !important;  /* Additional upward adjustment */
+                        background-color: #4a4a4a !important;  /* Dark greyish background */
+                        color: white !important;  /* White text */
+                    }
+                     
+                    button[kind="secondary"]:hover {
+                        border: 2.2px solid #618f8f !important;
+                        transform: translateY(-3px) !important;  /* Keep position on hover */
+                        background-color: #5a5a5a !important;  /* Slightly lighter on hover */
+                        color: white !important;  /* Keep white text on hover */
+                    }
+                     
+                    button[kind="secondary"]:focus {
+                        border: 2.2px solid #618f8f !important;
+                        outline: 2px solid #618f8f !important;
+                        transform: translateY(-3px) !important;  /* Keep position on focus */
+                        background-color: #4a4a4a !important;  /* Keep dark background on focus */
+                        color: white !important;  /* Keep white text on focus */
+                    }
+                     
+                    /* Try targeting by data attributes */
+                    [data-testid] button {
+                        border: 2.2px solid #618f8f !important;
+                        height: 48px !important;
+                        margin-top: -5px !important;  /* Move button up */
+                        transform: translateY(-2.5px) !important;  /* Additional upward adjustment */
+                        background-color: #4a4a4a !important;  /* Dark greyish background */
+                        color: white !important;  /* White text */
+                    }
+                    
+                    /* Additional targeting for button text specifically */
+                    button[kind="secondary"] p,
+                    button[kind="secondary"] span,
+                    button[kind="secondary"] div {
+                        color: white !important;
+                    }
+                    
+                    [data-testid] button p,
+                    [data-testid] button span,
+                    [data-testid] button div {
+                        color: white !important;
+                    }
+                    </style>
+                    """, unsafe_allow_html=True)  
 
 # Content area with validation-aware tab switching
 if st.session_state.active_tab == 0:

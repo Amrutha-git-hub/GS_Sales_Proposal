@@ -7,6 +7,7 @@ from ProjectSpecification.proj_spec_css import proj_spec_css
 from Common_Utils.ai_suggestion_utils import render_two_column_selector
 from Recommendation.recommendation_utils import get_ai_proj_sepc_recommendations
 from Recommendation.prompts import *
+from Common_Utils.common_utils import *
 
 # Initialize session state for async results
 def init_async_session_state():
@@ -209,6 +210,7 @@ def get_section_data(section_name):
         return {}
 
 def proj_specification_tab(client_data, seller_data,is_locked):
+
     # Initialize async session state
     init_async_session_state()
     
@@ -223,8 +225,165 @@ def proj_specification_tab(client_data, seller_data,is_locked):
         time.sleep(1)
         st.rerun()
         return None  # Don't render the main content yet
+
     
     # Main content - only shown after loading is complete
+    content_area_css = """
+            <style>
+            /* More aggressive targeting for Streamlit's structure */
+            .stApp > div:first-child > div:first-child > div:first-child {
+                background-color: #f7f7f7 !important;
+            }
+
+            /* Target the main content area */
+            .main {
+                background-color: #f7f7f7 !important;
+            }
+
+            /* Primary targeting for block container with full height and width control */
+            [data-testid="block-container"] {
+                background-color: #f7f7f7 !important;
+                padding: 2rem !important;
+                border-radius: 8px !important;
+                margin-top: 1rem !important;
+                margin-left: auto !important;
+                margin-right: auto !important;
+                width: 80% !important;
+                max-width: 80% !important;
+                min-height: 250vh !important;
+                height: auto !important;
+                padding-bottom: 5rem !important; /* Extra padding at bottom */
+            }
+
+            /* Alternative targeting for older Streamlit versions */
+            .block-container {
+                background-color: #f7f7f7 !important;
+                padding: 2rem !important;
+                border-radius: 8px !important;
+                margin-top: 1rem !important;
+                margin-left: auto !important;
+                margin-right: auto !important;
+                width: 80% !important;
+                max-width: 80% !important;
+                min-height: 250vh !important;
+                height: auto !important;
+                padding-bottom: 5rem !important;
+            }
+
+            /* Target the element that contains your tab content */
+            .stApp .main .block-container {
+                background-color: #f7f7f7 !important;
+                padding: 2rem !important;
+                border-radius: 8px !important;
+                margin-top: 1rem !important;
+                margin-left: auto !important;
+                margin-right: auto !important;
+                width: 80% !important;
+                max-width: 80% !important;
+                min-height: 250vh !important;
+                height: auto !important;
+                padding-bottom: 5rem !important;
+            }
+
+            /* Ensure the main container expands to content */
+            .main > div {
+                min-height: 250vh !important;
+                height: auto !important;
+            }
+
+            /* Target specific Streamlit containers that might override height */
+            div[data-testid="stVerticalBlock"] {
+                min-height: inherit !important;
+                height: auto !important;
+            }
+
+            /* Ensure tabs container has proper height */
+            .stTabs [data-baseweb="tab-panel"] {
+                min-height: 80vh !important;
+                height: auto !important;
+                padding-bottom: 3rem !important;
+            }
+
+            /* Style form elements to stand out on the background */
+            .stSelectbox > div,
+            .stTextInput > div,
+            .stTextArea > div,
+            .stNumberInput > div,
+            .stDateInput > div,
+            .stTimeInput > div {
+                background-color: white !important;
+                border-radius: 4px !important;
+            }
+
+            /* Style expander containers */
+            .streamlit-expanderHeader,
+            .streamlit-expanderContent {
+                background-color: rgba(255, 255, 255, 0.9) !important;
+                border-radius: 4px !important;
+            }
+
+            /* Style metric containers */
+            [data-testid="metric-container"] {
+                background-color: rgba(255, 255, 255, 0.9) !important;
+                border-radius: 4px !important;
+                padding: 8px !important;
+            }
+
+            /* Additional fallback for main content area */
+            section[data-testid="stSidebar"] ~ div {
+                background-color: #f7f7f7 !important;
+                width: 80% !important;
+                margin-left: auto !important;
+                margin-right: auto !important;
+                min-height: 250vh !important;
+                height: auto !important;
+            }
+
+            /* Ensure columns maintain proper height */
+            div[data-testid="column"] {
+                min-height: inherit !important;
+                height: auto !important;
+            }
+
+            /* Additional height coverage for dynamic content */
+            .stApp {
+                min-height: 250vh !important;
+                height: auto !important;
+            }
+
+            /* Fallback for very long content */
+            @media screen and (min-height: 800px) {
+                [data-testid="block-container"] {
+                    min-height: 250vh !important;
+                }
+                
+                .block-container {
+                    min-height: 250vh !important;
+                }
+                
+                .stApp .main .block-container {
+                    min-height: 250vh !important;
+                }
+            }
+
+            /* For extra long content (like many form fields) */
+            @media screen and (min-height: 1200px) {
+                [data-testid="block-container"] {
+                    min-height: 150vh !important;
+                }
+                
+                .block-container {
+                    min-height: 150vh !important;
+                }
+                
+                .stApp .main .block-container {
+                    min-height: 150vh !important;
+                }
+            }
+            </style>
+            """
+
+    st.markdown(content_area_css, unsafe_allow_html=True)
     st.markdown(proj_spec_css, unsafe_allow_html=True)
     st.markdown("""
         <style>
@@ -277,8 +436,7 @@ def proj_specification_tab(client_data, seller_data,is_locked):
         </style>
     """, unsafe_allow_html=True)
     
-    # Success message
-    st.success("✅ AI Analysis Complete! Your personalized project specification is ready.")
+
     
     # Section 1: Scope of Work
     scope_data = get_section_data('scope')

@@ -5,6 +5,7 @@ import streamlit as st
 import pandas as pd
 from typing import List
 import os
+from datetime import datetime
 
 from Search.WebsiteUrl_Agent.agent_runner import get_urls
 import asyncio 
@@ -239,3 +240,18 @@ def save_uploaded_file_and_get_path(uploaded_file):
         return file_path
     return None
 
+def set_global_message(message, message_type="info", duration=10):
+    """
+    Set a global message to be displayed
+    
+    Args:
+        message (str): The message text to display
+        message_type (str): Type of message - "error", "warning", "info", "success"
+        duration (int): Duration in seconds before auto-dismiss (default: 10)
+    """
+    st.session_state.global_message = {
+        'message': message,
+        'type': message_type,
+        'timestamp': datetime.now(),
+        'duration': duration
+    }

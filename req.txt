@@ -1,0 +1,31 @@
+# Core Utilities
+requests==2.32.3
+python-dotenv==1.1.0
+pyyaml==6.0.2
+
+# PDF Processing
+pypdf==5.6.0
+pdf2image==1.17.0
+weasyprint==65.1
+python-docx==1.2.0
+docx2txt==0.9
+
+# Web Scraping
+beautifulsoup4==4.13.4
+playwright==1.52.0
+lxml==5.4.0
+pyperclip==1.9.0  # For clipboard operations, often used in scraping scripts
+
+# LangChain and Chroma
+langchain==0.3.25
+langchain-community==0.3.25
+langchain-core==0.3.65
+langchain-text-splitters==0.3.8
+langchain-chroma==0.2.4
+langgraph==0.4.8
+chromadb==1.0.12
+sentence-transformers==4.1.0  # For embeddings in Chroma
+numpy==2.2.5  # Required by chromadb and sentence-transformers
+pydantic==2.11.4  # Required by langchain and chromadb
+fastapi==0.115.9  # Often used with langchain for APIs
+uvicorn==0.34.2  # ASGI server for fastapi
