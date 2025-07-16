@@ -29,3 +29,10 @@ numpy==2.2.5  # Required by chromadb and sentence-transformers
 pydantic==2.11.4  # Required by langchain and chromadb
 fastapi==0.115.9  # Often used with langchain for APIs
 uvicorn==0.34.2  # ASGI server for fastapi
+
+google-adk==0.5.0
+google-ai-generativelanguage==0.6.15
+google-genai==1.15.0
+google-generativeai==0.8.5
+
+

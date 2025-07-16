@@ -8,7 +8,7 @@ from Search.Linkedin.linkedin_serp import *
 from Recommendation.recommendation_utils import *
 from Common_Utils.ai_suggestion_utils import *
 from WebScraper.webscraper_without_ai import get_url_details_without_ai
-from Common_Utils.common_utils import set_global_message
+from Common_Utils.common_utils import set_global_message,get_data
 
 # Configure logger
 logger = logging.getLogger(__name__)
@@ -179,7 +179,7 @@ def seller_tab(is_locked):
                                                     height: 48px !important;
                                                     border: 2.2px solid #618f8f !important;
                                                     border-radius: 12px !important;
-                                                    background-color: #4a4a4a !important;  /* Dark greyish background */
+                                                    background-color: #edf2f1 !important;  /* Dark greyish background */
                                                     color: white !important;  /* White text */
                         transform: translateY(-5px);
                                                 }
@@ -194,7 +194,7 @@ def seller_tab(is_locked):
                                                 button[kind="secondary"]:focus {
                                                     border: 2.2px solid #618f8f !important;
                                                     outline: 2px solid #618f8f !important;
-                                                    background-color: #4a4a4a !important;  /* Keep dark background on focus */
+                                                    background-color: #edf2f1 !important;  /* Keep dark background on focus */
                                                     color: white !important;  /* Keep white text on focus */
                         transform: translateY(-5px);
                                                 }
@@ -203,7 +203,7 @@ def seller_tab(is_locked):
                                                 [data-testid] button {
                                                     border: 2.2px solid #618f8f !important;
                                                     height: 48px !important;
-                                                    background-color: #4a4a4a !important;  /* Dark greyish background */
+                                                    background-color: #edf2f1 !important;  /* Dark greyish background */
                                                     color: white !important;  /* White text */
                                                 }
 

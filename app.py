@@ -5,7 +5,7 @@ from Client.client import client_tab,validate_client_mandatory_fields
 from Seller.seller import seller_tab
 from ProjectSpecification.project_spec import proj_specification_tab
 from Generate_proposal.proposal_generator import generate_tab
-from Client.client_dataclass import ClientData
+from Client.client_dataclass import ClientTabState
 from Seller.seller import SellerTabState
 import os
 from datetime import datetime
@@ -32,137 +32,40 @@ def is_message_expired():
     elapsed_time = (datetime.now() - message_data['timestamp']).total_seconds()
     return elapsed_time > message_data['duration']
 
+import streamlit as st
+from datetime import datetime
+import time
+
 def display_global_message():
-    """Display the global message under the tabs if it exists and hasn't expired"""
+    """Display the global message using st.toast if it exists and hasn't expired."""
     if 'global_message' not in st.session_state:
         return
     
-
-    # Check if message has expired
-    if is_message_expired():
+    message_data = st.session_state.global_message
+    
+    # Check if message is older than 15 seconds
+    elapsed_time = (datetime.now() - message_data['timestamp']).total_seconds()
+    if elapsed_time > 15:
         clear_global_error()
         return
     
-    message_data = st.session_state.global_message
     message_type = message_data['type']
     message_text = message_data['message']
     
-    # Define styling and colors based on message type
-    if message_type == "error":
-        bg_color = "#fef2f2"
-        border_color = "#ef4444"
-        text_color = "#dc2626"
-        icon = '<img src="https://e7.pngegg.com/pngimages/144/379/png-clipart-computer-icons-red-alert-angle-text-thumbnail.png" style="width: 20px; height: 20px; margin-right: 5px;">'
-        container_class = "error_message"
-    elif message_type == "warning":
-        bg_color = "#fffbeb"
-        border_color = "#f59e0b"
-        text_color = "#d97706"
-        icon = "⚠️"
-        container_class = "warning_message"
-    elif message_type == "info":
-        bg_color = "#eff6ff"
-        border_color = "#3b82f6"
-        text_color = "#2563eb"
-        icon = "ℹ️"
-        container_class = "info_message"
-    elif message_type == "success":
-        bg_color = "#f0fdf4"
-        border_color = "#10b981"
-        text_color = "#059669"
-        icon = "✅"
-        container_class = "success_message"
-    else:
-        bg_color = "#f8fafc"
-        border_color = "#64748b"
-        text_color = "#475569"
-        icon = "📢"
-        container_class = "default_message"
+    # Determine icon based on type
+    icon_map = {
+        "error": "❌",
+        "warning": "⚠️", 
+        "info": "ℹ️",
+        "success": "✅"
+    }
+    icon = icon_map.get(message_type, "📢")
     
-    # Calculate remaining time for progress
-    elapsed_time = (datetime.now() - message_data['timestamp']).total_seconds()
-    remaining_time = max(0, message_data['duration'] - elapsed_time)
-    progress_percentage = remaining_time / message_data['duration']
-    # Create the message container with proper styling
-    st.markdown("")
-    with stylable_container(
-        key=container_class,
-        css_styles=f"""
-    div[data-testid="stBlock"] > div {{
-        background-color: {bg_color} !important;
-        border: 2px solid {border_color} !important;
-        border-radius: 12px !important;
-        padding: 1.2rem 1.2rem 0 1.2rem !important;
-        margin: 0.8rem 0 !important;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
-        position: relative !important;
-    }}
-    div[data-testid="stBlock"] > div::before {{
-        content: '' !important;
-        position: absolute !important;
-        top: 0 !important;
-        left: 0 !important;
-        height: 4px !important;
-        background-color: {border_color} !important;
-        width: {progress_percentage * 100}% !important;
-        border-radius: 12px 12px 0 0 !important;
-        transition: width 0.1s ease !important;
-    }}
-"""
-
-    ):
-        # Create columns for message content and close button
-        col1, col2 = st.columns([0.9, 0.1])
-        
-        with col1:
-            # Display message with icon and colored text
-            st.markdown(
-                f'<div style="color: {text_color}; font-weight: 600; font-size: 18px; display: flex; align-items: center; gap: 8px;">'
-                f'<span>{icon}</span>'
-                f'<span>{message_text}</span>'
-                f'</div>',
-                unsafe_allow_html=True
-            )
-            
-            # Show progress bar for remaining time
-            if remaining_time > 0:
-                st.progress(progress_percentage, text=f"Auto-dismiss in {int(remaining_time)}s")
-        
-        with col2:
-            # Close button with custom styling
-            with stylable_container(
-                key=f"close_btn_{container_class}",
-                css_styles=f"""
-                button {{
-                    background-color: {border_color} !important;
-                    color: white !important;
-                    border: none !important;
-                    border-radius: 50% !important;
-                    width: 30px !important;
-                    height: 30px !important;
-                    font-size: 16px !important;
-                    font-weight: bold !important;
-                    cursor: pointer !important;
-                    display: flex !important;
-                    align-items: center !important;
-                    justify-content: center !important;
-                    margin-top: 8px !important;
-                    
-                }}
-                button:hover {{
-                    opacity: 0.8 !important;
-                    transform: scale(1.05) !important;
-                }}
-                """
-            ):
-                if st.button("✕", key="close_global_message", help="Close message"):
-                    clear_global_error()
-                    st.rerun()
+    # Show the toast
+    st.toast(f"{icon} {message_text}", icon=icon)
     
-    # Auto-refresh to update progress and remove expired message
-    if remaining_time > 0:
-        time.sleep(0.1)
-        st.rerun()
+    # Clear the message after showing it
+    clear_global_error()
 
 
 def generate_session_id():
@@ -305,7 +208,7 @@ def show_validation_popup(missing_tab_name, missing_fields=None):
             left: 50% !important;
             transform: translateX(-50%) !important;
             z-index: 9999 !important;
-            background: white !important;
+            background: black !important;
             border: 1px solid #ddd !important;
             border-radius: 12px !important;
             padding: 30px !important;
@@ -380,7 +283,7 @@ def show_validation_popup(missing_tab_name, missing_fields=None):
                 css_styles="""
                 button {
                     background-color: #f56565 !important;
-                    color: white !important;
+                    color: black !important;
                     border: 1px solid #f56565 !important;
                     border-radius: 6px !important;
                     padding: 10px 20px !important;
@@ -503,7 +406,7 @@ def validate_seller_mandatory_fields():
     """Validate seller mandatory fields"""
     seller = st.session_state.seller_data_from_tab
 
-    # Ensure both fields are non-empty after stripping whitespace
+    # Ensure both fields are non-empty after stripping blackspace
     return seller is not None and bool(seller.seller_enterprise_name.strip()) and bool(seller.seller_enterprise_details_content.strip())
 
 
@@ -657,7 +560,7 @@ def show_lock_confirmation_popup(tab_index):
         left: 50% !important;
         transform: translate(-50%, -50%) !important;
         z-index: 9999 !important;
-        background: white !important;
+        background: black !important;
         border: 7px solid #e74c3c !important;
         border-radius: 10px !important;
         padding: 20px !important;
@@ -746,7 +649,7 @@ display: block !important;
             css_styles="""
             button {
                 background-color: #e74c3c !important;
-                color: white !important;
+                color: black !important;
                 border: 1px solid #e74c3c !important;
                 border-radius: 6px !important;
                 padding: 8px 16px !important;
@@ -872,144 +775,52 @@ logger = setup_logging()
         
 from main_css import *
 st.markdown(app_css, unsafe_allow_html=True)
+# st.markdown("""
+# <style>
+# /* Hide the default Streamlit scrollbar */
+# .main .block-container {
+#     max-height: none;
+#     overflow: visible;
+# }
+
+# /* Or alternatively, hide one of the scrollbars */
+# .stApp {
+#     overflow-x: hidden;
+# }
+
+# /* Hide horizontal scrollbar specifically */
+# ::-webkit-scrollbar-horizontal {
+#     display: none;
+# }
+# </style>
+# """, unsafe_allow_html=True)
 content_area_css = """
 <style>
-/* More aggressive targeting for Streamlit's structure */
-.stApp > div:first-child > div:first-child > div:first-child {
-    background-color: #f7f7f7 !important;
-}
-
-/* Target the main content area */
-.main {
-    background-color: #f7f7f7 !important;
-}
-
-/* Primary targeting for block container with full height and width control */
+/* Primary targeting for block container - 75% width grey background */
 [data-testid="block-container"] {
     background-color: #f7f7f7 !important;
-    padding: 2rem !important;
-    border-radius: 8px !important;
-    margin-top: 1rem !important;
+    width: 75% !important;
+    max-width: 75% !important;
     margin-left: auto !important;
     margin-right: auto !important;
-    width: 80% !important;
-    max-width: 80% !important;
-    min-height: 110vh !important;
-    height: auto !important;
-    padding-bottom: 5rem !important;
 }
 
 /* Alternative targeting for older Streamlit versions */
 .block-container {
     background-color: #f7f7f7 !important;
-    padding: 2rem !important;
-    border-radius: 8px !important;
-    margin-top: 1rem !important;
+    width: 75% !important;
+    max-width: 75% !important;
     margin-left: auto !important;
     margin-right: auto !important;
-    width: 80% !important;
-    max-width: 80% !important;
-    min-height: 110vh !important;
-    height: auto !important;
-    padding-bottom: 5rem !important;
 }
 
 /* Target the element that contains your tab content */
 .stApp .main .block-container {
     background-color: #f7f7f7 !important;
-    padding: 2rem !important;
-    border-radius: 8px !important;
-    margin-top: 1rem !important;
+    width: 75% !important;
+    max-width: 75% !important;
     margin-left: auto !important;
     margin-right: auto !important;
-    width: 80% !important;
-    max-width: 80% !important;
-    min-height: 110vh !important;
-    height: auto !important;
-    padding-bottom: 5rem !important;
-}
-
-/* Ensure the main container expands to content */
-.main > div {
-    min-height: 110vh !important;
-    height: auto !important;
-}
-
-/* Target specific Streamlit containers that might override height */
-div[data-testid="stVerticalBlock"] {
-    min-height: inherit !important;
-    height: auto !important;
-}
-
-/* Ensure tabs container has proper height */
-.stTabs [data-baseweb="tab-panel"] {
-    min-height: 110vh !important;
-    height: auto !important;
-    padding-bottom: 3rem !important;
-}
-
-/* Style form elements */
-.stSelectbox > div,
-.stTextInput > div,
-.stTextArea > div,
-.stNumberInput > div,
-.stDateInput > div,
-.stTimeInput > div {
-    background-color: white !important;
-    border-radius: 4px !important;
-}
-
-/* Style expander containers */
-.streamlit-expanderHeader,
-.streamlit-expanderContent {
-    background-color: rgba(255, 255, 255, 0.9) !important;
-    border-radius: 4px !important;
-}
-
-/* Style metric containers */
-[data-testid="metric-container"] {
-    background-color: rgba(255, 255, 255, 0.9) !important;
-    border-radius: 4px !important;
-    padding: 8px !important;
-}
-
-/* Additional fallback for main content area */
-section[data-testid="stSidebar"] ~ div {
-    background-color: #f7f7f7 !important;
-    width: 80% !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
-    min-height: 110vh !important;
-    height: auto !important;
-}
-
-/* Ensure columns maintain proper height */
-div[data-testid="column"] {
-    min-height: inherit !important;
-    height: auto !important;
-}
-
-/* Expand entire app area */
-.stApp {
-    min-height: 110vh !important;
-    height: auto !important;
-}
-
-/* Media queries */
-@media screen and (min-height: 800px) {
-    [data-testid="block-container"],
-    .block-container,
-    .stApp .main .block-container {
-        min-height: 110vh !important;
-    }
-}
-
-@media screen and (min-height: 1100px) {
-    [data-testid="block-container"],
-    .block-container,
-    .stApp .main .block-container {
-        min-height: 150vh !important;
-    }
 }
 </style>
 """
@@ -1017,12 +828,18 @@ st.markdown(content_area_css,unsafe_allow_html=True)
 
 # Add title - place this after your CSS but before the tab buttons
 st.markdown("""
-    <div style="text-align: center; margin-bottom: 30px;">
-        <h1 style="color: #2c3e50; font-size: 48px; font-weight: bold; margin: 0; text-shadow: 2px 2px 4px rgba(0,0,0,0.1);">
-            CoXprt
-        </h1>
+    <div style="display: flex; align-items: center; justify-content: center; margin: 0 0 30px 0; padding: 0;">
+        <div style="margin-right: 15px;">
+            <h1 style="color: #2c3e50; font-size: 48px; font-weight: bold; margin: 0; padding: 0; text-shadow: 2px 2px 4px rgba(0,0,0,0.1);">
+                CoXprt
+            </h1>
+        </div>
+        <div>
+            <img src="https://static.wixstatic.com/media/cb6b3d_5c8f2b020ebe48b69bc8c163cc480156~mv2.png/v1/fill/w_60,h_60,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/GrowthSutra%20Logo.png" alt="Logo" style="height: 60px; margin-left: 10px; margin-top: 0;">
+        </div>
     </div>
 """, unsafe_allow_html=True)
+
 # Add this CSS after your existing st.markdown(app_css, unsafe_allow_html=True)
 
 # Initialize session state for active tab - ENSURE CLIENT TAB IS DEFAULT
@@ -1035,7 +852,7 @@ if 'active_tab' not in st.session_state:
 # Tab buttons
 tab_names = ["Client Information", "Seller Information", "Project Specifications", "Generate Proposal"]
 
-# Create tab buttons with stylable containers for #599cd4 active state
+# Create tab buttons with stylable containers for #e3e6e5 active state
 cols = st.columns(4, gap="large")
 for i, tab_name in enumerate(tab_names):
     with cols[i]:
@@ -1049,14 +866,14 @@ for i, tab_name in enumerate(tab_names):
         if is_tab_locked(i):
             display_name = f"🔒 {tab_name}"
         
-        # Use stylable_container to make active tab #599cd4
+        # Use stylable_container to make active tab #e3e6e5
         if is_active and tab_enabled:
             with stylable_container(
                 f"active_tab_{i}",
                 css_styles="""
                 button {
-                    background-color: #599cd4 !important;
-                    color: white !important;
+                    background-color: #e3e6e5 !important;
+                    color: black !important;
                     border: 2px solid #4a8bc2 !important;
                     font-weight: bold !important;
                     transition: all 0.3s ease !important;
@@ -1064,13 +881,13 @@ for i, tab_name in enumerate(tab_names):
                 }
                 button:hover {
                     background-color: #4a8bc2 !important;
-                    color: white !important;
+                    color: black !important;
                     transform: translateY(-2px) !important;
                     box-shadow: 0 6px 12px rgba(89, 156, 212, 0.4) !important;
                 }
                 button:focus {
                     background-color: #3b7ab0 !important;
-                    color: white !important;
+                    color: black !important;
                     outline: none !important;
                 }
                 """,
@@ -1083,14 +900,14 @@ for i, tab_name in enumerate(tab_names):
                 f"inactive_tab_{i}",
                 css_styles="""
                 button {
-                    background-color: #6c757d !important;
-                    color: white !important;
+                    background-color: #edf2f1 !important;
+                    color: black !important;
                     border: 1px solid #5a6268 !important;
                     transition: all 0.3s ease !important;
                 }
                 button:hover {
                     background-color: #5a6268 !important;
-                    color: white !important;
+                    color: black !important;
                     transform: translateY(-1px) !important;
                 }
                 """,
@@ -1104,15 +921,15 @@ for i, tab_name in enumerate(tab_names):
                 f"disabled_tab_{i}",
                 css_styles="""
                 button {
-                    background-color: #6c757d !important;
-                    color: white !important;
+                    background-color: #edf2f1 !important;
+                    color: black !important;
                     border: 1px solid #5a6268 !important;
                     cursor: not-allowed !important;
                     opacity: 1 !important;
                 }
                 button:hover {
-                    background-color: #6c757d !important;
-                    color: white !important;
+                    background-color: #edf2f1 !important;
+                    color: black !important;
                     transform: none !important;
                 }
                 """,
@@ -1148,23 +965,23 @@ st.markdown("""
                         border-radius: 4px !important;
                         margin-top: -5px !important;  /* Move button up */
                         transform: translateY(-3px) !important;  /* Additional upward adjustment */
-                        background-color: #4a4a4a !important;  /* Dark greyish background */
-                        color: white !important;  /* White text */
+                        background-color: #edf2f1 !important;  /* Dark greyish background */
+                        color: black !important;  /* black text */
                     }
                      
                     button[kind="secondary"]:hover {
                         border: 2.2px solid #618f8f !important;
                         transform: translateY(-3px) !important;  /* Keep position on hover */
                         background-color: #5a5a5a !important;  /* Slightly lighter on hover */
-                        color: white !important;  /* Keep white text on hover */
+                        color: black !important;  /* Keep black text on hover */
                     }
                      
                     button[kind="secondary"]:focus {
                         border: 2.2px solid #618f8f !important;
                         outline: 2px solid #618f8f !important;
                         transform: translateY(-3px) !important;  /* Keep position on focus */
-                        background-color: #4a4a4a !important;  /* Keep dark background on focus */
-                        color: white !important;  /* Keep white text on focus */
+                        background-color: #edf2f1 !important;  /* Keep dark background on focus */
+                        color: black !important;  /* Keep black text on focus */
                     }
                      
                     /* Try targeting by data attributes */
@@ -1173,21 +990,21 @@ st.markdown("""
                         height: 48px !important;
                         margin-top: -5px !important;  /* Move button up */
                         transform: translateY(-2.5px) !important;  /* Additional upward adjustment */
-                        background-color: #4a4a4a !important;  /* Dark greyish background */
-                        color: white !important;  /* White text */
+                        background-color: #edf2f1 !important;  /* Dark greyish background */
+                        color: black !important;  /* black text */
                     }
                     
                     /* Additional targeting for button text specifically */
                     button[kind="secondary"] p,
                     button[kind="secondary"] span,
                     button[kind="secondary"] div {
-                        color: white !important;
+                        color: black !important;
                     }
                     
                     [data-testid] button p,
                     [data-testid] button span,
                     [data-testid] button div {
-                        color: white !important;
+                        color: black !important;
                     }
                     </style>
                     """, unsafe_allow_html=True)  
@@ -1259,7 +1076,7 @@ with col1:
             css_styles="""
             button {
                 background-color: #e9ecef !important;
-                color: #6c757d !important;
+                color: #edf2f1 !important;
                 border: 1px solid #dee2e6 !important;
                 cursor: not-allowed !important;
                 opacity: 0.6 !important;
@@ -1273,19 +1090,19 @@ with col1:
             "prev_button",
             css_styles="""
             button {
-                background-color: #6c757d !important;
-                color: white !important;
+                background-color: #edf2f1 !important;
+                color: black !important;
                 border: 1px solid #5a6268 !important;
                 font-weight: bold !important;
                 transition: all 0.3s ease !important;
             }
             button:hover {
                 background-color: #5a6268 !important;
-                color: white !important;
+                color: black !important;
                 transform: translateY(-1px) !important;
             }
             button:active {
-                background-color: #599cd4 !important;
+                background-color: #e3e6e5 !important;
                 border: 2px solid #4a8bc2 !important;
                 transform: translateY(0px) !important;
                 box-shadow: 0 2px 4px rgba(89, 156, 212, 0.4) !important;
@@ -1301,19 +1118,19 @@ with col2:
         "refresh_button",
         css_styles="""
         button {
-            background-color: #6c757d !important;
-            color: white !important;
+            background-color: #edf2f1 !important;
+            color: black !important;
             border: 1px solid #5a6268 !important;
             font-weight: bold !important;
             transition: all 0.3s ease !important;
         }
         button:hover {
             background-color: #5a6268 !important;
-            color: white !important;
+            color: black !important;
             transform: translateY(-1px) !important;
         }
         button:active {
-            background-color: #599cd4 !important;
+            background-color: #e3e6e5 !important;
             border: 2px solid #4a8bc2 !important;
             transform: translateY(0px) !important;
             box-shadow: 0 2px 4px rgba(89, 156, 212, 0.4) !important;
@@ -1334,7 +1151,7 @@ with col3:
             css_styles="""
             button {
                 background-color: #e9ecef !important;
-                color: #6c757d !important;
+                color: #edf2f1 !important;
                 border: 1px solid #dee2e6 !important;
                 cursor: not-allowed !important;
                 opacity: 0.6 !important;
@@ -1348,19 +1165,19 @@ with col3:
             "next_button",
             css_styles="""
             button {
-                background-color: #6c757d !important;
-                color: white !important;
+                background-color: #edf2f1 !important;
+                color: black !important;
                 border: 1px solid #5a6268 !important;
                 font-weight: bold !important;
                 transition: all 0.3s ease !important;
             }
             button:hover {
                 background-color: #5a6268 !important;
-                color: white !important;
+                color: black !important;
                 transform: translateY(-1px) !important;
             }
             button:active {
-                background-color: #599cd4 !important;
+                background-color: #e3e6e5 !important;
                 border: 2px solid #4a8bc2 !important;
                 transform: translateY(0px) !important;
                 box-shadow: 0 2px 4px rgba(89, 156, 212, 0.4) !important;

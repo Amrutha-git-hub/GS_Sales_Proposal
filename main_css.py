@@ -19,14 +19,14 @@ def add_professional_css():
         border-radius: 6px;
         margin-bottom: 1rem;
         text-align: center;
-        color: #599cd4;
+        color: #e3e6e5;
     }
     
     .main-header h1 {
         margin: 0;
         font-size: 1.6rem;
         font-weight: 600;
-        color: #599cd4;
+        color: #e3e6e5;
     }
     
     .main-header p {
@@ -47,7 +47,7 @@ def add_professional_css():
     }
     
     .section-title {
-        color: #599cd4;
+        color: #e3e6e5;
         font-size: 1rem;
         font-weight: 600;
         margin-bottom: 0.6rem;
@@ -65,7 +65,7 @@ def add_professional_css():
     }
     
     .required-asterisk {
-        color: #599cd4;
+        color: #e3e6e5;
         font-weight: bold;
         margin-left: 3px;
     }
@@ -78,7 +78,7 @@ def add_professional_css():
         font-size: 0.85rem;
         transition: all 0.3s ease;
         background: #ffffff;
-        color: #599cd4;
+        color: #e3e6e5;
         height: 2rem;
     }
     
@@ -93,7 +93,7 @@ def add_professional_css():
         border: 1px solid #666666;
         transition: all 0.3s ease;
         background: #ffffff;
-        color: #599cd4;
+        color: #e3e6e5;
         min-height: 2rem;
     }
     
@@ -110,7 +110,7 @@ def add_professional_css():
         font-size: 0.85rem;
         transition: all 0.3s ease;
         background: #ffffff;
-        color: #599cd4;
+        color: #e3e6e5;
     }
     
     .stTextArea > div > div > textarea:focus {
@@ -131,7 +131,7 @@ def add_professional_css():
     }
     
     .stFileUploader > div:hover {
-        border-color: #599cd4;
+        border-color: #e3e6e5;
         background: #ffffff;
     }
     
@@ -146,7 +146,7 @@ def add_professional_css():
         transition: all 0.3s ease;
         display: inline-block;
         font-size: 0.75rem;
-        color: #599cd4;
+        color: #e3e6e5;
         height: 2rem;
         line-height: 1.6rem;
     }
@@ -155,12 +155,12 @@ def add_professional_css():
         background: #ffffff;
         transform: translateY(-1px);
         text-decoration: none;
-        color: #599cd4;
+        color: #e3e6e5;
     }
     
     /* Validation styling - more compact */
     .validation-success {
-        color: #599cd4;
+        color: #e3e6e5;
         font-size: 0.75rem;
         margin-top: 0.2rem;
         display: flex;
@@ -184,7 +184,7 @@ def add_professional_css():
         box-shadow: 0 1px 4px rgba(255,255,255,0.1);
         border: 1px solid #666666;
         background: #ffffff;
-        color: #599cd4;
+        color: #e3e6e5;
     }
     
     /* Info styling - more compact */
@@ -211,18 +211,18 @@ def add_professional_css():
     .css-1d391kg {
         padding-top: 0.8rem;
         background:#ffffff;
-        color: #599cd4;
+        color: #e3e6e5;
     }
     
     /* General dark theme colors */
     .stApp {
         background:#ffffff;
-        color: #599cd4;
+        color: #e3e6e5;
     }
     
     /* Streamlit element colors */
     .stMarkdown {
-        color: #599cd4;
+        color: #e3e6e5;
     }
     
     /* Hide default streamlit styling */
@@ -245,7 +245,7 @@ def add_professional_css():
     }
     
     .column-header {
-        color: #599cd4;
+        color: #e3e6e5;
         font-size: 0.95rem;
         font-weight: 600;
         margin-bottom: 0.6rem;
@@ -275,7 +275,7 @@ def add_professional_css():
     .suggestion-title {
         font-size: 0.8rem;
         font-weight: 500;
-        color: #599cd4;
+        color: #e3e6e5;
     }
     
     .suggestion-added {
@@ -350,7 +350,7 @@ app_css = """
 }
 
 .main-header h1 {
-    color: #599cd4;
+    color: #e3e6e5;
     font-size: 4rem;
     font-weight: 800;
     margin: 0;
@@ -394,7 +394,7 @@ app_css = """
 .separator-diamond {
     width: 8px;
     height: 8px;
-    background: #599cd4;
+    background: #e3e6e5;
     transform: rotate(45deg);
     border-radius: 2px;
     box-shadow: 0 0 15px rgba(89, 156, 212, 0.3);
@@ -429,7 +429,7 @@ app_css = """
 /* Tab styling - Improved modern design */
 .stButton > button {
     background: #2a2a2a !important;
-    color: #599cd4 !important;
+    color: #e3e6e5 !important;
     border: 1px solid #666666 !important;
     font-weight: 600 !important;
     font-size: 1.1rem !important;
@@ -468,7 +468,7 @@ app_css = """
 /* Active tab styling */
 .stButton > button:focus,
 .stButton > button:active {
-    background: #599cd4 !important;
+    background: #e3e6e5 !important;
     color:#ffffff !important;
     border-color: #cccccc !important;
     transform: translateY(-2px) scale(1.03) !important;
@@ -491,7 +491,7 @@ app_css = """
 }
 
 .content-area h2 {
-    color: #599cd4;
+    color: #e3e6e5;
     font-size: 2.5rem;
     margin-bottom: 1.5rem;
     font-weight: 700;
@@ -579,7 +579,7 @@ app_css = """
 /* Refresh Button */
 .footer div[data-testid="column"]:nth-child(1) .stButton > button {
     background: #666666 !important;
-    color: #599cd4 !important;
+    color: #e3e6e5 !important;
     box-shadow: 0 6px 20px rgba(255, 255, 255, 0.1) !important;
 }
 
@@ -591,7 +591,7 @@ app_css = """
 
 /* Generate Presentation Button */
 .footer div[data-testid="column"]:nth-child(2) .stButton > button {
-    background: #599cd4 !important;
+    background: #e3e6e5 !important;
     color:#ffffff !important;
     box-shadow: 0 6px 20px rgba(89, 156, 212, 0.2) !important;
 }
@@ -607,7 +607,7 @@ app_css = """
 .stTextInput > div > div > input,
 .stTextArea > div > div > textarea {
     background: #2a2a2a !important;
-    color: #599cd4 !important;
+    color: #e3e6e5 !important;
     border: 1px solid #666666 !important;
     border-radius: 10px !important;
     font-size: 1.1rem !important;
@@ -637,8 +637,8 @@ app_css = """
 }
 
 .stFileUploader label, .stFileUploader p, .stFileUploader svg {
-    color: #599cd4 !important;
-    fill: #599cd4 !important;
+    color: #e3e6e5 !important;
+    fill: #e3e6e5 !important;
 }
 
 /* Sidebar removal */
@@ -729,7 +729,7 @@ header {visibility: hidden;}
 .metric-value {
     font-size: 2.5rem;
     font-weight: 800;
-    color: #599cd4;
+    color: #e3e6e5;
     margin-bottom: 0.5rem;
 }
 

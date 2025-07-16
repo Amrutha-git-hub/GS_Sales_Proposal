@@ -6,7 +6,7 @@ import os
 from Search.WebsiteUrl_Agent.agent_runner import get_urls
 import asyncio 
 from Common_Utils.pain_points_extractor import *
-from WebScraper.scrape_agent import get_data
+from WebScraper.webscraper_without_ai import get_url_details_without_ai
 
 
 # Function to get URLs (placeholder function)
@@ -28,21 +28,21 @@ def show_field_warning(field_name: str):
     """Show warning message for mandatory fields"""
     st.markdown(f'<div class="field-warning">⚠️ {field_name} is mandatory and cannot be empty!</div>', unsafe_allow_html=True)
 
-def get_url_details(url:str):
-    """Use this if you want to run async function synchronously"""
-    try:
-        # Run the async function synchronously
-        website_details,logo = asyncio.run(get_data(url))
-        return {
-            'website_details': website_details,
-            'logo': logo
-        }
+# def get_url_details(url:str):
+#     """Use this if you want to run async function synchronously"""
+#     try:
+#         # Run the async function synchronously
+#         website_details,logo = asyncio.run(get_data(url))
+#         return {
+#             'website_details': website_details,
+#             'logo': logo
+#         }
         
-    except Exception as e:
-        return {
-            'website_details': "",
-            'logo': ""
-        }
+#     except Exception as e:
+#         return {
+#             'website_details': "",
+#             'logo': ""
+#         }
     
 def save_uploaded_file_and_get_path(file):
     return "saved"
