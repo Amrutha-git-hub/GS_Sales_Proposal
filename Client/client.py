@@ -559,8 +559,8 @@ def doc_upload_section(logger, client_data, is_locked):
         /* File Uploader */
         .stFileUploader > div > div {
             background-color: #f0f5f5 !important;
-            color: #f0f5f5 !important;
-            border: 2px solid #5a9f9f !important;
+            color: black !important;
+            border: 2px solid #ececec !important;
             border-radius: 8px !important;
         }
         
@@ -573,7 +573,7 @@ def doc_upload_section(logger, client_data, is_locked):
             margin: 4px 0 !important;
             display: flex !important;
             align-items: center !important;
-            color: #f0f2f2 !important;
+            color: black !important;
             font-size: 12px !important;
             line-height: 1.2 !important;
             background-color: #f0f5f5 !important;
@@ -619,7 +619,7 @@ def doc_upload_section(logger, client_data, is_locked):
         .stFileUploader section p,
         .stFileUploader [data-testid="fileUploaderFileName"],
         .stFileUploader small {
-            color: #f0f2f2 !important; /* Light grey for uploaded file names and text */
+            color: black !important; /* Light grey for uploaded file names and text */
             font-size: 12px !important;
             line-height: 1.2 !important;
         }
@@ -627,7 +627,7 @@ def doc_upload_section(logger, client_data, is_locked):
         /* File uploader drag and drop area */
         .stFileUploader section {
             background-color: #f0f5f5 !important;
-            border: 2px dashed #5a9f9f !important;
+            border: 2px dashed #ececec !important;
             border-radius: 8px !important;
         }
         
@@ -635,7 +635,7 @@ def doc_upload_section(logger, client_data, is_locked):
         .stFileUploader section div,
         .stFileUploader section span,
         .stFileUploader section small {
-            color: #f0f2f2 !important; /* Light grey for all file uploader text */
+            color: black !important; /* Light grey for all file uploader text */
             font-size: 12px !important;
             line-height: 1.2 !important;
         }
@@ -646,7 +646,7 @@ def doc_upload_section(logger, client_data, is_locked):
         .stFileUploader .uploadedFile,
         .stFileUploader [data-baseweb="file-uploader"] div {
             background-color: #f0f5f5 !important;
-            color: #333333 !important;
+            color: black !important;
         }
         
         /* Override any dark backgrounds in file uploader */
@@ -656,7 +656,7 @@ def doc_upload_section(logger, client_data, is_locked):
         
         /* Make sure the file name text is visible */
         .stFileUploader span, .stFileUploader small {
-            color: #333333 !important;
+            color: black!important;
         }
         </style>
         """, unsafe_allow_html=True)
@@ -899,36 +899,36 @@ def render_client_pain_points_section(logger, client_data, is_locked):
         /* Force override all button styling */
         button[kind="secondary"] {
             height: 48px !important;
-            border: 2.2px solid #618f8f !important;
+            border: 2.2px solid #ececec !important;
             border-radius: 4px !important;
             margin-top: -5px !important;  /* Move button up */
             transform: translateY(-3px) !important;  /* Additional upward adjustment */
-            background-color: #edf2f1 !important;  /* Dark greyish background */
+            background-color: #d3d3d3 !important;  
             color: black !important;  /* black text */
         }
             
         button[kind="secondary"]:hover {
-            border: 2.2px solid #618f8f !important;
+            border: 2.2px solid #ececec !important;
             transform: translateY(-3px) !important;  /* Keep position on hover */
-            background-color: #5a5a5a !important;  /* Slightly lighter on hover */
+            background-color: #d3d3d3 !important;  /* Slightly lighter on hover */
             color: black !important;  /* Keep black text on hover */
         }
             
         button[kind="secondary"]:focus {
-            border: 2.2px solid #618f8f !important;
-            outline: 2px solid #618f8f !important;
+            border: 2.2px solid #ececec !important;
+            outline: 2px solid #ececec !important;
             transform: translateY(-3px) !important;  /* Keep position on focus */
-            background-color: #edf2f1 !important;  /* Keep dark background on focus */
+            background-color: #d3d3d3 !important;  /* Keep dark background on focus */
             color: black !important;  /* Keep black text on focus */
         }
             
         /* Try targeting by data attributes */
         [data-testid] button {
-            border: 2.2px solid #618f8f !important;
+            border: 2.2px solid #ececec !important;
             height: 48px !important;
             margin-top: -5px !important;  /* Move button up */
             transform: translateY(-2.5px) !important;  /* Additional upward adjustment */
-            background-color: #edf2f1 !important;  /* Dark greyish background */
+            background-color: #d3d3d3 !important;  /* Dark greyish background */
             color: black !important;  /* black text */
         }
         
@@ -946,12 +946,6 @@ def render_client_pain_points_section(logger, client_data, is_locked):
         }
         </style>
         """, unsafe_allow_html=True)  
-                                
-                                icon_url = (
-                                    "https://cdn-icons-png.flaticon.com/512/5974/5974627.png"  # ❌ (close)
-                                    if is_selected else
-                                    "home/shreyank/GS/GS_Sales_Proposal/Images/remove.png"         # ➕ (add)
-                                )      
                                 button_text = "❌" if is_selected else "➕"
                                 button_help = f"Remove '{key}' from client requirements" if is_selected else f"Add '{key}' to client requirements section"
                                 button_type = "secondary" 
@@ -1056,13 +1050,13 @@ def render_client_pain_points_section(logger, client_data, is_locked):
                                 # Style the content box based on selection state
                                 if is_selected:
                                     background_color = "#DCEBD6"
-                                    border_color = "#5a9f9f"
+                                    border_color = "#ececec"
                                     text_color = "#000000"
                                     icon = "✅"
                                     box_shadow = "0 2px 8px rgba(76, 175, 80, 0.3)"
                                 else:
                                     background_color = "#f5f5f5"
-                                    border_color = "#5a9f9f"
+                                    border_color = "#ececec"
                                     text_color = "#000000"
                                     icon = "📋"
                                     box_shadow = "0 2px 4px rgba(0,0,0,0.1)"
@@ -1407,7 +1401,6 @@ def render_selected_profile_info(logger, client_data, spoc_name_provided, spoc_l
     except Exception as e:
         logger.error(f"Error in selected profile info section: {str(e)}")
         set_global_message("Profile information section unavailable - Please refresh the page")
-
 @st.fragment
 def render_spoc_name_section(logger, client_data, is_locked):
     """Render the SPOC name input section (left column)"""
@@ -1421,15 +1414,71 @@ def render_spoc_name_section(logger, client_data, is_locked):
         </div>
         ''', unsafe_allow_html=True)
         
-        spoc_name = st.text_input(
-            on_change=lambda : None,
-            label="SPOC Name", 
-            value=client_data.spoc_name,
-            placeholder="Enter SPOC full name...", 
-            key="spoc_name_input",
-            label_visibility="collapsed",
-            disabled=not client_name_provided or is_locked
-        )
+        # Create two columns for SPOC name input and LinkedIn button
+        col1, col2 = st.columns([0.7, 0.3])
+        
+        with col1:
+            spoc_name = st.text_input(
+                on_change=lambda : None,
+                label="SPOC Name", 
+                value=client_data.spoc_name,
+                placeholder="Enter SPOC full name...", 
+                key="spoc_name_input",
+                label_visibility="collapsed",
+                disabled=not client_name_provided or is_locked
+            )
+        
+        with col2:
+            # LinkedIn search button - only enabled when SPOC name is provided
+            linkedin_button_disabled = (not spoc_name or not spoc_name.strip() or 
+                                       not client_name_provided or is_locked)
+            
+            if st.button(
+                "Get LinkedIn",
+                key="get_linkedin_button",
+                disabled=linkedin_button_disabled,
+                help="Search for LinkedIn profiles of the SPOC"
+            ):
+                # Handle LinkedIn profile search when button is clicked
+                try:
+                    set_global_message(f"Searching LinkedIn profiles for {spoc_name}...")
+                    logger.info(f"Searching LinkedIn profiles for SPOC: {spoc_name}")
+                    
+                    # Search for LinkedIn profiles
+                    linkedin_profiles_raw = get_linkedin(spoc_name.strip())
+                    
+                    # Process LinkedIn profiles - handle both list and dict formats
+                    processed_profiles = {}
+                    if linkedin_profiles_raw:
+                        if isinstance(linkedin_profiles_raw, list):
+                            # Handle list format - merge all dictionaries
+                            for profile_dict in linkedin_profiles_raw:
+                                if isinstance(profile_dict, dict):
+                                    processed_profiles.update(profile_dict)
+                        elif isinstance(linkedin_profiles_raw, dict):
+                            # Handle direct dictionary format
+                            processed_profiles = linkedin_profiles_raw
+                        
+                        logger.info(f"Found {len(processed_profiles)} LinkedIn profiles")
+                    else:
+                        set_global_message("No LinkedIn profiles found", "info")
+                        logger.info("No LinkedIn profiles found for SPOC")
+                    
+                    try:
+                        client_state_manager.update_client_data(
+                            linkedin_profiles=processed_profiles,
+                            last_searched_spoc=spoc_name
+                        )
+                        logger.debug("Updated client data with LinkedIn profiles")
+                    except Exception as e:
+                        logger.error(f"Error updating LinkedIn profiles: {str(e)}")
+                        set_global_message("Failed to save LinkedIn profiles - Please try searching again")
+                    
+                    st.rerun()
+                    
+                except Exception as e:
+                    logger.error(f"Error searching LinkedIn profiles: {str(e)}")
+                    set_global_message("LinkedIn search failed - Please try again or check your connection")
         
         # Update client data when SPOC name changes
         if spoc_name != client_data.spoc_name:
@@ -1439,49 +1488,7 @@ def render_spoc_name_section(logger, client_data, is_locked):
             except Exception as e:
                 logger.error(f"Error updating SPOC name: {str(e)}")
                 set_global_message("Failed to save SPOC name - Please try again")
-        
-        # Automatically search for LinkedIn profiles when SPOC name changes
-        if spoc_name and spoc_name.strip() and spoc_name != client_data.last_searched_spoc and client_name_provided:
-            try:
-                set_global_message(f"Searching LinkedIn profiles for {spoc_name}...")
-                logger.info(f"Searching LinkedIn profiles for SPOC: {spoc_name}")
-                
-                # Search for LinkedIn profiles
-                linkedin_profiles_raw = get_linkedin(spoc_name.strip())
-                
-                # Process LinkedIn profiles - handle both list and dict formats
-                processed_profiles = {}
-                if linkedin_profiles_raw:
-                    if isinstance(linkedin_profiles_raw, list):
-                        # Handle list format - merge all dictionaries
-                        for profile_dict in linkedin_profiles_raw:
-                            if isinstance(profile_dict, dict):
-                                processed_profiles.update(profile_dict)
-                    elif isinstance(linkedin_profiles_raw, dict):
-                        # Handle direct dictionary format
-                        processed_profiles = linkedin_profiles_raw
-                    
-                    logger.info(f"Found {len(processed_profiles)} LinkedIn profiles")
-                else:
-                    set_global_message("No LinkedIn profiles found", "info")
-                    logger.info("No LinkedIn profiles found for SPOC")
-                
-                try:
-                    client_state_manager.update_client_data(
-                        linkedin_profiles=processed_profiles,
-                        last_searched_spoc=spoc_name
-                    )
-                    logger.debug("Updated client data with LinkedIn profiles")
-                except Exception as e:
-                    logger.error(f"Error updating LinkedIn profiles: {str(e)}")
-                    set_global_message("Failed to save LinkedIn profiles - Please try searching again")
-                
-                st.rerun()
-                
-            except Exception as e:
-                logger.error(f"Error searching LinkedIn profiles: {str(e)}")
-                set_global_message("LinkedIn search failed - Please try again or check your connection")
-                
+    
     except Exception as e:
         logger.error(f"Error in SPOC name section: {str(e)}")
         set_global_message("SPOC name section unavailable - Please refresh the page")
@@ -1723,7 +1730,13 @@ def render_fourth_section(logger, is_locked, client_data):
 def render_spoc_role_section(spoc_name_provided, spoc_linkedin_profile, client_data, logger, is_locked):
     """Render the SPOC Role selection section"""
     client_name_provided = bool(client_data.enterprise_name and client_data.enterprise_name.strip())
-    
+    st.markdown("""
+    <style>
+    .push-down {
+        transform: translateY(10px);
+    }
+    </style>
+""", unsafe_allow_html=True)
     st.markdown('''
     <div class="tooltip-label">
         SPOC Role 
@@ -1731,6 +1744,13 @@ def render_spoc_role_section(spoc_name_provided, spoc_linkedin_profile, client_d
     </div>
     ''', unsafe_allow_html=True)
 
+    st.markdown("""
+    <style>
+    .push-down {
+        transform: translateY(0.3px);
+    }
+    </style>
+""", unsafe_allow_html=True)
     # Prepare role options for dropdown based on LinkedIn profile selection
     role_options = ["Select a role..."]
     
@@ -1940,40 +1960,57 @@ def render_spoc_business_priorities_section(spoc_name_provided, client_data, log
         with col_add:
             # Style the button to align vertically with the content box
             st.markdown("""
-            <style>
-            /* Force override all button styling for priorities */
-            button[kind="secondary"] {
-                height: 48px !important;
-                border: 2.2px solid #618f8f !important;
-                border-radius: 4px !important;
-                margin-top: -5px !important;
-                transform: translateY(-3px) !important;
-                background-color: #edf2f1 !important;
-                color: black !important;
-            }
-                
-            button[kind="secondary"]:hover {
-                border: 2.2px solid #618f8f !important;
-                transform: translateY(-3px) !important;
-                background-color: #5a5a5a !important;
-                color: black !important;
-            }
-                
-            button[kind="secondary"]:focus {
-                border: 2.2px solid #618f8f !important;
-                outline: 2px solid #618f8f !important;
-                transform: translateY(-3px) !important;
-                background-color: #edf2f1 !important;
-                color: black !important;
-            }
+        <style>
+        /* Force override all button styling */
+        button[kind="secondary"] {
+            height: 48px !important;
+            border: 2.2px solid #ececec !important;
+            border-radius: 4px !important;
+            margin-top: -5px !important;  /* Move button up */
+            transform: translateY(-5px) !important;  /* Additional upward adjustment */
+            background-color: #d3d3d3 !important;  
+            color: black !important;  /* black text */
+        }
             
-            button[kind="secondary"] p,
-            button[kind="secondary"] span,
-            button[kind="secondary"] div {
-                color: black !important;
-            }
-            </style>
-            """, unsafe_allow_html=True)
+        button[kind="secondary"]:hover {
+            border: 2.2px solid #ececec !important;
+            transform: translateY(-5px) !important;  /* Keep position on hover */
+            background-color: #d3d3d3 !important;  /* Slightly lighter on hover */
+            color: black !important;  /* Keep black text on hover */
+        }
+            
+        button[kind="secondary"]:focus {
+            border: 2.2px solid #ececec !important;
+            outline: 2px solid #ececec !important;
+            transform: translateY(-5px) !important;  /* Keep position on focus */
+            background-color: #d3d3d3 !important;  /* Keep dark background on focus */
+            color: black !important;  /* Keep black text on focus */
+        }
+            
+        /* Try targeting by data attributes */
+        [data-testid] button {
+            border: 2.2px solid #ececec !important;
+            height: 48px !important;
+            margin-top: -5px !important;  /* Move button up */
+            transform: translateY(-5px) !important;  /* Additional upward adjustment */
+            background-color: #d3d3d3 !important;  /* Dark greyish background */
+            color: black !important;  /* black text */
+        }
+        
+        /* Additional targeting for button text specifically */
+        button[kind="secondary"] p,
+        button[kind="secondary"] span,
+        button[kind="secondary"] div {
+            color: black !important;
+        }
+        
+        [data-testid] button p,
+        [data-testid] button span,
+        [data-testid] button div {
+            color: black !important;
+        }
+        </style>
+        """, unsafe_allow_html=True) 
             
             button_text = "❌" if is_selected else "➕"
             button_help = f"Remove '{priority_title}' from SPOC priorities" if is_selected else f"Add '{priority_title}' to SPOC priorities"
@@ -2022,13 +2059,13 @@ def render_spoc_business_priorities_section(spoc_name_provided, client_data, log
             # Style the content box based on selection state
             if is_selected:
                 background_color = "#DCEBD6"
-                border_color = "#5a9f9f"
+                border_color = "#ececec"
                 text_color = "#000000"
                 display_icon = "✅"
                 box_shadow = "0 2px 8px rgba(76, 175, 80, 0.3)"
             else:
                 background_color = "#f5f5f5"
-                border_color = "#5a9f9f"
+                border_color = "#ececec"
                 text_color = "#000000"
                 display_icon = priority_icon
                 box_shadow = "0 2px 4px rgba(0,0,0,0.1)"
@@ -2064,9 +2101,12 @@ def render_fifth_section(spoc_name_provided, spoc_linkedin_profile, client_data,
     with col8:
         render_spoc_business_priorities_section(spoc_name_provided, client_data, logger, is_locked)
 @st.fragment
-def render_sixth_section(logger,is_locked,client_data):
-    client_enterprise_name  = client_data.enterprise_name
+def render_sixth_section(logger, is_locked, client_data):
+    # Get current client state
+    
+    client_enterprise_name = client_data.enterprise_name
     client_name_provided = bool(client_enterprise_name and client_enterprise_name.strip())
+    
     col9, col10 = st.columns([1, 1])
     logger.info("Created additional requirements columns")
 
@@ -2092,10 +2132,10 @@ def render_sixth_section(logger,is_locked,client_data):
         )
         logger.info(f"Additional requirements text area rendered with {len(client_additional_requirements)} characters")
         
-        # Update the dataclass when the text area changes (only if enabled)
+        # Update the state when the text area changes (only if enabled)
         if client_name_provided and client_additional_requirements != client_data.client_additional_requirements_content:
-            client_state_manager.update_client_data(client_additional_requirements_content=client_additional_requirements)
-            client_data = client_state_manager.get_client_data()  # Refresh reference
+            client_state_manager.update_field('client_additional_requirements_content', client_additional_requirements)
+            client_data = client_state_manager.get_state()  # Refresh reference
             logger.info("Updated additional client requirements content")
         
         client_additional_requirements_provided = bool(client_name_provided and client_additional_requirements.strip())
@@ -2161,7 +2201,7 @@ def render_sixth_section(logger,is_locked,client_data):
                         
                         if is_selected:
                             # REMOVE FUNCTIONALITY
-                            # Get current content from the dataclass
+                            # Get current content from the state
                             current_content = client_data.client_additional_requirements_content
                             
                             # Get the original content that was added for this key
@@ -2182,31 +2222,36 @@ def render_sixth_section(logger,is_locked,client_data):
                             # Clean up any excessive newlines
                             updated_content = '\n\n'.join([section.strip() for section in updated_content.split('\n\n') if section.strip()])
                             
-                            # Update the dataclass
-                            client_data.client_additional_requirements_content = updated_content
-                            client_data.selected_additional_specs.discard(key)
-                            if key in client_data.additional_specs_content_map:
-                                del client_data.additional_specs_content_map[key]
+                            # Update the state using the new manager methods
+                            client_state_manager.update_multiple_fields(
+                                client_additional_requirements_content=updated_content,
+                                selected_additional_specs=client_data.selected_additional_specs - {key},
+                                additional_specs_content_map={k: v for k, v in client_data.additional_specs_content_map.items() if k != key}
+                            )
                             
-                            # Save changes to session state
-                            client_state_manager.save_client_data(client_data)
                             logger.info(f"Removed additional spec: {key}")
                             
                         else:
                             # ADD FUNCTIONALITY
-                            # Get current content from the dataclass
+                            # Get current content from the state
                             current_content = client_data.client_additional_requirements_content
                             
                             # Append the value to the content
                             new_content = current_content + f"\n\n{value}" if current_content else value
                             
-                            # Update the dataclass
-                            client_data.client_additional_requirements_content = new_content
-                            client_data.additional_specs_content_map[key] = value
-                            client_data.selected_additional_specs.add(key)
+                            # Update the state using the new manager methods
+                            new_selected_specs = client_data.selected_additional_specs.copy()
+                            new_selected_specs.add(key)
                             
-                            # Save changes to session state
-                            client_state_manager.save_client_data(client_data)
+                            new_content_map = client_data.additional_specs_content_map.copy()
+                            new_content_map[key] = value
+                            
+                            client_state_manager.update_multiple_fields(
+                                client_additional_requirements_content=new_content,
+                                selected_additional_specs=new_selected_specs,
+                                additional_specs_content_map=new_content_map
+                            )
+                            
                             logger.info(f"Added additional spec: {key}")
                         
                         st.rerun()
@@ -2215,13 +2260,13 @@ def render_sixth_section(logger,is_locked,client_data):
                     # Style the content box based on selection state
                     if is_selected:
                         background_color = "#DCEBD6"
-                        border_color = "#4a90e2"
+                        border_color = "#ececec"
                         text_color = "#000000"
                         icon = "✅"
                         box_shadow = "0 2px 8px rgba(76, 175, 80, 0.3)"
                     else:
                         background_color = "#f5f5f5"
-                        border_color = "#5a9f9f"
+                        border_color = "#ececec"
                         text_color = "#000000"
                         icon = "📋"
                         box_shadow = "0 2px 4px rgba(0,0,0,0.1)"
@@ -2262,7 +2307,7 @@ def client_tab(st, logger, is_locked):
             <style>
             /* Primary targeting for block container - 70% width grey background */
             [data-testid="block-container"] {
-                background-color: #f7f7f7 !important;
+                background-color: #fafafa !important;
                 width: 70% !important;
                 max-width: 70% !important;
                 margin-left: auto !important;
@@ -2271,7 +2316,7 @@ def client_tab(st, logger, is_locked):
             
             /* Alternative targeting for older Streamlit versions */
             .block-container {
-                background-color: #f7f7f7 !important;
+                background-color: #fafafa !important;
                 width: 70% !important;
                 max-width: 70% !important;
                 margin-left: auto !important;
@@ -2280,7 +2325,7 @@ def client_tab(st, logger, is_locked):
             
             /* Target the element that contains your tab content */
             .stApp .main .block-container {
-                background-color: #f7f7f7 !important;
+                background-color: #fafafa !important;
                 width: 70% !important;
                 max-width: 70% !important;
                 margin-left: auto !important;

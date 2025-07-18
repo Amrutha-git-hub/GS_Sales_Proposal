@@ -4,7 +4,7 @@ from typing import *
 def render_three_column_selector_unified(
     # Column configuration - Made wider to fill screen
     column_ratio: Tuple[float, float, float] = (2, 2, 2),  # Equal wider columns
-    column_gap: str = "large",  # Increased gap for better spacing
+    column_gap: str = "medium",  # Increased gap for better spacing
     
     # Left column (text area) configuration
     left_title: str = "Client Requirements",
@@ -81,6 +81,7 @@ def render_three_column_selector_unified(
     right_data = dict(data_items[middle_count:])
     
     # Add CSS for styling
+    # Add CSS for styling
     st.markdown(f"""
     <style>
     /* Full width container styling */
@@ -102,39 +103,59 @@ def render_three_column_selector_unified(
         padding: 15px !important;
     }}
     
-    /* Button styling - Fixed alignment */
+    /* Button styling - Fixed alignment to match content card height */
     .stButton > button {{
         width: 100% !important;
-        height: 70px !important;
+        height: 50px !important;
         font-size: 24px !important;
         font-weight: bold !important;
-        margin: 8px 0 !important;
+        margin: 2px 0 !important;
         border-radius: 12px !important;
         min-width: 60px !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
+        vertical-align: middle !important;
     }}
     
-    /* Content cards styling - Fixed alignment */
+    /* Content cards styling - Fixed alignment to match button height */
     .content-card {{
         width: 100% !important;
-        margin: 8px 0 !important;
+        margin: 2px 0 !important;
         font-size: 15px !important;
         line-height: 1.4 !important;
         height: 50px !important;
         display: flex !important;
-        align-items: center !important;
-        transform: translateY(-10px) !important;
+        margin-left: -15px !important;
+        padding: 15px !important;
+        border-radius: 8px !important;
+        box-sizing: border-box !important;
+        transform: translateY(-7px)translateX(-5px) !important;
     }}
     
-    /* Row container for perfect alignment */
+    /* Row container for perfect alignment - ensuring both button and card are at same level */
     .item-row {{
         display: flex !important;
         align-items: center !important;
         gap: 10px !important;
-        margin: 8px 0 !important;
+        margin: 2px 0 !important;
         width: 100% !important;
+        min-height: 50px !important;
+    }}
+    
+    /* Fix column alignment within each row */
+    .stColumns > div {{
+        display: flex !important;
+        align-items: center !important;
+        min-height: 50px !important;
+    }}
+    
+    /* Ensure button container has same height as content card */
+    .stButton {{
+        height: 50px !important;
+        display: flex !important;
+        align-items: center !important;
+        margin: 2px 0 !important;
     }}
     
     /* Normal section tooltip styling - same as left */
@@ -207,7 +228,7 @@ def render_three_column_selector_unified(
         st.session_state[textarea_session_key] = ""
     
     # Create main THREE COLUMN layout - NO NESTING!
-    col_left, col_middle, col_right = st.columns(column_ratio, gap=column_gap)
+    col_left, col_middle, col_right = st.columns(column_ratio, gap="medium")
     
     # LEFT COLUMN - Text Area
     with col_left:
@@ -254,7 +275,7 @@ def render_three_column_selector_unified(
             is_selected = key in st.session_state[middle_selected_items_key]
             
             # Create button and content sub-columns WITHIN THIS COLUMN with better ratios
-            btn_col, content_col = st.columns([0.8, 4.2], gap="small")
+            btn_col, content_col = st.columns([0.8, 4.2], gap="medium")
             
             with btn_col:
                 # Button
@@ -341,7 +362,7 @@ def render_three_column_selector_unified(
                     color: {current_text_color_final};
                     font-weight: 500;
                     box-shadow: {box_shadow};
-                    height: 70px;
+                    height: 50px;
                     display: flex;
                     align-items: center;
                     transition: all 0.3s ease;
@@ -349,6 +370,7 @@ def render_three_column_selector_unified(
                     width: 100%;
                     font-size: 15px;
                     line-height: 1.4;
+                    transform: translateY(-5px) !important;;
                 ">
                     <span style="font-size: 18px; margin-right: 10px; flex-shrink: 0;">{icon}</span>
                     <span style="font-weight: bold; font-size: 16px; flex: 1;">{key}</span>
@@ -371,7 +393,7 @@ def render_three_column_selector_unified(
             is_selected = key in st.session_state[right_selected_items_key]
             
             # Create button and content sub-columns WITHIN THIS COLUMN with better ratios
-            btn_col, content_col = st.columns([0.8, 4.2], gap="small")
+            btn_col, content_col = st.columns([0.8, 4.2], gap="medium")
             
             with btn_col:
                 # Button
@@ -459,7 +481,7 @@ def render_three_column_selector_unified(
                     color: {current_text_color_final};
                     font-weight: 500;
                     box-shadow: {box_shadow};
-                    height: 70px;
+                    height: 50px;
                     display: flex;
                     align-items: center;
                     transition: all 0.3s ease;
@@ -467,6 +489,7 @@ def render_three_column_selector_unified(
                     width: 100%;
                     font-size: 15px;
                     line-height: 1.4;
+                    transform: translateY(-5px) !important;
                 ">
                     <span style="font-size: 18px; margin-right: 10px; flex-shrink: 0;">{icon}</span>
                     <span style="font-weight: bold; font-size: 16px; flex: 1;">{key}</span>
@@ -564,7 +587,7 @@ def render_two_column_selector(
     /* Button styling */
     .stButton > button {{
         width: 100% !important;
-        height: 70px !important;
+        height: 50px !important;
         font-size: 24px !important;
         font-weight: bold !important;
         margin: 8px 0 !important;
@@ -583,7 +606,8 @@ def render_two_column_selector(
         line-height: 1.4 !important;
         height: 50px !important;
         display: flex !important;
-        align-items: center !important;
+        margin-left: -15px !important;
+        transform: translateY(-7px) translateX(-5px)!important;
     }}
     
     /* Row container for perfect alignment */
@@ -643,7 +667,7 @@ def render_two_column_selector(
         st.session_state[textarea_session_key] = ""
     
     # Create main TWO COLUMN layout
-    col_left, col_right = st.columns(column_ratio, gap=column_gap)
+    col_left, col_right = st.columns(column_ratio, gap="medium")
     
     # LEFT COLUMN - Text Area
     with col_left:
@@ -689,7 +713,7 @@ def render_two_column_selector(
             is_selected = key in st.session_state[selected_items_key]
             
             # Create button and content sub-columns
-            btn_col, content_col = st.columns([0.8, 4.2], gap="small")
+            btn_col, content_col = st.columns([0.8, 4.2], gap="medium")
             
             with btn_col:
                 # Button
@@ -777,7 +801,7 @@ def render_two_column_selector(
                     color: {current_text_color_final};
                     font-weight: 500;
                     box-shadow: {box_shadow};
-                    height: 70px;
+                    height: 50px;
                     display: flex;
                     align-items: center;
                     transition: all 0.3s ease;

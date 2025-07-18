@@ -169,58 +169,50 @@ class SellerTabState:
 
 
 def seller_tab(is_locked):
+    
+    st.markdown("""
+        <style>
+        /* Slightly shift secondary button upward */
+        button[kind="secondary"] {
+            height: 48px !important;
+            border: 2.2px solid #ececec !important;
+            border-radius: 4px !important;
+            background-color: #d3d3d3 !important;
+            color: black !important;
+            margin-top: 0px !important;
+            padding-top: 0px !important;
+            transform: translateY(-10px) !important;  /* visually move up */
+        }
+
+        button[kind="secondary"]:hover {
+            border: 2.2px solid #ececec !important;
+            background-color: #ececec !important;
+            color: black !important;
+            transform: translateY(-10px) !important;  /* keep hover in sync */
+        }
+
+        button[kind="secondary"]:focus {
+            border: 2.2px solid #ececec !important;
+            outline: 2px solid #ececec !important;
+            background-color: #d3d3d3 !important;
+            color: black !important;
+            transform: translateY(-10px) !important;
+        }
+
+        button[kind="secondary"] p,
+        button[kind="secondary"] span,
+        button[kind="secondary"] div {
+            color: black !important;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+
+
     """Main seller tab function with dataclass-based state management."""
     try:
         st.markdown(seller_css, unsafe_allow_html=True)
-        st.markdown("""
-                                                <style>
-                                                /* Force override all button styling */
-                                                button[kind="secondary"] {
-                                                    height: 48px !important;
-                                                    border: 2.2px solid #618f8f !important;
-                                                    border-radius: 12px !important;
-                                                    background-color: #edf2f1 !important;  /* Dark greyish background */
-                                                    color: white !important;  /* White text */
-                        transform: translateY(-5px);
-                                                }
+        
 
-                                                button[kind="secondary"]:hover {
-                                                    border: 2.2px solid #618f8f !important;
-                                                    background-color: #5a5a5a !important;  /* Slightly lighter on hover */
-                                                    color: white !important;  /* Keep white text on hover */
-                        transform: translateY(-5px);
-                                                }
-
-                                                button[kind="secondary"]:focus {
-                                                    border: 2.2px solid #618f8f !important;
-                                                    outline: 2px solid #618f8f !important;
-                                                    background-color: #edf2f1 !important;  /* Keep dark background on focus */
-                                                    color: white !important;  /* Keep white text on focus */
-                        transform: translateY(-5px);
-                                                }
-
-                                                /* Try targeting by data attributes */
-                                                [data-testid] button {
-                                                    border: 2.2px solid #618f8f !important;
-                                                    height: 48px !important;
-                                                    background-color: #edf2f1 !important;  /* Dark greyish background */
-                                                    color: white !important;  /* White text */
-                                                }
-
-                                                /* Additional targeting for button text specifically */
-                                                button[kind="secondary"] p,
-                                                button[kind="secondary"] span,
-                                                button[kind="secondary"] div {
-                                                    color: white !important;
-                                                }
-
-                                                [data-testid] button p,
-                                                [data-testid] button span,
-                                                [data-testid] button div {
-                                                    color: white !important;
-                                                }
-                                                </style>
-                                                """, unsafe_allow_html=True)
         logger.info("Starting seller_tab function")
         
         # Load or create seller state
@@ -231,6 +223,44 @@ def seller_tab(is_locked):
         
         # Render main UI components - PASS is_locked parameter
         _render_top_section(seller_state, is_locked)
+        st.markdown("""
+    <style>
+    /* Slightly shift secondary button upward */
+    button[kind="secondary"] {
+        height: 48px !important;
+        border: 2.2px solid #ececec !important;
+        border-radius: 4px !important;
+        background-color: #d3d3d3 !important;
+        color: black !important;
+        margin-top: 0px !important;
+        padding-top: 0px !important;
+        transform: translateY(-10px) !important;  /* visually move up */
+    }
+
+    button[kind="secondary"]:hover {
+        border: 2.2px solid #ececec !important;
+        background-color: #ececec !important;
+        color: black !important;
+        transform: translateY(-10px) !important;  /* keep hover in sync */
+    }
+
+    button[kind="secondary"]:focus {
+        border: 2.2px solid #ececec !important;
+        outline: 2px solid #ececec !important;
+        background-color: #d3d3d3 !important;
+        color: black !important;
+        transform: translateY(-10px) !important;
+    }
+
+    button[kind="secondary"] p,
+    button[kind="secondary"] span,
+    button[kind="secondary"] div {
+        color: black !important;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+
         _render_document_upload_section(seller_state, is_locked)
         _render_enterprise_details_section(seller_state, is_locked)
         
@@ -504,12 +534,12 @@ def _render_website_url_section(seller_state: SellerTabState, is_locked: bool):
                     <style>
                         .website-link-box {{
                             max-width: auto;
-                            margin: -5px auto auto -5px;
-                            border: 1px solid #bee5eb;
+                            margin: -10px auto auto -10px;
+                            border: 4px solid #bee5eb;
                             border-radius: 4px;
                             padding: 8px 12px;
                             background-color: #d1ecf1;
-                            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+                            box-shadow: 0 4px 2px rgba(0,0,0,0.1);
                             font-family: Arial, sans-serif;
                         }}
                         
@@ -832,7 +862,7 @@ def _render_process_all_button(seller_state: SellerTabState, seller_documents_up
         <style>
         div.stButton > button:first-child {{
             background-color: {button_color};
-            color: white;
+            color: black;
             border: none;
             font-weight: bold;
         }}
@@ -915,7 +945,7 @@ def _render_enterprise_details_section(seller_state: SellerTabState, is_locked: 
 
         seller_enterprise_details, provided = render_three_column_selector_unified(
             column_ratio=(2, 2, 2),
-            column_gap="large",
+            column_gap="small",
             
             left_title="Seller Services to be provided",
             left_tooltip="Define your enterprise details, services offered, company capabilities, core competencies, and business portfolio. This information helps clients understand your organizational strengths and service offerings.",
@@ -946,7 +976,8 @@ def _render_enterprise_details_section(seller_state: SellerTabState, is_locked: 
             title_font_size="18px",
             title_color="#000000",
             title_margin_bottom="10px",
-            selected_color="#d2ebfb"
+            selected_color="#d2ebfb",
+            unselected_border_color="#ececec"
         )
 
         # Update state (only if not locked)

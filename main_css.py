@@ -19,14 +19,14 @@ def add_professional_css():
         border-radius: 6px;
         margin-bottom: 1rem;
         text-align: center;
-        color: #e3e6e5;
+        color: #599cd4;
     }
     
     .main-header h1 {
         margin: 0;
         font-size: 1.6rem;
         font-weight: 600;
-        color: #e3e6e5;
+        color: #599cd4;
     }
     
     .main-header p {
@@ -42,12 +42,12 @@ def add_professional_css():
         border-radius: 6px;
         box-shadow: 0 1px 4px rgba(255,255,255,0.1);
         margin-bottom: 0.8rem;
-        border: 1px solid #666666;
+        border: 1px solid #ececec;
         background: #ffffff;
     }
     
     .section-title {
-        color: #e3e6e5;
+        color: #599cd4;
         font-size: 1rem;
         font-weight: 600;
         margin-bottom: 0.6rem;
@@ -65,7 +65,7 @@ def add_professional_css():
     }
     
     .required-asterisk {
-        color: #e3e6e5;
+        color: #599cd4;
         font-weight: bold;
         margin-left: 3px;
     }
@@ -73,12 +73,12 @@ def add_professional_css():
     /* Input field improvements - MUCH MORE COMPACT */
     .stTextInput > div > div > input {
         border-radius: 4px;
-        border: 1px solid #666666;
+        border: 1px solid #ececec;
         padding: 0.4rem 0.6rem;
         font-size: 0.85rem;
         transition: all 0.3s ease;
         background: #ffffff;
-        color: #e3e6e5;
+        color: #599cd4;
         height: 2rem;
     }
     
@@ -90,10 +90,10 @@ def add_professional_css():
     
     .stSelectbox > div > div > div {
         border-radius: 4px;
-        border: 1px solid #666666;
+        border: 1px solid #ececec;
         transition: all 0.3s ease;
         background: #ffffff;
-        color: #e3e6e5;
+        color: #599cd4;
         min-height: 2rem;
     }
     
@@ -105,12 +105,12 @@ def add_professional_css():
     
     .stTextArea > div > div > textarea {
         border-radius: 4px;
-        border: 1px solid #666666;
+        border: 1px solid #ececec;
         padding: 0.4rem 0.6rem;
         font-size: 0.85rem;
         transition: all 0.3s ease;
         background: #ffffff;
-        color: #e3e6e5;
+        color: #599cd4;
     }
     
     .stTextArea > div > div > textarea:focus {
@@ -121,7 +121,7 @@ def add_professional_css():
     
     /* File uploader styling - more compact */
     .stFileUploader > div {
-        border: 2px dashed #999999;
+        border: 2px dashed #ececec;
         border-radius: 6px;
         padding: 0.8rem;
         text-align: center;
@@ -131,7 +131,7 @@ def add_professional_css():
     }
     
     .stFileUploader > div:hover {
-        border-color: #e3e6e5;
+        border-color:  #ececec;
         background: #ffffff;
     }
     
@@ -146,7 +146,7 @@ def add_professional_css():
         transition: all 0.3s ease;
         display: inline-block;
         font-size: 0.75rem;
-        color: #e3e6e5;
+        color: #599cd4;
         height: 2rem;
         line-height: 1.6rem;
     }
@@ -155,12 +155,12 @@ def add_professional_css():
         background: #ffffff;
         transform: translateY(-1px);
         text-decoration: none;
-        color: #e3e6e5;
+        color: #599cd4;
     }
     
     /* Validation styling - more compact */
     .validation-success {
-        color: #e3e6e5;
+        color: #599cd4;
         font-size: 0.75rem;
         margin-top: 0.2rem;
         display: flex;
@@ -182,9 +182,9 @@ def add_professional_css():
         padding: 0.8rem;
         border-radius: 6px;
         box-shadow: 0 1px 4px rgba(255,255,255,0.1);
-        border: 1px solid #666666;
+        border: 1px solid #ececec;
         background: #ffffff;
-        color: #e3e6e5;
+        color: #599cd4;
     }
     
     /* Info styling - more compact */
@@ -211,18 +211,18 @@ def add_professional_css():
     .css-1d391kg {
         padding-top: 0.8rem;
         background:#ffffff;
-        color: #e3e6e5;
+        color: #599cd4;
     }
     
     /* General dark theme colors */
     .stApp {
         background:#ffffff;
-        color: #e3e6e5;
+        color: #599cd4;
     }
     
     /* Streamlit element colors */
     .stMarkdown {
-        color: #e3e6e5;
+        color: #599cd4;
     }
     
     /* Hide default streamlit styling */
@@ -239,13 +239,13 @@ def add_professional_css():
         padding: 0.6rem;
         border-radius: 6px;
         box-shadow: 0 1px 4px rgba(255,255,255,0.1);
-        border: 1px solid #666666;
+        border: 1px solid #ececec;
         background: #ffffff;
         height: 100%;
     }
     
     .column-header {
-        color: #e3e6e5;
+        color: #599cd4;
         font-size: 0.95rem;
         font-weight: 600;
         margin-bottom: 0.6rem;
@@ -260,7 +260,7 @@ def add_professional_css():
     
     .suggestion-container {
         background: #ffffff;
-        border: 1px solid #666666;
+        border: 1px solid #ececec;
         padding: 0.5rem;
         margin: 0.3rem 0;
         border-radius: 4px;
@@ -269,18 +269,18 @@ def add_professional_css():
     
     .suggestion-container:hover {
         background: #ffffff;
-        border-color: #999999;
+        border-color:  #ececec;
     }
     
     .suggestion-title {
         font-size: 0.8rem;
         font-weight: 500;
-        color: #e3e6e5;
+        color: #599cd4;
     }
     
     .suggestion-added {
         background: #ffffff !important;
-        border-color: #999999 !important;
+        border-color:  #ececec !important;
     }
     
     .warning-container, .info-container {
@@ -292,7 +292,7 @@ def add_professional_css():
     
     .warning-container {
         background: #ffffff;
-        border: 1px solid #666666;
+        border: 1px solid #ececec;
         color: #cccccc;
     }
     
@@ -342,7 +342,7 @@ app_css = """
     padding: 3rem 0;
     margin-bottom: 2rem;
     background: #ffffff;
-    border: 1px solid #666666;
+    border: 1px solid #ececec;
     border-radius: 20px;
     box-shadow: 0 8px 32px rgba(255, 255, 255, 0.1);
     position: relative;
@@ -350,7 +350,7 @@ app_css = """
 }
 
 .main-header h1 {
-    color: #e3e6e5;
+    color: #599cd4;
     font-size: 4rem;
     font-weight: 800;
     margin: 0;
@@ -394,7 +394,7 @@ app_css = """
 .separator-diamond {
     width: 8px;
     height: 8px;
-    background: #e3e6e5;
+    background: #599cd4;
     transform: rotate(45deg);
     border-radius: 2px;
     box-shadow: 0 0 15px rgba(89, 156, 212, 0.3);
@@ -429,8 +429,8 @@ app_css = """
 /* Tab styling - Improved modern design */
 .stButton > button {
     background: #2a2a2a !important;
-    color: #e3e6e5 !important;
-    border: 1px solid #666666 !important;
+    color: #599cd4 !important;
+    border: 1px solid #ececec !important;
     font-weight: 600 !important;
     font-size: 1.1rem !important;
     text-transform: uppercase !important;
@@ -468,7 +468,7 @@ app_css = """
 /* Active tab styling */
 .stButton > button:focus,
 .stButton > button:active {
-    background: #e3e6e5 !important;
+    background: #599cd4 !important;
     color:#ffffff !important;
     border-color: #cccccc !important;
     transform: translateY(-2px) scale(1.03) !important;
@@ -482,7 +482,7 @@ app_css = """
     padding: 3rem;
     border-radius: 20px;
     margin-bottom: 2rem;
-    border: 1px solid #666666;
+    border: 1px solid #ececec;
     min-height: 70vh;
     width: 100%;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
@@ -491,7 +491,7 @@ app_css = """
 }
 
 .content-area h2 {
-    color: #e3e6e5;
+    color: #599cd4;
     font-size: 2.5rem;
     margin-bottom: 1.5rem;
     font-weight: 700;
@@ -525,7 +525,7 @@ app_css = """
     background: #2a2a2a;
     padding: 2rem;
     border-radius: 15px;
-    border: 1px solid #666666;
+    border: 1px solid #ececec;
     transition: all 0.3s ease;
 }
 
@@ -542,7 +542,7 @@ app_css = """
     border-radius: 20px;
     text-align: center;
     margin-top: 3rem;
-    border: 1px solid #666666;
+    border: 1px solid #ececec;
     width: 100%;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
@@ -579,7 +579,7 @@ app_css = """
 /* Refresh Button */
 .footer div[data-testid="column"]:nth-child(1) .stButton > button {
     background: #666666 !important;
-    color: #e3e6e5 !important;
+    color: #599cd4 !important;
     box-shadow: 0 6px 20px rgba(255, 255, 255, 0.1) !important;
 }
 
@@ -591,7 +591,7 @@ app_css = """
 
 /* Generate Presentation Button */
 .footer div[data-testid="column"]:nth-child(2) .stButton > button {
-    background: #e3e6e5 !important;
+    background: #599cd4 !important;
     color:#ffffff !important;
     box-shadow: 0 6px 20px rgba(89, 156, 212, 0.2) !important;
 }
@@ -607,8 +607,8 @@ app_css = """
 .stTextInput > div > div > input,
 .stTextArea > div > div > textarea {
     background: #2a2a2a !important;
-    color: #e3e6e5 !important;
-    border: 1px solid #666666 !important;
+    color: #599cd4 !important;
+    border: 1px solid #ececec !important;
     border-radius: 10px !important;
     font-size: 1.1rem !important;
     transition: all 0.3s ease !important;
@@ -637,8 +637,8 @@ app_css = """
 }
 
 .stFileUploader label, .stFileUploader p, .stFileUploader svg {
-    color: #e3e6e5 !important;
-    fill: #e3e6e5 !important;
+    color: #599cd4 !important;
+    fill: #599cd4 !important;
 }
 
 /* Sidebar removal */
@@ -713,7 +713,7 @@ header {visibility: hidden;}
 /* Enhanced metrics and cards */
 .metric-card {
     background: #2a2a2a;
-    border: 1px solid #666666;
+    border: 1px solid #ececec;
     border-radius: 15px;
     padding: 2rem;
     text-align: center;
@@ -729,7 +729,7 @@ header {visibility: hidden;}
 .metric-value {
     font-size: 2.5rem;
     font-weight: 800;
-    color: #e3e6e5;
+    color: #599cd4;
     margin-bottom: 0.5rem;
 }
 
@@ -737,6 +737,59 @@ header {visibility: hidden;}
     color: #999999;
     font-size: 1.1rem;
     font-weight: 500;
+}
+</style>
+"""
+
+sticky_header_css = """
+<style>
+/* Make the app container handle overflow properly */
+.stApp {
+    height: 40vh;
+}
+
+/* Create sticky header - this will freeze the header */
+.sticky-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    background-color: white;
+    padding: 10px 0;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Header content container with 75% width */
+.header-content {
+    width: 75%;
+    max-width: 75%;
+    margin-left: auto;
+    margin-right: auto;
+    background-color: white;
+    padding: 10px 0;
+}
+
+/* Main scrollable content area */
+.scrollable-content {
+    margin-top: 180px; /* Adjust based on header height */
+    height: calc(100vh - 180px);
+    overflow-y: auto;
+    background-color: #fafafa;
+    width: 75%;
+    max-width: 75%;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 20px;
+}
+
+/* Override streamlit's default container behavior */
+[data-testid="block-container"] {
+    background-color: transparent !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
 }
 </style>
 """

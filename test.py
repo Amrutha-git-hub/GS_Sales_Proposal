@@ -1,416 +1,1160 @@
 import streamlit as st
-import pandas as pd
+from streamlit_extras.stylable_container import stylable_container
+import time
+from Client.client import client_tab,validate_client_mandatory_fields
+from Seller.seller import seller_tab
+from ProjectSpecification.project_spec import proj_specification_tab
+from Generate_proposal.proposal_generator import generate_tab
+from Client.client_dataclass import ClientTabState
+from Seller.seller import SellerTabState
+import os
+from datetime import datetime
+import logging
+import uuid
+import random
+from main_css import *
+
+
+from dotenv import load_dotenv
+load_dotenv()
+from config import load_env_variables
+load_env_variables()
+
+
+import time
+from datetime import datetime, timedelta
+
+
+def clear_global_error():
+    """Clear the global error message"""
+    if 'global_message' in st.session_state:
+        del st.session_state.global_message
+
+def is_message_expired():
+    """Check if the current message has expired"""
+    if 'global_message' not in st.session_state:
+        return True
+    
+    message_data = st.session_state.global_message
+    elapsed_time = (datetime.now() - message_data['timestamp']).total_seconds()
+    return elapsed_time > message_data['duration']
+
+import streamlit as st
+from datetime import datetime
+import time
+
+def display_global_message():
+    """Display the global message using st.toast if it exists and hasn't expired."""
+    if 'global_message' not in st.session_state:
+        return
+    
+    message_data = st.session_state.global_message
+    
+    # Check if message is older than 15 seconds
+    elapsed_time = (datetime.now() - message_data['timestamp']).total_seconds()
+    if elapsed_time > 15:
+        clear_global_error()
+        return
+    
+    message_type = message_data['type']
+    message_text = message_data['message']
+    
+    # Determine icon based on type
+    icon_map = {
+        "error": "❌",
+        "warning": "⚠️", 
+        "info": "ℹ️",
+        "success": "✅"
+    }
+    icon = icon_map.get(message_type, "📢")
+    
+    # Show the toast
+    st.toast(f"{icon} {message_text}", icon=icon)
+    
+    # Clear the message after showing it
+    clear_global_error()
+
+
+def generate_session_id():
+    """Generate a unique session ID for the user"""
+    return str(uuid.uuid4())
+
 import os
 import logging
-import re
-import threading
-import time
-from typing import List, Dict
-
-# Assuming these are the correct paths to your modules
-from .client_utils import *
-from Search.Linkedin.linkedin_serp import get_linkedin
-from Recommendation.recommendation_utils import get_roles_list, get_ai_business_priorities, get_pain_points
-from .client_css import client_css
-from .client_dataclass import client_state_manager, ClientTabState
 from datetime import datetime
-from WebScraper.webscraper_without_ai import get_url_details_without_ai
-from Common_Utils.common_utils import set_global_message
+import streamlit as st
 
-def normalize_url(url: str) -> str:
-    """Normalize the URL format."""
-    url = url.strip()
-    if not re.match(r'^https?://', url):
-        url = 'https://' + url
-    domain_part = re.sub(r'^https?://', '', url).split('/')[0]
-    if not re.search(r'\.(com|in|org|net|co|io|edu|gov)(/|$)', domain_part):
-        url = url.rstrip('/') + '.com'
-    return url
+def generate_session_id():
+    """Placeholder session ID generator."""
+    print("---------")
+    return datetime.now().strftime('%Y%m%d%H%M%S%f')  # Replace with your actual logic
 
-def save_uploaded_file_and_get_path(uploaded_file, logger, client_enterprise_name):
-    """Save uploaded file to a directory and return the file path."""
-    logger.info(f"Starting file upload for: {uploaded_file.name if uploaded_file else 'None'}")
+
+def get_or_set_session_cookie():
+    """Persist session_id using browser cookie across refreshes."""
+    # Try to read the session_id from cookie
+    if "session_id" in st.session_state:
+        return st.session_state.session_id
+
+    # Streamlit's way to access cookies via experimental API
+    if "session_cookie" in st.experimental_get_query_params():
+        session_id = st.experimental_get_query_params()["session_cookie"][0]
+    else:
+        # If not found, generate a new one
+        session_id = str(uuid.uuid4())
+        st.experimental_set_query_params(session_cookie=session_id)
+
+    st.session_state.session_id = session_id
+    return session_id
+
+
+def setup_logging():
+    """Setup logging configuration for client module with session-based logging."""
     try:
-        if uploaded_file is not None:
-            base_upload_dir = os.getenv("FILE_SAVE_PATH")
-            enterprise_upload_dir = os.path.join(base_upload_dir, client_enterprise_name)
-            if not os.path.exists(enterprise_upload_dir):
-                os.makedirs(enterprise_upload_dir)
-                logger.info(f"Created directory: {enterprise_upload_dir}")
-            
-            file_path = os.path.join(enterprise_upload_dir, uploaded_file.name)
-            with open(file_path, "wb") as f:
-                f.write(uploaded_file.getbuffer())
-            logger.info(f"Successfully saved file to: {file_path}")
-            return file_path
-        else:
-            logger.warning("No file provided for upload.")
-            return None
-    except Exception as e:
-        set_global_message(str(e))
-        logger.error(f"Error in save_uploaded_file_and_get_path: {str(e)}", exc_info=True)
-        raise
+        # Initialize session ID if not exists
+        if 'session_id' not in st.session_state:
+            st.session_state.session_id =get_or_set_session_cookie()
 
-def validate_client_mandatory_fields():
-    """Validate client mandatory fields using the state manager."""
-    try:
-        return client_state_manager.is_mandatory_data_complete()
-    except Exception as e:
-        set_global_message(f"Error during validation: {str(e)}")
-        return False
+        # Check if logger is already initialized
+        if 'logger_initialized' in st.session_state and st.session_state.logger_initialized:
+            return logging.getLogger('client_module')
 
-@st.fragment
-def render_client_name_section(logger, client_data: ClientTabState, is_locked: bool):
-    """Render the client enterprise name section."""
-    try:
-        st.markdown("""
-            <div class="tooltip-label">
-                Client Enterprise Name <span style="color:red;">*</span>
-                <div class="tooltip-icon" data-tooltip="Enter the full legal name of the client organization. This is the primary identifier for the client in all documentation and communications. This field is mandatory for creating the client profile.">ⓘ</div>
-            </div>
-        """, unsafe_allow_html=True)
-        
-        name_col, button_col = st.columns([3, 1])
-        
-        with name_col:
-            client_enterprise_name = st.text_input(
-                label="Client Enterprise Name",
-                placeholder="Enter client enterprise name...",
-                key="client_enterprise_name_input",
-                label_visibility="collapsed",
-                disabled=is_locked,
-                value=client_data.enterprise_name
-            )
-            if client_enterprise_name != client_data.enterprise_name:
-                client_state_manager.update_multiple_fields(enterprise_name=client_enterprise_name)
-                logger.info(f"Updated enterprise name: {client_enterprise_name}")
-                st.rerun()
+        logs_dir = "logs"
+        if not os.path.exists(logs_dir):
+            os.makedirs(logs_dir)
 
-        with button_col:
-            find_urls_disabled = not (client_enterprise_name and len(client_enterprise_name.strip()) > 2)
-            if st.button("🔍 Find Website", disabled=find_urls_disabled, help="Find website URLs for this company", key="find_urls_button"):
-                logger.info(f"Find URLs button clicked for: {client_enterprise_name.strip()}")
-                set_global_message(f"Finding websites for '{client_enterprise_name.strip()}'...", 'info')
-                try:
-                    urls_list = get_urls_list(client_enterprise_name.strip())
-                    client_state_manager.update_multiple_fields(website_urls_list=urls_list)
-                    set_global_message(f"Found {len(urls_list)} URLs." if urls_list else "No URLs found.", 'success' if urls_list else 'info')
-                except Exception as e:
-                    logger.error(f"Error finding URLs: {str(e)}", exc_info=True)
-                    set_global_message("Failed to find websites.", "error")
-                st.rerun()
+        # Check if log filename already exists in session
+        if 'log_filename' not in st.session_state:
+            st.session_state.log_filename = f'client_logs_session_{st.session_state.session_id}.log'
 
-        if not client_enterprise_name and client_data.enterprise_name:
-            client_state_manager.update_multiple_fields(website_urls_list=[], enterprise_name="")
-            logger.info("Company name cleared, clearing URLs list.")
-            st.rerun()
+        log_filepath = os.path.join(logs_dir, st.session_state.log_filename)
 
-    except Exception as e:
-        logger.error(f"Error in client name section: {str(e)}", exc_info=True)
-        set_global_message("An error occurred in the client name section.", 'error')
-        st.rerun()
-    return client_enterprise_name
+        # Configure logger
+        logger = logging.getLogger('client_module')
+        logger.setLevel(logging.DEBUG)
 
-@st.fragment
-def render_client_website_section(logger, client_data: ClientTabState, is_locked: bool):
-    """Render the client website URL section."""
-    try:
-        client_enterprise_name = client_data.enterprise_name
-        client_name_provided = bool(client_enterprise_name and client_enterprise_name.strip())
+        # Remove existing handlers to avoid duplicates
+        for handler in logger.handlers[:]:
+            logger.removeHandler(handler)
 
-        st.markdown(...) # Tooltip HTML remains the same
+        # Only create file handler if file doesn't already exist
+        if not os.path.exists(log_filepath):
+            open(log_filepath, 'a').close()  # Create empty file if needed
 
-        url_col, btn1_col, btn2_col = st.columns([7, 1, 2])
-        
-        with url_col:
-            url_options = ["Select client website URL"] + client_data.website_urls_list
-            default_index = url_options.index(client_data.website_url) if client_data.website_url in url_options else 0
-            
-            client_website_url_input = st.selectbox(
-                label="Client Website URL",
-                options=url_options,
-                index=default_index,
-                key="client_website_url_selector",
-                label_visibility="collapsed",
-                disabled=not client_name_provided or is_locked,
-                accept_new_options=True,
-            )
-            
-            client_website_url = "" if client_website_url_input == "Select client website URL" else normalize_url(client_website_url_input)
+        file_handler = logging.FileHandler(log_filepath)
+        file_handler.setLevel(logging.DEBUG)
 
-            if client_website_url != client_data.website_url:
-                client_state_manager.update_multiple_fields(website_url=client_website_url)
-                logger.info(f"Updated website URL: {client_website_url}")
-                st.rerun()
+        console_handler = logging.StreamHandler()
+        console_handler.setLevel(logging.INFO)
 
-        with btn1_col:
-            if st.button("🔄", help="Refresh website URLs list", key="refresh_urls_btn", use_container_width=True, disabled=not client_name_provided):
-                try:
-                    set_global_message("Refreshing URLs...", 'info')
-                    urls_list = get_urls_list(client_enterprise_name)
-                    client_state_manager.update_multiple_fields(website_urls_list=urls_list)
-                    set_global_message(f"Found {len(urls_list)} URLs.", 'success')
-                except Exception as e:
-                    logger.error(f"Error refreshing URLs: {str(e)}", exc_info=True)
-                    set_global_message("Failed to refresh URLs.", 'error')
-                st.rerun()
-
-        with btn2_col:
-            if st.button("📑 Get Details", help="Get enterprise details", key="scrape_website_btn", use_container_width=True, disabled=not client_website_url or is_locked):
-                logger.info(f"Scrape button clicked for URL: {client_website_url}")
-                client_state_manager.update_multiple_fields(pending_scrape_url=client_website_url, scraping_in_progress=True)
-                set_global_message(f"Starting website analysis for {client_website_url}", 'info')
-                st.rerun()
-
-        if client_data.scraping_in_progress and client_data.pending_scrape_url:
-            try:
-                logger.info(f"Scraping {client_data.pending_scrape_url}")
-                scrape_result = get_url_details_without_ai(client_data.pending_scrape_url)
-                website_details = f"Company: {scrape_result.name}\n\n"
-                if scrape_result.description: website_details += f"Description:\n{scrape_result.description}\n\n"
-                if scrape_result.services:
-                    website_details += "Services:\n" + "".join([f"• {s}\n" for s in scrape_result.services])
-
-                if not website_details.strip() or len(website_details.strip()) < 10:
-                    set_global_message("Website scraping failed: No content extracted.", "error")
-                    client_state_manager.update_multiple_fields(scraping_in_progress=False, pending_scrape_url=None)
-                else:
-                    update_params = {
-                        'enterprise_details_content': website_details,
-                        'last_analyzed_url': client_data.pending_scrape_url,
-                        'scraping_in_progress': False,
-                        'pending_scrape_url': None,
-                        'enterprise_logo': scrape_result.logo
-                    }
-                    client_state_manager.update_multiple_fields(**update_params)
-                    set_global_message("Website details extracted successfully!", 'success')
-                st.rerun()
-            except Exception as e:
-                logger.error(f"Error during website scraping: {str(e)}", exc_info=True)
-                client_state_manager.update_multiple_fields(scraping_in_progress=False, pending_scrape_url=None)
-                set_global_message("Error scraping website.", 'error')
-                st.rerun()
-
-    except Exception as e:
-        logger.error(f"Error in website section: {str(e)}", exc_info=True)
-        set_global_message("An error occurred in the website section.", 'error')
-        st.rerun()
-
-@st.fragment
-def render_first_section(logger, client_data, is_locked):
-    """Render the first section with two columns."""
-    col1, col2 = st.columns([1, 1])
-    with col1:
-        render_client_name_section(logger, client_data, is_locked)
-    with col2:
-        render_client_website_section(logger, client_data, is_locked)
-
-@st.fragment
-def enterprise_content(logger, client_data: ClientTabState, is_locked: bool):
-    """Render the enterprise details section."""
-    try:
-        st.markdown(...) # Tooltip HTML
-        client_name_provided = bool(client_data.enterprise_name and client_data.enterprise_name.strip())
-        
-        enterprise_details = st.text_area(
-            label="Client Enterprise Details",
-            value=client_data.enterprise_details_content if client_name_provided else "",
-            placeholder="Enter client name first..." if not client_name_provided else "Website analysis results appear here...",
-            height=150,
-            key="enterprise_details_textarea",
-            label_visibility="collapsed",
-            disabled=not client_name_provided or is_locked
+        formatter = logging.Formatter(
+            f'%(asctime)s - %(name)s - %(levelname)s - Session:{st.session_state.session_id} - %(funcName)s:%(lineno)d - %(message)s'
         )
-        if client_name_provided and enterprise_details != client_data.enterprise_details_content:
-            client_state_manager.update_multiple_fields(enterprise_details_content=enterprise_details)
+        file_handler.setFormatter(formatter)
+        console_handler.setFormatter(formatter)
+
+        logger.addHandler(file_handler)
+        logger.addHandler(console_handler)
+
+        st.session_state.logger_initialized = True
+        logger.info(f"New session started with ID: {st.session_state.session_id}")
+
+        return logger
 
     except Exception as e:
-        logger.error(f"Error in enterprise_content: {str(e)}", exc_info=True)
-        set_global_message("Error rendering enterprise details.", 'error')
+        st.error(f"Error setting up logging: {str(e)}")
+        return logging.getLogger('client_module')
 
-@st.fragment
-def doc_upload_section(logger, client_data: ClientTabState, is_locked: bool):
-    """Render the document upload section."""
-    try:
-        st.markdown(...) # Tooltip HTML and CSS
-        client_enterprise_name = client_data.enterprise_name
+# Initialize session state variables
+if 'client_data_from_tab' not in st.session_state:
+    st.session_state.client_data_from_tab = None
 
-        rfi_document_upload = st.file_uploader(
-            label="Upload RFI Document", 
-            type=['pdf', 'docx', 'txt', 'csv', 'png', 'jpg', 'jpeg'], 
-            key="rfi_document_uploader",
-            label_visibility="hidden",
-            disabled=is_locked
-        )
-        
-        if rfi_document_upload is not None:
-            if st.button("Get pain points", key="analyze_rfi_document_btn"):
-                if not client_enterprise_name:
-                    set_global_message("Please enter a client name first.", 'error')
-                else:
-                    set_global_message("Analyzing document...", "info")
-                    try:
-                        file_path = save_uploaded_file_and_get_path(rfi_document_upload, logger, client_enterprise_name)
-                        if file_path:
-                            pain_points_data = get_pain_points(file_path, client_enterprise_name)
-                            client_state_manager.update_multiple_fields(
-                                uploaded_file_path=file_path,
-                                rfi_pain_points_items=pain_points_data,
-                                document_analyzed=True
-                            )
-                            set_global_message("RFI analyzed successfully!", "success")
-                        else:
-                            set_global_message("Failed to save uploaded file.", 'error')
-                    except Exception as e:
-                        logger.error(f"Error analyzing RFI: {str(e)}", exc_info=True)
-                        set_global_message("Failed to analyze document.", 'error')
-                    st.rerun()
+if 'seller_data_from_tab' not in st.session_state:
+    st.session_state.seller_data_from_tab = None
 
-    except Exception as e:
-        logger.error(f"Error in doc_upload_section: {str(e)}", exc_info=True)
-        set_global_message("Error with document upload section.", 'error')
+if 'project_specs_from_tab' not in st.session_state:
+    st.session_state.project_specs_from_tab = None
 
-@st.fragment
-def render_second_section(logger, client_data, is_locked):
-    """Render the second section with two columns."""
-    col3, col4 = st.columns([1, 1])
-    with col3:
-        doc_upload_section(logger, client_data, is_locked)
-    with col4:
-        enterprise_content(logger, client_data, is_locked)
+# Initialize locked tabs state
+if 'locked_tabs' not in st.session_state:
+    st.session_state.locked_tabs = set()
 
-@st.fragment
-def render_client_requirements_section(logger, client_data: ClientTabState, is_locked: bool):
-    """Render the client requirements section."""
-    try:
-        client_name_provided = bool(client_data.enterprise_name and client_data.enterprise_name.strip())
-        st.markdown(...) # Tooltip HTML
-        
-        client_requirements = st.text_area(
-            label="Client Requirements", 
-            value=client_data.client_requirements_content,
-            height=200, 
-            key="client_requirements_textarea",
-            label_visibility="collapsed",
-            disabled=not client_name_provided or is_locked,
-            placeholder="Enter client name first..." if not client_name_provided else "Add client requirements here..."
-        )
-        if client_name_provided and client_requirements != client_data.client_requirements_content:
-            client_state_manager.update_multiple_fields(client_requirements_content=client_requirements)
+# Initialize highest reached tab
+if 'highest_reached_tab' not in st.session_state:
+    st.session_state.highest_reached_tab = 0
 
-    except Exception as e:
-        logger.error(f"Error in requirements section: {str(e)}", exc_info=True)
-        set_global_message("Error in requirements section.", 'error')
+def get_sample_extracted_text():
+    return """Key Requirements Extracted:
 
-@st.fragment
-def render_client_pain_points_section(logger, client_data: ClientTabState, is_locked: bool):
-    """Render the client pain points section."""
-    try:
-        client_name_provided = bool(client_data.enterprise_name and client_data.enterprise_name.strip())
-        st.markdown(...) # Tooltip HTML
-        
-        rfi_pain_points_items = client_data.rfi_pain_points_items or { # Default data
-            "Revenue Challenges": "...", "Cost and Margin Pressure": "...", "Market Expansion": "..."
+• Project Type: Enterprise Software Development
+• Timeline: 6-8 months
+• Budget Range: $150,000 - $200,000
+• Team Size: 5-7 developers
+• Technologies: React, Node.js, PostgreSQL
+• Deployment: AWS Cloud Infrastructure
+• Security: SOC 2 compliance required
+• Integration: Salesforce, HubSpot APIs
+• Support: 24/7 monitoring and maintenance
+
+Additional Notes:
+- Client prefers agile methodology
+- Weekly progress reports required
+- UAT phase: 4 weeks
+- Go-live date: Q3 2024"""
+
+def show_validation_popup(missing_tab_name, missing_fields=None):
+    """Show validation error popup with professional styling"""
+    
+    # Create professional popup modal
+    with stylable_container(
+        f"validation_popup_{missing_tab_name.replace(' ', '_')}",
+        css_styles="""
+        div[data-testid="stBlock"] {
+            position: fixed !important;
+            top: 20% !important;
+            left: 50% !important;
+            transform: translateX(-50%) !important;
+            z-index: 9999 !important;
+            background: black !important;
+            border: 1px solid #ddd !important;
+            border-radius: 12px !important;
+            padding: 30px !important;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15) !important;
+            width: 450px !important;
+            max-width: 90vw !important;
+            border-top: 4px solid #f56565 !important;
         }
-
-        with st.container():
-            for i, (key, value) in enumerate(rfi_pain_points_items.items()):
-                is_selected = key in client_data.selected_pain_points
-                col_add, col_content = st.columns([0.5, 9], gap="medium")
-
-                with col_add:
-                    if st.button("❌" if is_selected else "➕", key=f"toggle_pain_point_{i}", disabled=not client_name_provided or is_locked):
-                        current_content = client_data.client_requirements_content
-                        if is_selected:
-                            client_data.selected_pain_points.discard(key)
-                            original_content = client_data.pain_point_content_map.get(key, value)
-                            updated_content = current_content.replace(original_content, "").strip()
-                        else:
-                            client_data.selected_pain_points.add(key)
-                            client_data.pain_point_content_map[key] = value
-                            updated_content = (current_content + f"\n\n{value}").strip()
-                        
-                        client_state_manager.update_multiple_fields(
-                            selected_pain_points=client_data.selected_pain_points,
-                            pain_point_content_map=client_data.pain_point_content_map,
-                            client_requirements_content=updated_content
-                        )
-                        st.rerun()
-
-                with col_content:
-                    # Div styling based on is_selected...
-                    st.markdown(f"<div>{key}</div>", unsafe_allow_html=True) 
-
-    except Exception as e:
-        logger.error(f"Error in pain points section: {str(e)}", exc_info=True)
-        set_global_message("Error displaying pain points.", 'error')
-
-@st.fragment
-def render_third_section(logger, client_data, is_locked):
-    """Render client requirements and pain points sections."""
-    col5, col6 = st.columns([1, 1])
-    with col5:
-        render_client_requirements_section(logger, client_data, is_locked)
-    with col6:
-        render_client_pain_points_section(logger, client_data, is_locked)
-
-@st.fragment
-def render_spoc_name_section(logger, client_data: ClientTabState, is_locked: bool):
-    """Render the SPOC name input section."""
-    client_name_provided = bool(client_data.enterprise_name and client_data.enterprise_name.strip())
-    st.markdown(...) # Tooltip
+        div[data-testid="stBlock"]:before {
+            content: '' !important;
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            height: 180vh !important;
+            background: rgba(0, 0, 0, 0.4) !important;
+            z-index: -1 !important;
+        }
+        """,
+    ):
+        # Header with icon and title
+        st.markdown(
+            f"""
+            <div style="text-align: center; margin-bottom: 20px;">
+                <div style="background: #fed7d7; border-radius: 50%; width: 60px; height: 60px; 
+                           display: flex; align-items: center; justify-content: center; 
+                           margin: 0 auto 15px auto; border: 2px solid #fc8181;">
+                    <span style="font-size: 24px; color: #f56565;">⚠️</span>
+                </div>
+                <h3 style="color: #2d3748; margin: 0; font-size: 20px; font-weight: 600;">
+                    Validation Error
+                </h3>
+            </div>
+            """, 
+            unsafe_allow_html=True
+        )
+        
+        # Error message
+        st.markdown(
+            f"""
+            <div style="text-align: center; margin-bottom: 25px;">
+                <p style="font-size: 15px; color: #e53e3e; line-height: 1.6; margin-bottom: 10px; font-weight: 500;">
+                    Please complete all mandatory fields in the <strong>"{missing_tab_name}"</strong> tab first!
+                </p>
+            </div>
+            """, 
+            unsafe_allow_html=True
+        )
+        
+        # Show missing fields if provided
+        if missing_fields:
+            st.markdown(
+                f"""
+                <div style="background: #fef5e7; border: 1px solid #f6ad55; border-radius: 8px; 
+                           padding: 15px; margin-bottom: 20px;">
+                    <p style="font-size: 14px; color: #c05621; margin: 0; font-weight: 500;">
+                        <strong>Missing Required Fields:</strong>
+                    </p>
+                    <p style="font-size: 14px; color: #9c4221; margin: 5px 0 0 0; line-height: 1.4;">
+                        {missing_fields}
+                    </p>
+                </div>
+                """, 
+                unsafe_allow_html=True
+            )
+        
+        # Action button
+        col1, col2, col3 = st.columns([1, 2, 1])
+        with col2:
+            with stylable_container(
+                f"validation_ok_btn_{missing_tab_name.replace(' ', '_')}",
+                css_styles="""
+                button {
+                    background-color: #f56565 !important;
+                    color: black !important;
+                    border: 1px solid #f56565 !important;
+                    border-radius: 6px !important;
+                    padding: 10px 20px !important;
+                    font-weight: 600 !important;
+                    width: 100% !important;
+                    transition: all 0.2s ease !important;
+                    font-size: 15px !important;
+                }
+                button:hover {
+                    background-color: #e53e3e !important;
+                    border-color: #e53e3e !important;
+                    transform: translateY(-1px) !important;
+                    box-shadow: 0 4px 8px rgba(245, 101, 101, 0.3) !important;
+                }
+                """,
+            ):
+                if st.button("Got it!", key=f"validation_ok_{missing_tab_name.replace(' ', '_')}"):
+                    # Clear validation popup state
+                    validation_key = f"show_validation_popup_{missing_tab_name.replace(' ', '_')}"
+                    if validation_key in st.session_state:
+                        del st.session_state[validation_key]
+                    st.rerun()
     
-    spoc_name = st.text_input(
-        label="SPOC Name",
-        value=client_data.spoc_name,
-        key="spoc_name_input",
-        label_visibility="collapsed",
-        disabled=not client_name_provided or is_locked
-    )
+    return True
+
+# Updated function to trigger validation popup
+def trigger_validation_popup(missing_tab_name, missing_fields=None):
+    """Trigger validation popup by setting session state"""
+    validation_key = f"show_validation_popup_{missing_tab_name.replace(' ', '_')}"
+    st.session_state[validation_key] = {
+        'tab_name': missing_tab_name,
+        'missing_fields': missing_fields
+    }
+
+# Updated navigation functions that use the new popup system
+def navigate_to_next_tab():
+    """Navigate to the next tab with validation and locking"""
+    current_tab = st.session_state.active_tab
     
-    if spoc_name != client_data.spoc_name:
-        client_state_manager.update_multiple_fields(spoc_name=spoc_name)
-        # Trigger search on name change
-        if spoc_name.strip():
-            set_global_message(f"Searching for {spoc_name}...", "info")
-            try:
-                profiles = get_linkedin(spoc_name.strip()) or {}
-                client_state_manager.update_multiple_fields(
-                    linkedin_profiles=profiles,
-                    last_searched_spoc=spoc_name
-                )
-            except Exception as e:
-                logger.error(f"LinkedIn search failed: {e}", exc_info=True)
-                set_global_message("LinkedIn search failed.", "error")
+    # Get validation function for current tab
+    validation_func = get_validation_function(current_tab)
+    
+    if not validation_func():
+        tab_names = ["Client Information", "Seller Information", "Project Specifications", "Generate Proposal"]
+        trigger_validation_popup(tab_names[current_tab])
+        return
+    
+    # If tab is already locked, just navigate
+    if current_tab in st.session_state.locked_tabs:
+        if current_tab < 3:
+            st.session_state.active_tab = current_tab + 1
+            st.session_state.highest_reached_tab = max(st.session_state.highest_reached_tab, st.session_state.active_tab)
+            st.rerun()
+        return
+    
+    # If this is the last tab, don't show confirmation
+    if current_tab >= 3:
+        return
+    
+    # Show confirmation dialog
+    confirmation_key = f"show_confirmation_{current_tab}"
+    st.session_state[confirmation_key] = True
+    st.rerun()
+
+# Add this to your main app logic, right after the confirmation dialog handling
+def handle_validation_popups():
+    """Handle validation popups display"""
+    tab_names = ["Client Information", "Seller Information", "Project Specifications", "Generate Proposal"]
+    
+    for tab_name in tab_names:
+        validation_key = f"show_validation_popup_{tab_name.replace(' ', '_')}"
+        if validation_key in st.session_state and st.session_state[validation_key]:
+            popup_data = st.session_state[validation_key]
+            show_validation_popup(popup_data['tab_name'], popup_data.get('missing_fields'))
+            st.stop()  # Stop execution to show only the popup
+
+def refresh_all_data():
+    """Clear all session state and form data"""
+    # Get current session ID and logger status before clearing
+    current_session_id = st.session_state.get('session_id', None)
+    logger_initialized = st.session_state.get('logger_initialized', False)
+    
+    # Clear all session state variables
+
+    
+    for key in list(st.session_state.keys()):
+        if key in st.session_state:
+            del st.session_state[key]
+    
+    # Clear locked tabs and reset navigation
+    st.session_state.locked_tabs = set()
+    st.session_state.highest_reached_tab = 0
+    st.session_state.active_tab = 0
+    
+    # Clear confirmation states
+    confirmation_keys = [key for key in st.session_state.keys() if key.startswith('show_confirmation_')]
+    for key in confirmation_keys:
+        del st.session_state[key]
+    
+    # Clear any other dynamic keys (role and priority related)
+    keys_to_remove = []
+    for key in st.session_state.keys():
+        if (key.startswith('role_edit_input_') or 
+            key.startswith('remove_role_btn_') or 
+            key.startswith('priority_checkbox_')):
+            keys_to_remove.append(key)
+    
+    for key in keys_to_remove:
+        del st.session_state[key]
+    
+    # Preserve session ID and logger status
+    if current_session_id:
+        st.session_state.session_id = current_session_id
+        st.session_state.logger_initialized = logger_initialized
+    
+    st.success("All data has been cleared!")
+    st.rerun()
+
+def validate_seller_mandatory_fields():
+    """Validate seller mandatory fields"""
+    seller = st.session_state.seller_data_from_tab
+
+    # Ensure both fields are non-empty after stripping blackspace
+    return seller is not None and bool(seller.seller_enterprise_name.strip()) and bool(seller.seller_enterprise_details_content.strip())
+
+
+def validate_project_mandatory_fields():
+    """Validate project specification mandatory fields"""
+    # Add your project validation logic here
+    # For now, returning True as placeholder
+    return True
+
+def show_validation_popup(missing_tab_name, missing_fields=None):
+    """Show validation error popup"""
+    toast = st.toast(f"⚠️ Please complete all mandatory fields in {missing_tab_name} tab first!")
+
+    # Inject JavaScript to auto-dismiss the toast after 3 seconds (3000 ms)
+    # st.markdown("""
+    #     <script>
+    #     setTimeout(function() {
+    #         let toasts = window.parent.document.querySelectorAll('div[data-testid="stToast"]');
+    #         if (toasts.length > 0) {
+    #             toasts[0].style.display = 'none';
+    #         }
+    #     }, 10000);
+    #     </script>
+    # """, unsafe_allow_html=True)
+    if missing_fields:
+        st.error(f"Missing required fields: {missing_fields}")
+
+def get_validation_function(tab_index):
+    """Get validation function for a specific tab"""
+    if tab_index == 0:
+        return validate_client_mandatory_fields
+    elif tab_index == 1:
+        return validate_seller_mandatory_fields
+    elif tab_index == 2:
+        return validate_project_mandatory_fields
+    else:
+        return lambda: True
+
+def is_tab_accessible(tab_index):
+    """Check if a tab is accessible based on validation"""
+    if tab_index == 0:
+        return True
+    elif tab_index == 1:
+        return validate_client_mandatory_fields()
+    elif tab_index == 2:
+        return validate_client_mandatory_fields() and validate_seller_mandatory_fields()
+    elif tab_index == 3:
+        return (validate_client_mandatory_fields() and 
+                validate_seller_mandatory_fields() and 
+                validate_project_mandatory_fields())
+    return False
+
+def show_lock_confirmation_popup(tab_index):
+    """Show compact popup-style confirmation dialog for locking a tab"""
+    tab_names = ["Client Information", "Seller Information", "Project Specifications", "Generate Proposal"]
+    for i in range(5):
+        st.markdown(" ")
+    # Create compact popup modal
+    with stylable_container(
+    f"confirmation_popup_{tab_index}",
+    css_styles="""
+    div[data-testid="stBlock"] {
+        position: fixed !important;
+        top: 75% !important;
+        left: 50% !important;
+        transform: translate(-50%, -50%) !important;
+        z-index: 9999 !important;
+        background: black !important;
+        border: 7px solid #e74c3c !important;
+        border-radius: 10px !important;
+        padding: 20px !important;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3) !important;
+        width: 60px !important;
+        height: 180px !important;
+        max-width: 90vw !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
+    }
+    div[data-testid="stBlock"]:before {
+        content: '' !important;
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        background: rgba(0, 0, 0, 0.4) !important;
+        z-index: -1 !important;
+    }
+    """
+):
+
+        # Text message
+        st.markdown(
+    """
+    <div style="
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        padding: 15px;
+        margin-bottom: 15px;
+        background-color: #f8f9fa;
+        width:40%;
+        text-align: center;
+        margin: 0 auto;
+    ">
+        <h4 style="color: #e74c3c; margin: 0 0 10px 0; font-size: 18px; font-weight: 600;">
+            ⚠️ Confirm Tab Lock
+        </h4>
+        <p style="font-size: 14px; color: #4a5568; line-height: 1.4; margin: 0 0 15px 0;">
+            Lock <strong>tab</strong>?<br>
+            <span style="color: #718096; font-size: 13px;">You won't be able to modify this tab once locked.</span>
+        </p>
+    </div>
+    """, 
+    unsafe_allow_html=True)
+
+
+# Action buttons in the same container, positioned right under the box
+    col1, col2 = st.columns(2, gap="small")
+
+    with col1:
+        with stylable_container(
+            f"cancel_btn_{tab_index}",
+            css_styles="""
+            button {
+                background-color: #f7fafc !important;
+                color: #4a5568 !important;
+                border: 1px solid #e2e8f0 !important;
+                border-radius: 6px !important;
+                padding: 8px 16px !important;
+                font-weight: 500 !important;
+                width: 40% !important;
+                font-size: 14px !important;
+                height: 40px !important;
+                margin-left: auto !important;
+display: block !important;
+                
+            }
+            button:hover {
+                background-color: #edf2f7 !important;
+                border-color: #cbd5e0 !important;
+            }
+            """,
+        ):
+            if st.button("Back", key=f"cancel_lock_{tab_index}"):
+                # Clear confirmation state
+                if f"show_confirmation_{tab_index}" in st.session_state:
+                    del st.session_state[f"show_confirmation_{tab_index}"]
+                st.rerun()
+
+    with col2:
+        with stylable_container(
+            f"confirm_btn_{tab_index}",
+            css_styles="""
+            button {
+                background-color: #e74c3c !important;
+                color: black !important;
+                border: 1px solid #e74c3c !important;
+                border-radius: 6px !important;
+                padding: 8px 16px !important;
+                font-weight: 500 !important;
+                width: 40% !important;
+                font-size: 14px !important;
+                height: 40px !important;
+            }
+            button:hover {
+                background-color: #c53030 !important;
+                border-color: #c53030 !important;
+            }
+            """,
+        ):
+            if st.button("Lock & Continue", key=f"confirm_lock_{tab_index}"):
+                # Clear confirmation state
+                if f"show_confirmation_{tab_index}" in st.session_state:
+                    del st.session_state[f"show_confirmation_{tab_index}"]
+                # Lock the current tab
+                st.session_state.locked_tabs.add(tab_index)
+                # Move to next tab
+                st.session_state.active_tab = tab_index + 1
+                st.session_state.highest_reached_tab = max(st.session_state.highest_reached_tab, st.session_state.active_tab)
+                st.rerun()
+
+    return True
+
+def navigate_to_next_tab():
+    """Navigate to the next tab with validation and locking"""
+    current_tab = st.session_state.active_tab
+    
+    # Get validation function for current tab
+    validation_func = get_validation_function(current_tab)
+    
+    if not validation_func():
+        tab_names = ["Client Information", "Seller Information", "Project Specifications", "Generate Proposal"]
+        show_validation_popup(tab_names[current_tab])
+        return
+    
+    # If tab is already locked, just navigate
+    if current_tab in st.session_state.locked_tabs:
+        if current_tab < 3:
+            st.session_state.active_tab = current_tab + 1
+            st.session_state.highest_reached_tab = max(st.session_state.highest_reached_tab, st.session_state.active_tab)
+            st.rerun()
+        return
+    
+    # If this is the last tab, don't show confirmation
+    if current_tab >= 3:
+        return
+    
+    # Show confirmation dialog
+    confirmation_key = f"show_confirmation_{current_tab}"
+    st.session_state[confirmation_key] = True
+    st.rerun()
+
+def navigate_to_next_tab():
+    """Navigate to the next tab with validation and locking"""
+    current_tab = st.session_state.active_tab
+    
+    # Get validation function for current tab
+    validation_func = get_validation_function(current_tab)
+    
+    if not validation_func():
+        tab_names = ["Client Information", "Seller Information", "Project Specifications", "Generate Proposal"]
+        show_validation_popup(tab_names[current_tab])
+        return
+    
+    # If tab is already locked, just navigate
+    if current_tab in st.session_state.locked_tabs:
+        if current_tab < 3:
+            st.session_state.active_tab = current_tab + 1
+            st.session_state.highest_reached_tab = max(st.session_state.highest_reached_tab, st.session_state.active_tab)
+            st.rerun()
+        return
+    
+    # If this is the last tab, don't show confirmation
+    if current_tab >= 3:
+        return
+    
+    # Show confirmation dialog
+    confirmation_key = f"show_confirmation_{current_tab}"
+    st.session_state[confirmation_key] = True
+    st.rerun()
+
+def navigate_to_previous_tab():
+    """Navigate to the previous tab"""
+    if st.session_state.active_tab > 0:
+        st.session_state.active_tab -= 1
         st.rerun()
-    return spoc_name
 
-@st.fragment
-def render_linkedin_profile_section(logger, client_data: ClientTabState, is_locked: bool, spoc_name: str):
-    """Render the LinkedIn profile selection section."""
-    client_name_provided = bool(client_data.enterprise_name and client_data.enterprise_name.strip())
-    spoc_name_provided = bool(spoc_name and spoc_name.strip())
-    st.markdown(...) # Tooltip
+def get_button_text(direction, current_tab):
+    """Get button text with tab names"""
+    tab_names = ["Client Information", "Seller Information", "Project Specifications", "Generate Proposal"]
+    
+    if direction == "next":
+        if current_tab < 3:
+            return f"Next: {tab_names[current_tab + 1]} ➡️"
+        else:
+            return "Next ➡️"
+    else:  # previous
+        if current_tab > 0:
+            return f"⬅️ Previous: {tab_names[current_tab - 1]}"
+        else:
+            return "⬅️ Previous"
 
-    options = ["Select a LinkedIn profile..."]
-    url_map = {}
-    if spoc_name_provided and client_data.linkedin_profiles:
-        for url, data in client_data.linkedin_profiles.items():
-            display_text = f"{data.get('name', 'N/A')} - {data.get('role', 'N/A')}"
-            options.append(display_text)
-            url_map[display_text] = url
+def is_tab_locked(tab_index):
+    """Check if a tab is locked"""
+    return tab_index in st.session_state.locked_tabs
 
-    selected_display = st.selectbox(
-        "SPOC LinkedIn Profile",
-        options=options,
-        key="spoc_linkedin_profile_selector",
-        label_visibility="collapsed",
-        disabled=not spoc_name_provided or is_locked
-    )
+# NOTE: Add this line at the very top of your main script (before any other Streamlit commands):
+st.set_page_config(page_title="CoXPRT", page_icon="Images/gs_logo.png", layout="wide")
 
-    selected_url = url_map.get(selected_display)
-    if selected_url != client_data.spoc_linkedin_profile:
-        client_state_manager.update_multiple_fields(spoc_linkedin_profile=selected_url)
+# Initialize session ID and logger at the very beginning
+if 'session_id' not in st.session_state:
+    st.session_state.session_id = generate_session_id()
+
+if 'logger_initialized' not in st.session_state:
+    st.session_state.logger_initialized = False
+
+# Setup logging once at the beginning
+logger = setup_logging()
+        
+from main_css import *
+st.markdown(app_css, unsafe_allow_html=True)
+# st.markdown("""
+# <style>
+# /* Hide the default Streamlit scrollbar */
+# .main .block-container {
+#     max-height: none;
+#     overflow: visible;
+# }
+
+# /* Or alternatively, hide one of the scrollbars */
+# .stApp {
+#     overflow-x: hidden;
+# }
+
+# /* Hide horizontal scrollbar specifically */
+# ::-webkit-scrollbar-horizontal {
+#     display: none;
+# }
+# </style>
+# """, unsafe_allow_html=True)
+content_area_css = """
+<style>
+/* Primary targeting for block container - 75% width grey background */
+[data-testid="block-container"] {
+    background-color: #fafafa !important;
+    width: 75% !important;
+    max-width: 75% !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+
+/* Alternative targeting for older Streamlit versions */
+.block-container {
+    background-color: #fafafa !important;
+    width: 75% !important;
+    max-width: 75% !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+
+/* Target the element that contains your tab content */
+.stApp .main .block-container {
+    background-color: #fafafa !important;
+    width: 75% !important;
+    max-width: 75% !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+</style>
+"""
+st.markdown(content_area_css,unsafe_allow_html=True)
+st.markdown(sticky_header_css, unsafe_allow_html=True)
+
+# Add title - place this after your CSS but before the tab buttons
+# Replace your existing title section with this:
+st.markdown("""
+<div class="sticky-header">
+    <div class="header-content" style="display: flex; align-items: center; justify-content: space-between; margin: 0 0 20px 0; width: 100%;">
+        <div style="margin-left: 480px;">
+            <h1 style="color: #2c3e50; font-size: 48px; font-weight: bold; margin: 0; padding: 0; text-shadow: 2px 2px 4px rgba(0,0,0,0.1);">
+                CoXprt
+            </h1>
+        </div>
+        <div style="margin-right: 15px;">
+            <img src="https://static.wixstatic.com/media/cb6b3d_5c8f2b020ebe48b69bc8c163cc480156~mv2.png/v1/fill/w_60,h_60,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/GrowthSutra%20Logo.png" alt="Logo" style="height: 60px;">
+        </div>
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
+
+
+# Add sticky tabs CSS
+st.markdown("""
+<style>
+.sticky-tabs {
+    position: sticky;
+    top: 120px; /* Adjust based on your header height */
+    z-index: 999;
+    background-color: white;
+    padding: 10px 0;
+    border-bottom: 1px solid #e0e0e0;
+    margin-bottom: 20px;
+}
+
+/* Force override all button styling */
+button[kind="secondary"] {
+    height: 48px !important;
+    border: 2.2px solid #ececec !important;
+    border-radius: 4px !important;
+    margin-top: -5px !important;  /* Move button up */
+    transform: translateY(-3px) !important;  /* Additional upward adjustment */
+    background-color: #d3d3d3 !important;  
+    color: black !important;  /* black text */
+}
+    
+button[kind="secondary"]:hover {
+    border: 2.2px solid #ececec !important;
+    transform: translateY(-3px) !important;  /* Keep position on hover */
+    background-color: #d3d3d3 !important;  /* Slightly lighter on hover */
+    color: black !important;  /* Keep black text on hover */
+}
+    
+button[kind="secondary"]:focus {
+    border: 2.2px solid #ececec !important;
+    outline: 2px solid #ececec !important;
+    transform: translateY(-3px) !important;  /* Keep position on focus */
+    background-color: #d3d3d3 !important;  /* Keep dark background on focus */
+    color: black !important;  /* Keep black text on focus */
+}
+    
+/* Try targeting by data attributes */
+[data-testid] button {
+    border: 2.2px solid #ececec !important;
+    height: 48px !important;
+    margin-top: -5px !important;  /* Move button up */
+    transform: translateY(-2.5px) !important;  /* Additional upward adjustment */
+    background-color: #d3d3d3 !important;  /* Dark greyish background */
+    color: black !important;  /* black text */
+}
+
+/* Additional targeting for button text specifically */
+button[kind="secondary"] p,
+button[kind="secondary"] span,
+button[kind="secondary"] div {
+    color: black !important;
+}
+
+[data-testid] button p,
+[data-testid] button span,
+[data-testid] button div {
+    color: black !important;
+}
+</style>
+""", unsafe_allow_html=True)
+
+# Initialize session state for active tab - ENSURE CLIENT TAB IS DEFAULT
+if 'active_tab' not in st.session_state:
+    st.session_state.active_tab = 0
+
+# Tab buttons with sticky container
+st.markdown('<div class="sticky-tabs">', unsafe_allow_html=True)
+
+tab_names = ["Client Information", "Seller Information", "Project Specifications", "Generate Proposal"]
+
+# Create tab buttons with stylable containers for #e3e6e5 active state
+cols = st.columns(4, gap="large")
+
+for i, tab_name in enumerate(tab_names):
+    with cols[i]:
+        is_active = (i == st.session_state.active_tab)
+        
+        # Determine if tab should be clickable based on validation
+        tab_enabled = is_tab_accessible(i)
+        
+        # Add lock indicator to tab name if locked
+        display_name = tab_name
+        if is_tab_locked(i):
+            display_name = f"🔒 {tab_name}"
+        
+        # Use stylable_container to make active tab #599cd4
+        if is_active and tab_enabled:
+            with stylable_container(
+                f"active_tab_{i}",
+                css_styles="""
+                button {
+                    background-color: #599cd4 !important;
+                    color: white !important;
+                    border: 2px solid #ececec !important;
+                    font-weight: bold !important;
+                    box-shadow: 0 4px 8px rgba(89, 156, 212, 0.3) !important;
+                    pointer-events: none !important;
+                }
+                button:focus {
+                    background-color: #599cd4 !important;
+                    color: blue !important;
+                    outline: none !important;
+                }
+                """,
+            ):
+                if st.button(display_name, key=f"tab_{i}", use_container_width=True, disabled=True, type="secondary"):
+                    st.session_state.active_tab = i
+                    st.rerun()
+        elif tab_enabled:
+            with stylable_container(
+                f"inactive_tab_{i}",
+                css_styles="""
+                button {
+                    background-color: #ececec !important;
+                    color: white !important;
+                    border: 1px solid #ececec !important;
+                    pointer-events: none !important;
+                }
+                """,
+            ):
+                if st.button(display_name, key=f"tab_{i}", use_container_width=True, disabled=True, type='secondary'):
+                    st.session_state.active_tab = i
+                    st.rerun()
+        else:
+            # Disabled tabs with no hover effects
+            with stylable_container(
+                f"disabled_tab_{i}",
+                css_styles="""
+                button {
+                    background-color: #ececec !important;
+                    color: white !important;
+                    border: 1px solid #5a6268 !important;
+                    cursor: not-allowed !important;
+                    opacity: 1 !important;
+                    pointer-events: none !important;
+                }
+                """,
+            ):
+                st.button(display_name, key=f"tab_{i}", use_container_width=True, disabled=True, type='secondary')
+
+# Close sticky tabs container
+st.markdown('</div>', unsafe_allow_html=True)
+
+display_global_message()
+
+# Handle confirmation dialogs - POPUP STYLE
+current_tab = st.session_state.active_tab
+confirmation_key = f"show_confirmation_{current_tab}"
+
+if confirmation_key in st.session_state and st.session_state[confirmation_key]:
+    show_lock_confirmation_popup(current_tab)
+    st.stop()  # Stop execution to show only the popup
+
+
+# Set is_active flag for current tab
+st.session_state.is_active = True
+
+# Show lock status message for locked tabs
+if is_tab_locked(current_tab):
+    st.info(f"🔒 This tab is locked. You cannot modify the data in this tab.")
+
+
+st.markdown("""
+                    <style>
+                    /* Force override all button styling */
+                    button[kind="secondary"] {
+                        height: 48px !important;
+                        border: 2.2px solid #ececec !important;
+                        border-radius: 4px !important;
+                        margin-top: -5px !important;  /* Move button up */
+                        transform: translateY(-3px) !important;  /* Additional upward adjustment */
+                        background-color: #edf2f1 !important;  /* Dark greyish background */
+                        color: black !important;  /* black text */
+                    }
+                     
+                    button[kind="secondary"]:hover {
+                        border: 2.2px solid #ececec !important;
+                        transform: translateY(-3px) !important;  /* Keep position on hover */
+                        background-color: #5a5a5a !important;  /* Slightly lighter on hover */
+                        color: black !important;  /* Keep black text on hover */
+                    }
+                     
+                    button[kind="secondary"]:focus {
+                        border: 2.2px solid #ececec !important;
+                        outline: 2px solid #ececec !important;
+                        transform: translateY(-3px) !important;  /* Keep position on focus */
+                        background-color: #edf2f1 !important;  /* Keep dark background on focus */
+                        color: black !important;  /* Keep black text on focus */
+                    }
+                     
+                    /* Try targeting by data attributes */
+                    [data-testid] button {
+                        border: 2.2px solid #ececec !important;
+                        height: 48px !important;
+                        margin-top: -5px !important;  /* Move button up */
+                        transform: translateY(-2.5px) !important;  /* Additional upward adjustment */
+                        background-color: #edf2f1 !important;  /* Dark greyish background */
+                        color: black !important;  /* black text */
+                    }
+                    
+                    /* Additional targeting for button text specifically */
+                    button[kind="secondary"] p,
+                    button[kind="secondary"] span,
+                    button[kind="secondary"] div {
+                        color: black !important;
+                    }
+                    
+                    [data-testid] button p,
+                    [data-testid] button span,
+                    [data-testid] button div {
+                        color: black !important;
+                    }
+                    </style>
+                    """, unsafe_allow_html=True)  
+
+
+# Content area with validation-aware tab switching
+if st.session_state.active_tab == 0:
+    # Pass locked status to the tab
+    st.session_state.client_data_from_tab = client_tab(st, logger, is_locked=is_tab_locked(0))
+
+elif st.session_state.active_tab == 1:
+    # Double-check validation before showing seller tab
+    if validate_client_mandatory_fields():
+        st.session_state.seller_data_from_tab = seller_tab(is_locked=is_tab_locked(1))
+    else:
+        st.session_state.active_tab = 0  # Force back to client tab
+        show_validation_popup("Client Information")
         st.rerun()
-    return selected_url
 
+elif st.session_state.active_tab == 2:
+    # Check both client and seller validations
+    if not validate_client_mandatory_fields():
+        st.session_state.active_tab = 0  # Force back to client tab
+        show_validation_popup("Client Information")
+        st.rerun()
+    elif not validate_seller_mandatory_fields():
+        st.session_state.active_tab = 1  # Force back to seller tab
+        show_validation_popup("Seller Information")
+        st.rerun()
+    else:
+        print(st.session_state.client_data_from_tab, st.session_state.seller_data_from_tab)
+        st.session_state.project_specs_from_tab = proj_specification_tab(
+            st.session_state.client_data_from_tab, 
+            st.session_state.seller_data_from_tab,
+            is_locked=is_tab_locked(2)
+        )
+
+else:  # Generate Proposal Tab
+    # Check all validations
+    if not validate_client_mandatory_fields():
+        st.session_state.active_tab = 0
+        show_validation_popup("Client Information")
+        st.rerun()
+    elif not validate_seller_mandatory_fields():
+        st.session_state.active_tab = 1
+        show_validation_popup("Seller Information")
+        st.rerun()
+    elif not validate_project_mandatory_fields():
+        st.session_state.active_tab = 2
+        show_validation_popup("Project Specifications")
+        st.rerun()
+    else:
+        generate_tab(
+            st.session_state.client_data_from_tab,
+            st.session_state.seller_data_from_tab,
+            st.session_state.project_specs_from_tab
+        )
+
+# Bottom navigation buttons with enhanced styling
+col1, col2, col3 = st.columns(3, gap="large")
+
+# Previous Button
+with col1:
+    is_first_tab = (st.session_state.active_tab == 0)
+    prev_button_text = get_button_text("previous", st.session_state.active_tab)
+    
+    if is_first_tab:
+        with stylable_container(
+            "prev_button_disabled",
+            css_styles="""
+            button {
+                background-color: #D4D4D !important;
+                color: black !important;
+                border: 1px solid #dee2e6 !important;
+                cursor: not-allowed !important;
+                opacity: 0.6 !important;
+                font-weight: bold !important;
+            }
+            """,
+        ):
+            st.button(prev_button_text, key="prev_btn", use_container_width=True, disabled=True)
+    else:
+        with stylable_container(
+            "prev_button",
+            css_styles="""
+            button {
+                background-color: #ececec !important;
+                color: black !important;
+                border: 1px solid #5a6268 !important;
+                font-weight: bold !important;
+                transition: all 0.3s ease !important;
+            }
+            button:hover {
+                background-color: #ececec !important;
+                color: black !important;
+                transform: translateY(-1px) !important;
+            }
+            button:active {
+                background-color: #ececec !important;
+                border: 2px solid #ececec !important;
+                transform: translateY(0px) !important;
+                box-shadow: 0 2px 4px rgba(89, 156, 212, 0.4) !important;
+            }
+            """,
+        ):
+            if st.button(prev_button_text, key="prev_btn", use_container_width=True):
+                navigate_to_previous_tab()
+
+# Refresh Button
+with col2:
+    with stylable_container(
+        "refresh_button",
+        css_styles="""
+        button {
+            background-color: #ececec !important;
+            color: black !important;
+            border: 1px solid #5a6268 !important;
+            font-weight: bold !important;
+            transition: all 0.3s ease !important;
+        }
+        button:hover {
+            background-color: #ececec !important;
+            color: black !important;
+            transform: translateY(-1px) !important;
+        }
+        button:active {
+            background-color:#ececec !important;
+            border: 2px solid #ececec !important;
+            transform: translateY(0px) !important;
+            box-shadow: 0 2px 4px rgba(89, 156, 212, 0.4) !important;
+        }
+        """,
+    ):
+        if st.button("🔄 Refresh All Data", key="refresh_btn", use_container_width=True):
+            refresh_all_data()
+
+# Next Button
+with col3:
+    is_last_tab = (st.session_state.active_tab == 3)
+    next_button_text = get_button_text("next", st.session_state.active_tab)
+    
+    if is_last_tab:
+        with stylable_container(
+            "next_button_disabled",
+            css_styles="""
+            button {
+                background-color:#D4D4D !important;
+                color: black !important;
+                border: 1px solid #dee2e6 !important;
+                cursor: not-allowed !important;
+                opacity: 0.6 !important;
+                font-weight: bold !important;
+            }
+            """,
+        ):
+            st.button(next_button_text, key="next_btn", use_container_width=True, disabled=True)
+    else:
+        with stylable_container(
+            "next_button",
+            css_styles="""
+            button {
+                background-color: #ececec!important;
+                color: black !important;
+                border: 1px solid #5a6268 !important;
+                font-weight: bold !important;
+                transition: all 0.3s ease !important;
+            }
+            button:active {
+                background-color: #ececec !important;
+                border: 2px solid #ececec !important;
+                transform: translateY(0px) !important;
+                box-shadow: 0 2px 4px rgba(89, 156, 212, 0.4) !important;
+            }
+            """,
+        ):
+            if st.button(next_button_text, key="next_btn", use_container_width=True):
+                navigate_to_next_tab()

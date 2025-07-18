@@ -1,19 +1,19 @@
 seller_css = """
 <style>
-.seller-section {
-    background: #f5f5f5;
-    padding: 1.5rem;
-    border-radius: 4px; /* More square than default */
-    border: 2px solid #618f8f; /* Matches button border color */
-    box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3); /* Optional: match visual depth */
-    margin-bottom: 1rem;
-    color: #2a2a2a;
-}
+    .client-section {
+        background: #f5f5f5;
+        padding: 1.5rem;
+        border-radius: 10px;
+        border-left: 4px solid #ececec;
+        margin-bottom: 1rem;
+        color: #2a2a2a;
+    }
+    
     .url-section {
         background: #f5f5f5;
         padding: 1.5rem;
         border-radius: 10px;
-        border-left: 4px solid #764ba2;
+        border-left: 4px solid #ececec;
         margin-bottom: 1rem;
         color: #2a2a2a;
     }
@@ -22,7 +22,7 @@ seller_css = """
         background: #f5f5f5;
         padding: 1.5rem;
         border-radius: 10px;
-        border: 2px solid #5a9f9f;
+        border: 2px solid #ececec;
         margin-bottom: 1rem;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
         color: #2a2a2a;
@@ -39,6 +39,7 @@ seller_css = """
     .roles-section {
         background: #f5f5f5;
         padding: 1.5rem;
+        border:#ececec
         border-radius: 10px;
         border-left: 4px solid #2196f3;
         color: #2a2a2a;
@@ -48,7 +49,7 @@ seller_css = """
         background: #f5f5f5;
         padding: 1.5rem;
         border-radius: 10px;
-        border-left: 4px solid #9c27b0;
+        border-left: 4px solid #ececec;
         color: #2a2a2a;
     }
     
@@ -56,12 +57,12 @@ seller_css = """
         background: #f5f5f5;
         padding: 1.5rem;
         border-radius: 10px;
-        border-left: 4px solid #00bcd4;
+        border-left: 4px solid #ececec;
         color: #2a2a2a;
     }
     
     .upload-section {
-        border: 2px dashed #667eea;
+        border: 2px dashed #ececec;
         border-radius: 10px;
         padding: 2rem;
         text-align: center;
@@ -114,7 +115,7 @@ seller_css = """
     }
     
     .url-button {
-        background: #667eea;
+        background: #ececec;
         color: white;
         border: none;
         padding: 8px 12px;
@@ -131,7 +132,7 @@ seller_css = """
     /* Summary item styling */
     .summary-item {
         background: #f5f5f5;
-        border: 1px solid #5a9f9f;
+        border: 1px solid #ececec;
         border-radius: 8px;
         padding: 12px;
         margin-bottom: 8px;
@@ -143,7 +144,7 @@ seller_css = """
     
     .summary-key {
         font-weight: 600;
-        color: #667eea;
+        color: #ececec;
     }
     
     .add-button {
@@ -170,7 +171,7 @@ seller_css = """
     .summary-control-btn {
         background: #007bff;
         color: white;
-        border: none;
+        border: #ececec;
         padding: 6px 12px;
         border-radius: 4px;
         cursor: pointer;
@@ -232,7 +233,7 @@ seller_css = """
     .stTextInput > div > div > input {
         background-color: #f5f5f5 !important;
         color: #2a2a2a !important;
-        border: 2px solid #5a9f9f !important;
+        border: 2px solid #ececec !important;
         border-radius: 8px !important;
         padding: 12px !important;
         font-size: 14px !important;
@@ -242,7 +243,7 @@ seller_css = """
     .stTextArea > div > div > textarea {
         background-color: #f5f5f5 !important;
         color: #2a2a2a !important;
-        border: 2px solid #5a9f9f !important;
+        border: 2px solid #ececec !important;
         border-radius: 8px !important;
         padding: 12px !important;
         font-size: 14px !important;
@@ -252,7 +253,7 @@ seller_css = """
     .stNumberInput > div > div > input {
         background-color: #f5f5f5 !important;
         color: #2a2a2a !important;
-        border: 2px solid #5a9f9f !important;
+        border: 2px solid #ececec !important;
         border-radius: 8px !important;
         padding: 12px !important;
         font-size: 14px !important;
@@ -262,7 +263,7 @@ seller_css = """
     .stSelectbox > div > div > div {
         background-color: #f5f5f5 !important;
         color: #2a2a2a !important;
-        border: 2px solid #5a9f9f !important;
+        border: 2px solid #ececec !important;
         border-radius: 8px !important;
     }
     
@@ -270,7 +271,7 @@ seller_css = """
     .stMultiSelect > div > div > div {
         background-color: #f5f5f5 !important;
         color: #2a2a2a !important;
-        border: 2px solid #5a9f9f !important;
+        border: 2px solid #ececec !important;
         border-radius: 8px !important;
     }
     
@@ -278,7 +279,7 @@ seller_css = """
     .stDateInput > div > div > input {
         background-color: #f5f5f5 !important;
         color: #2a2a2a !important;
-        border: 2px solid #5a9f9f !important;
+        border: 2px solid #ececec !important;
         border-radius: 8px !important;
         padding: 12px !important;
         font-size: 14px !important;
@@ -288,7 +289,7 @@ seller_css = """
     .stTimeInput > div > div > input {
         background-color: #f5f5f5 !important;
         color: #2a2a2a !important;
-        border: 2px solid #5a9f9f !important;
+        border: 2px solid #ececec !important;
         border-radius: 8px !important;
         padding: 12px !important;
         font-size: 14px !important;
@@ -298,87 +299,14 @@ seller_css = """
     .stFileUploader > div > div {
         background-color: #f5f5f5 !important;
         color: #2a2a2a !important;
-        border: 2px solid #5a9f9f !important;
+        border: 2px solid #ececec !important;
         border-radius: 8px !important;
-    }
-    
-    /* REDUCED HEIGHT FOR UPLOADED FILE DISPLAY */
-    /* Target the uploaded file container */
-    .stFileUploader div[data-testid="stFileUploaderFileName"] {
-        min-height: 30px !important;
-        height: 30px !important;
-        padding: 4px 8px !important;
-        margin: 2px 0 !important;
-        display: flex !important;
-        align-items: center !important;
-        color: #999999 !important;
-        font-size: 12px !important;
-        line-height: 1.2 !important;
-    }
-    
-    /* Reduce height of the file uploader section after upload */
-    .stFileUploader section[data-testid="stFileUploaderDropzone"] {
-        min-height: 40px !important;
-        height: auto !important;
-        padding: 8px !important;
-        margin: 4px 0 !important;
-    }
-    
-    /* Target any uploaded file display elements */
-    .stFileUploader [data-testid="fileUploaderFileName"],
-    .stFileUploader [data-testid="stFileUploaderFileName"] > div,
-    .stFileUploader div[role="button"] {
-        min-height: 30px !important;
-        height: 30px !important;
-        padding: 4px 8px !important;
-        margin: 2px 0 !important;
-        line-height: 1.2 !important;
-        font-size: 12px !important;
-    }
-    
-    /* Compact the entire file uploader when files are uploaded */
-    .stFileUploader:has([data-testid="stFileUploaderFileName"]) {
-        min-height: 40px !important;
-    }
-    
-    .stFileUploader:has([data-testid="stFileUploaderFileName"]) > div {
-        min-height: 40px !important;
-        padding: 4px !important;
-    }
-    
-    /* File Uploader - Uploaded file display text (light grey) */
-    .stFileUploader div[data-testid="stFileUploaderFileName"],
-    .stFileUploader div[data-testid="fileUploaderDropzone"] span,
-    .stFileUploader div[data-testid="fileUploaderDropzone"] p,
-    .stFileUploader section span,
-    .stFileUploader section p,
-    .stFileUploader [data-testid="fileUploaderFileName"],
-    .stFileUploader small {
-        color: #999999 !important; /* Light grey for uploaded file names and text */
-        font-size: 12px !important;
-        line-height: 1.2 !important;
-    }
-    
-    /* File uploader drag and drop area */
-    .stFileUploader section {
-        background-color: #f5f5f5 !important;
-        border: 2px dashed #5a9f9f !important;
-        border-radius: 8px !important;
-    }
-    
-    /* File uploader text content - making it light grey */
-    .stFileUploader section div,
-    .stFileUploader section span,
-    .stFileUploader section small {
-        color: #999999 !important; /* Light grey for all file uploader text */
-        font-size: 12px !important;
-        line-height: 1.2 !important;
     }
     
     /* Color Picker */
     .stColorPicker > div > div > input {
         background-color: #f5f5f5 !important;
-        border: 2px solid #5a9f9f !important;
+        border: 2px solid #ececec !important;
         border-radius: 8px !important;
     }
     
@@ -388,7 +316,7 @@ seller_css = """
     .stNumberInput > div > div > input:focus,
     .stDateInput > div > div > input:focus,
     .stTimeInput > div > div > input:focus {
-        border-color: #667eea !important;
+        border-color: #ececec !important;
         box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2) !important;
         outline: none !important;
         background-color: #f5f5f5 !important;
@@ -436,6 +364,12 @@ seller_css = """
         background-color: #f5f5f5 !important;
     }
     
+    /* File uploader drag and drop area */
+    .stFileUploader section {
+        background-color: #f5f5f5 !important;
+        border: 2px dashed #ececec !important;
+        border-radius: 8px !important;
+    }
 input,
 textarea,
 select,
@@ -444,6 +378,50 @@ select,
     color: #2a2a2a !important;
 }
 
+   /* Force override all button styling */
+                    button[kind="secondary"] {
+                        height: 48px !important;
+                        border: 2.2px solid #ececec !important;
+                        border-radius: 4px !important;
+                        margin-top: -5px !important;  /* Move button up */
+                        background-color: #4a4a4a !important;  /* Dark greyish background */
+                        color: white !important;  /* White text */
+                    }
+                     
+                    button[kind="secondary"]:hover {
+                        border: 2.2px solid #ececec !important;
+                        background-color: #5a5a5a !important;  /* Slightly lighter on hover */
+                        color: white !important;  /* Keep white text on hover */
+                    }
+                     
+                    button[kind="secondary"]:focus {
+                        border: 2.2px solid #ececec !important;
+                        outline: 2px solid #618f8f !important;
+                        background-color: #4a4a4a !important;  /* Keep dark background on focus */
+                        color: white !important;  /* Keep white text on focus */
+                    }
+                     
+                    /* Try targeting by data attributes */
+                    [data-testid] button {
+                        border: 2.2px solid #ececec !important;
+                        height: 48px !important;
+                        margin-top: -5px !important;  /* Move button up */
+                        background-color: #4a4a4a !important;  /* Dark greyish background */
+                        color: white !important;  /* White text */
+                    }
+                    
+                    /* Additional targeting for button text specifically */
+                    button[kind="secondary"] p,
+                    button[kind="secondary"] span,
+                    button[kind="secondary"] div {
+                        color: white !important;
+                    }
+                    
+                    [data-testid] button p,
+                    [data-testid] button span,
+                    [data-testid] button div {
+                        color: white !important;
+                    }
 
 </style>
 """

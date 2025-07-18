@@ -10,7 +10,12 @@ import re
 from Search.WebsiteUrl_Agent.agent_prompts import *
 
 
+
 load_dotenv()
+
+import os 
+os.environ["GOOGLE_API_KEY"] ="AIzaSyDTYADVQVxJ5-UKQYZ8-tNFDlo-SKhwzEU"
+
 class WebSite(BaseModel):
     website_name : str = Field(description="Website name")
     website_url : str = Field(description="Website url")
