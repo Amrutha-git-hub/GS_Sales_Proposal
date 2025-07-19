@@ -161,36 +161,39 @@ def render_client_name_section(logger, client_data, is_locked):
                 set_global_message("Unable to initialize website search. Please refresh the page.", 'error')
                 st.rerun()
         
+        # Add spinner container that spans both columns
+        spinner_container = st.container()
+        
         # Handle the Find URLs button click
         if find_urls_clicked:
             logger.info(f"Find URLs button clicked for: {client_enterprise_name.strip()}")
             
-            # Show processing message instead of spinner
-            set_global_message(f"Finding websites for '{client_enterprise_name.strip()}'...", 'info')
-            
-            try:
-                urls_list = get_urls_list(client_enterprise_name.strip())
-                logger.info(f"Found {len(urls_list)} URLs for {client_enterprise_name.strip()}")
-                
-                # Update multiple fields at once
-                client_state_manager.update_multiple_fields(
-                    website_urls_list=urls_list,
-                    enterprise_name=client_enterprise_name,
-                    last_company_name=client_enterprise_name.strip()
-                )
-                logger.debug("Updated client data with URLs list")
-                
-                if urls_list:
-                    set_global_message(f"Successfully found {len(urls_list)} website URLs for {client_enterprise_name.strip()}", 'success')
-                else:
-                    set_global_message(f"No website URLs found for {client_enterprise_name.strip()}", "error")
-                st.rerun()
-                
-            except Exception as e:
-                logger.error(f"Error finding URLs for {client_enterprise_name.strip()}: {str(e)}")
-                client_state_manager.update_field('website_urls_list', [])
-                set_global_message("The requested websites couldn't be found. Please try again later.", "error")
-                st.rerun()
+            # Show spinner while processing
+            with spinner_container:
+                with st.spinner(f"Finding websites for '{client_enterprise_name.strip()}'..."):
+                    try:
+                        urls_list = get_urls_list(client_enterprise_name.strip())
+                        logger.info(f"Found {len(urls_list)} URLs for {client_enterprise_name.strip()}")
+                        
+                        # Update multiple fields at once
+                        client_state_manager.update_multiple_fields(
+                            website_urls_list=urls_list,
+                            enterprise_name=client_enterprise_name,
+                            last_company_name=client_enterprise_name.strip()
+                        )
+                        logger.debug("Updated client data with URLs list")
+                        
+                        if urls_list:
+                            set_global_message(f"Successfully found {len(urls_list)} website URLs for {client_enterprise_name.strip()}", 'success')
+                        else:
+                            set_global_message(f"No website URLs found for {client_enterprise_name.strip()}", "error")
+                        st.rerun()
+                        
+                    except Exception as e:
+                        logger.error(f"Error finding URLs for {client_enterprise_name.strip()}: {str(e)}")
+                        client_state_manager.update_field('website_urls_list', [])
+                        set_global_message("The requested websites couldn't be found. Please try again later.", "error")
+                        st.rerun()
         
         # Clear URLs if company name is cleared
         try:
@@ -330,7 +333,7 @@ def render_client_website_section(logger, client_data, is_locked):
                 st.markdown(f'''
             <style>
                 .plain-link {{
-                    margin-top: -120px;  /* Increased from -90px to push it higher */
+                    margin-bottom: 30px; 
                     margin-left: 10px;
                     display: inline-block;
                     font-size: 14px;
@@ -1109,298 +1112,6 @@ def render_third_section(logger, client_data, is_locked):
     
     with col6:
         render_client_pain_points_section(logger, client_data, is_locked)
-
-@st.fragment
-def render_spoc_name_section(logger, client_data, is_locked):
-    """Render the SPOC name input section (left column)"""
-    client_name_provided = bool(client_data.enterprise_name and client_data.enterprise_name.strip())
-    
-    try:
-        st.markdown('''
-        <div class="tooltip-label">
-            SPOC Name
-            <div class="tooltip-icon" data-tooltip="Enter the Single Point of Contact (SPOC) name - the primary person responsible for communication and decision-making on the client side. This person will be your main contact throughout the project lifecycle.">ⓘ</div>
-        </div>
-        ''', unsafe_allow_html=True)
-        
-        spoc_name = st.text_input(
-            on_change=lambda : None,
-            label="SPOC Name", 
-            value=client_data.spoc_name,
-            placeholder="Enter SPOC full name...", 
-            key="spoc_name_input",
-            label_visibility="collapsed",
-            disabled=not client_name_provided or is_locked
-        )
-        
-        # Update client data when SPOC name changes
-        if spoc_name != client_data.spoc_name:
-            try:
-                client_state_manager.update_client_data(spoc_name=spoc_name)
-                logger.debug(f"Updated SPOC name to: {spoc_name}")
-            except Exception as e:
-                logger.error(f"Error updating SPOC name: {str(e)}")
-                set_global_message("Failed to save SPOC name - Please try again")
-        
-        # Automatically search for LinkedIn profiles when SPOC name changes
-        if spoc_name and spoc_name.strip() and spoc_name != client_data.last_searched_spoc and client_name_provided:
-            try:
-                set_global_message(f"Searching LinkedIn profiles for {spoc_name}...")
-                logger.info(f"Searching LinkedIn profiles for SPOC: {spoc_name}")
-                
-                # Search for LinkedIn profiles
-                linkedin_profiles_raw = get_linkedin(spoc_name.strip())
-                
-                # Process LinkedIn profiles - handle both list and dict formats
-                processed_profiles = {}
-                if linkedin_profiles_raw:
-                    if isinstance(linkedin_profiles_raw, list):
-                        # Handle list format - merge all dictionaries
-                        for profile_dict in linkedin_profiles_raw:
-                            if isinstance(profile_dict, dict):
-                                processed_profiles.update(profile_dict)
-                    elif isinstance(linkedin_profiles_raw, dict):
-                        # Handle direct dictionary format
-                        processed_profiles = linkedin_profiles_raw
-                    
-                    logger.info(f"Found {len(processed_profiles)} LinkedIn profiles")
-                else:
-                    set_global_message("No LinkedIn profiles found", "info")
-                    logger.info("No LinkedIn profiles found for SPOC")
-                
-                try:
-                    client_state_manager.update_client_data(
-                        linkedin_profiles=processed_profiles,
-                        last_searched_spoc=spoc_name
-                    )
-                    logger.debug("Updated client data with LinkedIn profiles")
-                except Exception as e:
-                    logger.error(f"Error updating LinkedIn profiles: {str(e)}")
-                    set_global_message("Failed to save LinkedIn profiles - Please try searching again")
-                
-                st.rerun()
-                
-            except Exception as e:
-                logger.error(f"Error searching LinkedIn profiles: {str(e)}")
-                set_global_message("LinkedIn search failed - Please try again or check your connection")
-                
-    except Exception as e:
-        logger.error(f"Error in SPOC name section: {str(e)}")
-        set_global_message("SPOC name section unavailable - Please refresh the page")
-    
-    return spoc_name
-
-
-@st.fragment
-def render_linkedin_profile_section(logger, client_data, is_locked, spoc_name):
-    """Render the LinkedIn profile selection section (right column)"""
-    client_name_provided = bool(client_data.enterprise_name and client_data.enterprise_name.strip())
-    spoc_name_provided = bool(spoc_name and spoc_name.strip()) and client_name_provided
-    
-    try:
-        st.markdown('''
-        <div class="tooltip-label">
-            Select SPOC LinkedIn Profile
-            <div class="tooltip-icon" data-tooltip="Enter or select the LinkedIn profile URL of the SPOC. This helps in understanding their professional background, expertise, and communication style for better relationship building.">ⓘ</div>
-        </div>
-        ''', unsafe_allow_html=True)
-        
-        spoc_linkedin_profile = None
-        
-        # Prepare LinkedIn profile options
-        if spoc_name_provided and client_data.linkedin_profiles:
-            try:
-                # Create options with profile titles for better selection
-                linkedin_options = ["Select a LinkedIn profile..."]
-                linkedin_url_mapping = {}  # To map display text to actual URL
-                
-                for url, profile_data in client_data.linkedin_profiles.items():
-                    # Handle both old and new profile data formats
-                    if isinstance(profile_data, dict):
-                        name = profile_data.get('name', 'Unknown')
-                        role = profile_data.get('role', 'Unknown Role')
-                        display_text = f"{name} - {role}"
-                    else:
-                        # Fallback for unexpected format
-                        display_text = f"Profile: {str(profile_data)}"
-                    
-                    linkedin_options.append(display_text)
-                    linkedin_url_mapping[display_text] = url
-                
-                selected_linkedin_display = st.selectbox(
-                    label="SPOC LinkedIn Profile",
-                    options=linkedin_options,
-                    key="spoc_linkedin_profile_selector",
-                    label_visibility="collapsed",
-                    disabled=not client_name_provided or is_locked,
-                    accept_new_options=True,
-                )
-                
-                # Extract the actual URL from the selected option
-                if selected_linkedin_display != "Select a LinkedIn profile...":
-                    spoc_linkedin_profile = linkedin_url_mapping.get(selected_linkedin_display)
-                    if spoc_linkedin_profile:
-                        try:
-                            client_state_manager.update_client_data(spoc_linkedin_profile=spoc_linkedin_profile)
-                            logger.debug(f"Updated SPOC LinkedIn profile: {spoc_linkedin_profile}")
-                        except Exception as e:
-                            logger.error(f"Error updating SPOC LinkedIn profile: {str(e)}")
-                            set_global_message("Failed to save LinkedIn profile selection - Please try again")
-                else:
-                    spoc_linkedin_profile = None
-                    
-            except Exception as e:
-                logger.error(f"Error processing LinkedIn profile options: {str(e)}")
-                set_global_message("LinkedIn profile options unavailable - Please refresh the page")
-                
-        elif spoc_name_provided and not client_data.linkedin_profiles:
-            # Show message when no profiles found
-            st.selectbox(
-                label="SPOC LinkedIn Profile",
-                options=["No LinkedIn profiles found. Try a different name."],
-                key="spoc_linkedin_profile_selector",
-                label_visibility="collapsed",
-                disabled=is_locked,
-                accept_new_options=True
-            )
-            spoc_linkedin_profile = None
-        else:
-            # Default disabled state
-            spoc_linkedin_profile = st.selectbox(
-                label="SPOC LinkedIn Profile",
-                options=["Enter SPOC name to get LinkedIn profiles"],
-                key="spoc_linkedin_profile_selector",
-                label_visibility="collapsed",
-                disabled=is_locked or not spoc_name_provided,
-                accept_new_options=True
-            )
-            
-    except Exception as e:
-        logger.error(f"Error in LinkedIn profile section: {str(e)}")
-        set_global_message("LinkedIn profile section unavailable - Please refresh the page")
-    
-    return spoc_linkedin_profile
-
-
-@st.fragment
-def render_selected_profile_info(logger, client_data, spoc_name_provided, spoc_linkedin_profile):
-    """Render the selected profile information and handle dynamic updates"""
-    try:
-        # Display selected profile information and handle dynamic updates
-        if spoc_name_provided and client_data.linkedin_profiles:
-            # Check if LinkedIn profile selection has changed
-            profile_changed = False
-            if spoc_linkedin_profile:
-                if client_data.current_selected_profile_url != spoc_linkedin_profile:
-                    try:
-                        client_state_manager.update_client_data(current_selected_profile_url=spoc_linkedin_profile)
-                        profile_changed = True
-                        logger.info(f"Profile changed to: {spoc_linkedin_profile}")
-                    except Exception as e:
-                        logger.error(f"Error updating current selected profile URL: {str(e)}")
-                        set_global_message("Failed to update profile selection - Please try again")
-                        
-                selected_profile_data = client_data.linkedin_profiles.get(spoc_linkedin_profile)
-                if selected_profile_data and isinstance(selected_profile_data, dict):
-                    try:
-                        name = selected_profile_data.get('name', 'Unknown')
-                        role = selected_profile_data.get('role', 'Unknown Role')
-                        st.markdown(f'''
-<div style="text-align: center; margin-top: 10px;">
-    <a href="{spoc_linkedin_profile}" target="_blank" style="color: #0077b5; font-weight: 500; text-decoration: none;">
-        Visit LinkedIn
-    </a>
-</div>
-''', unsafe_allow_html=True)
-
-                        
-                        logger.debug(f"Displayed profile info for: {name}")
-                        
-                    except Exception as e:
-                        logger.error(f"Error displaying profile info: {str(e)}")
-                        set_global_message("Profile display error - Please refresh the page")
-                
-                # Update roles and priorities when profile changes
-                if profile_changed:
-                    try:
-                        # Remove previously auto-populated LinkedIn role if it exists
-                        linkedin_roles_to_remove = []
-                        if hasattr(client_data, 'selected_target_roles') and isinstance(client_data.selected_target_roles, list):
-                            for i, existing_role in enumerate(client_data.selected_target_roles):
-                                # Check if this role was from a previous LinkedIn profile
-                                for url, profile in client_data.linkedin_profiles.items():
-                                    if (url != spoc_linkedin_profile and 
-                                        isinstance(profile, dict) and 
-                                        profile.get('role') == existing_role):
-                                        linkedin_roles_to_remove.append(i)
-                                        break
-                        
-                            # Remove old LinkedIn roles
-                            for idx in reversed(linkedin_roles_to_remove):
-                                client_data.selected_target_roles.pop(idx)
-                        
-                        # Add new LinkedIn role
-                        linkedin_role = selected_profile_data.get('role')
-                        if linkedin_role:
-                            if not hasattr(client_data, 'selected_target_roles'):
-                                client_data.selected_target_roles = []
-                            if linkedin_role not in client_data.selected_target_roles:
-                                client_data.selected_target_roles.append(linkedin_role)
-                        
-                        # Remove old LinkedIn priorities and add new ones
-                        if hasattr(client_data, 'selected_business_priorities') and isinstance(client_data.selected_business_priorities, list):
-                            linkedin_priorities_to_remove = []
-                            for priority in client_data.selected_business_priorities:
-                                # Check if this priority was from a previous LinkedIn profile
-                                for url, profile in client_data.linkedin_profiles.items():
-                                    if (url != spoc_linkedin_profile and 
-                                        isinstance(profile, dict) and 
-                                        priority in profile.get('top_3_priorities', [])):
-                                        linkedin_priorities_to_remove.append(priority)
-                                        break
-                            
-                            # Remove old LinkedIn priorities
-                            for priority in linkedin_priorities_to_remove:
-                                if priority in client_data.selected_business_priorities:
-                                    client_data.selected_business_priorities.remove(priority)
-                        
-                        # Add new LinkedIn priorities
-                        inferred_priorities = selected_profile_data.get('top_3_priorities', [])
-                        if not hasattr(client_data, 'selected_business_priorities'):
-                            client_data.selected_business_priorities = []
-                        
-                        for priority in inferred_priorities:
-                            if priority not in client_data.selected_business_priorities:
-                                client_data.selected_business_priorities.append(priority)
-                        
-                        # Update client data
-                        client_state_manager.update_client_data(
-                            selected_target_roles=getattr(client_data, 'selected_target_roles', []),
-                            selected_business_priorities=getattr(client_data, 'selected_business_priorities', [])
-                        )
-                        
-                        logger.info("Updated target roles and business priorities based on LinkedIn profile")
-                        
-                        # Force rerun to update the display
-                        st.rerun()
-                        
-                    except Exception as e:
-                        logger.error(f"Error updating roles and priorities: {str(e)}")
-                        set_global_message("Failed to update roles and priorities - Please try again")
-                        
-            elif hasattr(client_data, 'current_selected_profile_url') and client_data.current_selected_profile_url is not None:
-                # Profile was deselected
-                try:
-                    client_state_manager.update_client_data(current_selected_profile_url=None)
-                    profile_changed = True
-                    logger.info("Profile deselected")
-                except Exception as e:
-                    logger.error(f"Error clearing selected profile: {str(e)}")
-                    set_global_message("Failed to clear profile selection - Please try again")
-                    
-    except Exception as e:
-        logger.error(f"Error in selected profile info section: {str(e)}")
-        set_global_message("Profile information section unavailable - Please refresh the page")
 @st.fragment
 def render_spoc_name_section(logger, client_data, is_locked):
     """Render the SPOC name input section (left column)"""
@@ -1433,52 +1144,62 @@ def render_spoc_name_section(logger, client_data, is_locked):
             linkedin_button_disabled = (not spoc_name or not spoc_name.strip() or 
                                        not client_name_provided or is_locked)
             
-            if st.button(
+            linkedin_button_clicked = st.button(
                 "Get LinkedIn",
                 key="get_linkedin_button",
                 disabled=linkedin_button_disabled,
                 help="Search for LinkedIn profiles of the SPOC"
-            ):
-                # Handle LinkedIn profile search when button is clicked
-                try:
-                    set_global_message(f"Searching LinkedIn profiles for {spoc_name}...")
-                    logger.info(f"Searching LinkedIn profiles for SPOC: {spoc_name}")
-                    
-                    # Search for LinkedIn profiles
-                    linkedin_profiles_raw = get_linkedin(spoc_name.strip())
-                    
-                    # Process LinkedIn profiles - handle both list and dict formats
-                    processed_profiles = {}
-                    if linkedin_profiles_raw:
-                        if isinstance(linkedin_profiles_raw, list):
-                            # Handle list format - merge all dictionaries
-                            for profile_dict in linkedin_profiles_raw:
-                                if isinstance(profile_dict, dict):
-                                    processed_profiles.update(profile_dict)
-                        elif isinstance(linkedin_profiles_raw, dict):
-                            # Handle direct dictionary format
-                            processed_profiles = linkedin_profiles_raw
-                        
-                        logger.info(f"Found {len(processed_profiles)} LinkedIn profiles")
-                    else:
-                        set_global_message("No LinkedIn profiles found", "info")
-                        logger.info("No LinkedIn profiles found for SPOC")
-                    
+            )
+        
+        # Add spinner container that spans both columns
+        spinner_container = st.container()
+        
+        # Handle LinkedIn profile search when button is clicked
+        if linkedin_button_clicked:
+            with spinner_container:
+                with st.spinner(f"Searching LinkedIn profiles for {spoc_name.strip()}..."):
                     try:
-                        client_state_manager.update_client_data(
-                            linkedin_profiles=processed_profiles,
-                            last_searched_spoc=spoc_name
-                        )
-                        logger.debug("Updated client data with LinkedIn profiles")
+                        logger.info(f"Searching LinkedIn profiles for SPOC: {spoc_name}")
+                        
+                        # Search for LinkedIn profiles
+                        linkedin_profiles_raw = get_linkedin(spoc_name.strip())
+                        
+                        # Process LinkedIn profiles - handle both list and dict formats
+                        processed_profiles = {}
+                        if linkedin_profiles_raw:
+                            if isinstance(linkedin_profiles_raw, list):
+                                # Handle list format - merge all dictionaries
+                                for profile_dict in linkedin_profiles_raw:
+                                    if isinstance(profile_dict, dict):
+                                        processed_profiles.update(profile_dict)
+                            elif isinstance(linkedin_profiles_raw, dict):
+                                # Handle direct dictionary format
+                                processed_profiles = linkedin_profiles_raw
+                            
+                            logger.info(f"Found {len(processed_profiles)} LinkedIn profiles")
+                            set_global_message(f"Successfully found {len(processed_profiles)} LinkedIn profiles for {spoc_name.strip()}", "success")
+                        else:
+                            set_global_message("No LinkedIn profiles found", "info")
+                            logger.info("No LinkedIn profiles found for SPOC")
+                        
+                        try:
+                            # Clear previous profile selection when new search is performed
+                            client_state_manager.update_client_data(
+                                linkedin_profiles=processed_profiles,
+                                last_searched_spoc=spoc_name,
+                                current_selected_profile_url=None,  # Reset selection
+                                spoc_linkedin_profile=""  # Reset profile selection
+                            )
+                            logger.debug("Updated client data with LinkedIn profiles")
+                        except Exception as e:
+                            logger.error(f"Error updating LinkedIn profiles: {str(e)}")
+                            set_global_message("Failed to save LinkedIn profiles - Please try searching again", "error")
+                        
+                        st.rerun()
+                        
                     except Exception as e:
-                        logger.error(f"Error updating LinkedIn profiles: {str(e)}")
-                        set_global_message("Failed to save LinkedIn profiles - Please try searching again")
-                    
-                    st.rerun()
-                    
-                except Exception as e:
-                    logger.error(f"Error searching LinkedIn profiles: {str(e)}")
-                    set_global_message("LinkedIn search failed - Please try again or check your connection")
+                        logger.error(f"Error searching LinkedIn profiles: {str(e)}")
+                        set_global_message("LinkedIn search failed - Please try again or check your connection", "error")
         
         # Update client data when SPOC name changes
         if spoc_name != client_data.spoc_name:
@@ -1487,11 +1208,11 @@ def render_spoc_name_section(logger, client_data, is_locked):
                 logger.debug(f"Updated SPOC name to: {spoc_name}")
             except Exception as e:
                 logger.error(f"Error updating SPOC name: {str(e)}")
-                set_global_message("Failed to save SPOC name - Please try again")
+                set_global_message("Failed to save SPOC name - Please try again", "error")
     
     except Exception as e:
         logger.error(f"Error in SPOC name section: {str(e)}")
-        set_global_message("SPOC name section unavailable - Please refresh the page")
+        set_global_message("SPOC name section unavailable - Please refresh the page", "error")
     
     return spoc_name
 
@@ -1532,34 +1253,65 @@ def render_linkedin_profile_section(logger, client_data, is_locked, spoc_name):
                     linkedin_options.append(display_text)
                     linkedin_url_mapping[display_text] = url
                 
+                # Pre-select the current profile if it exists
+                current_index = 0
+                if client_data.current_selected_profile_url:
+                    for i, (display_text, url) in enumerate(linkedin_url_mapping.items(), 1):
+                        if url == client_data.current_selected_profile_url:
+                            current_index = i
+                            break
+                
                 selected_linkedin_display = st.selectbox(
                     label="SPOC LinkedIn Profile",
                     options=linkedin_options,
+                    index=current_index,
                     key="spoc_linkedin_profile_selector",
                     label_visibility="collapsed",
-                    disabled= not client_name_provided or is_locked,
-                    accept_new_options=True,
+                    disabled=not client_name_provided or is_locked,
                 )
-                
-
-
 
                 # Extract the actual URL from the selected option
                 if selected_linkedin_display != "Select a LinkedIn profile...":
                     spoc_linkedin_profile = linkedin_url_mapping.get(selected_linkedin_display)
                     if spoc_linkedin_profile:
                         try:
-                            client_state_manager.update_client_data(spoc_linkedin_profile=spoc_linkedin_profile)
+                            # Update both spoc_linkedin_profile and current_selected_profile_url
+                            client_state_manager.update_client_data(
+                                spoc_linkedin_profile=spoc_linkedin_profile,
+                                current_selected_profile_url=spoc_linkedin_profile
+                            )
                             logger.debug(f"Updated SPOC LinkedIn profile: {spoc_linkedin_profile}")
+                            
+                            # Immediately display the "Visit LinkedIn profile" link when profile is selected
+                            selected_profile_data = client_data.linkedin_profiles.get(spoc_linkedin_profile)
+                            if selected_profile_data and isinstance(selected_profile_data, dict):
+                                st.markdown(
+                                    f'<div style="text-align: right; margin-top: 10px;">'
+                                    f'<a href="{spoc_linkedin_profile}" target="_blank" '
+                                    f'style="color: #0066cc; text-decoration: none; font-size: 14px;">'
+                                    f'🔗 Visit LinkedIn Profile</a></div>', 
+                                    unsafe_allow_html=True
+                                )
+                                
                         except Exception as e:
                             logger.error(f"Error updating SPOC LinkedIn profile: {str(e)}")
-                            set_global_message("Failed to save LinkedIn profile selection - Please try again")
+                            set_global_message("Failed to save LinkedIn profile selection - Please try again", "error")
                 else:
+                    # Clear selection when "Select a LinkedIn profile..." is chosen
+                    if client_data.current_selected_profile_url is not None:
+                        try:
+                            client_state_manager.update_client_data(
+                                spoc_linkedin_profile="",
+                                current_selected_profile_url=None
+                            )
+                            logger.debug("Cleared SPOC LinkedIn profile selection")
+                        except Exception as e:
+                            logger.error(f"Error clearing SPOC LinkedIn profile: {str(e)}")
                     spoc_linkedin_profile = None
                     
             except Exception as e:
                 logger.error(f"Error processing LinkedIn profile options: {str(e)}")
-                set_global_message("LinkedIn profile options unavailable - Please refresh the page")
+                set_global_message("LinkedIn profile options unavailable - Please refresh the page", "error")
                 
         elif spoc_name_provided and not client_data.linkedin_profiles:
             # Show message when no profiles found
@@ -1569,23 +1321,22 @@ def render_linkedin_profile_section(logger, client_data, is_locked, spoc_name):
                 key="spoc_linkedin_profile_selector",
                 label_visibility="collapsed",
                 disabled=is_locked,
-                accept_new_options=True
             )
             spoc_linkedin_profile = None
         else:
             # Default disabled state
-            spoc_linkedin_profile = st.selectbox(
+            st.selectbox(
                 label="SPOC LinkedIn Profile",
                 options=["Enter SPOC name to get LinkedIn profiles"],
                 key="spoc_linkedin_profile_selector",
                 label_visibility="collapsed",
                 disabled=is_locked or not spoc_name_provided,
-                accept_new_options=True
             )
+            spoc_linkedin_profile = None
             
     except Exception as e:
         logger.error(f"Error in LinkedIn profile section: {str(e)}")
-        set_global_message("LinkedIn profile section unavailable - Please refresh the page")
+        set_global_message("LinkedIn profile section unavailable - Please refresh the page", "error")
     
     return spoc_linkedin_profile
 
@@ -1595,112 +1346,79 @@ def render_selected_profile_info(logger, client_data, spoc_name_provided, spoc_l
     """Render the selected profile information and handle dynamic updates"""
     try:
         # Display selected profile information and handle dynamic updates
-        if spoc_name_provided and client_data.linkedin_profiles:
-            # Check if LinkedIn profile selection has changed
-            profile_changed = False
-            if spoc_linkedin_profile:
-                if client_data.current_selected_profile_url != spoc_linkedin_profile:
-                    try:
-                        client_state_manager.update_client_data(current_selected_profile_url=spoc_linkedin_profile)
-                        profile_changed = True
-                        logger.info(f"Profile changed to: {spoc_linkedin_profile}")
-                    except Exception as e:
-                        logger.error(f"Error updating current selected profile URL: {str(e)}")
-                        set_global_message("Failed to update profile selection - Please try again")
-                        
-                selected_profile_data = client_data.linkedin_profiles.get(spoc_linkedin_profile)
-                if selected_profile_data and isinstance(selected_profile_data, dict):
-                    try:
-                        name = selected_profile_data.get('name', 'Unknown')
-                        role = selected_profile_data.get('role', 'Unknown Role')
-                        st.markdown(f'<div style="text-align: right;"><a href="{spoc_linkedin_profile}" target="_blank">Visit LinkedIn profile</a></div>', unsafe_allow_html=True)
-                        logger.debug(f"Displayed profile info for: {name}")
-                        
-                    except Exception as e:
-                        logger.error(f"Error displaying profile info: {str(e)}")
-                        set_global_message("Profile display error - Please refresh the page")
-                
-                # Update roles and priorities when profile changes
-                if profile_changed:
-                    try:
-                        # Remove previously auto-populated LinkedIn role if it exists
-                        linkedin_roles_to_remove = []
-                        if hasattr(client_data, 'selected_target_roles') and isinstance(client_data.selected_target_roles, list):
-                            for i, existing_role in enumerate(client_data.selected_target_roles):
-                                # Check if this role was from a previous LinkedIn profile
-                                for url, profile in client_data.linkedin_profiles.items():
-                                    if (url != spoc_linkedin_profile and 
-                                        isinstance(profile, dict) and 
-                                        profile.get('role') == existing_role):
-                                        linkedin_roles_to_remove.append(i)
-                                        break
-                        
-                            # Remove old LinkedIn roles
-                            for idx in reversed(linkedin_roles_to_remove):
-                                client_data.selected_target_roles.pop(idx)
-                        
-                        # Add new LinkedIn role
-                        linkedin_role = selected_profile_data.get('role')
-                        if linkedin_role:
-                            if not hasattr(client_data, 'selected_target_roles'):
-                                client_data.selected_target_roles = []
-                            if linkedin_role not in client_data.selected_target_roles:
-                                client_data.selected_target_roles.append(linkedin_role)
-                        
-                        # Remove old LinkedIn priorities and add new ones
-                        if hasattr(client_data, 'selected_business_priorities') and isinstance(client_data.selected_business_priorities, list):
-                            linkedin_priorities_to_remove = []
-                            for priority in client_data.selected_business_priorities:
-                                # Check if this priority was from a previous LinkedIn profile
-                                for url, profile in client_data.linkedin_profiles.items():
-                                    if (url != spoc_linkedin_profile and 
-                                        isinstance(profile, dict) and 
-                                        priority in profile.get('top_3_priorities', [])):
-                                        linkedin_priorities_to_remove.append(priority)
-                                        break
-                            
-                            # Remove old LinkedIn priorities
-                            for priority in linkedin_priorities_to_remove:
-                                if priority in client_data.selected_business_priorities:
-                                    client_data.selected_business_priorities.remove(priority)
-                        
-                        # Add new LinkedIn priorities
-                        inferred_priorities = selected_profile_data.get('top_3_priorities', [])
-                        if not hasattr(client_data, 'selected_business_priorities'):
-                            client_data.selected_business_priorities = []
-                        
-                        for priority in inferred_priorities:
-                            if priority not in client_data.selected_business_priorities:
-                                client_data.selected_business_priorities.append(priority)
-                        
-                        # Update client data
-                        client_state_manager.update_client_data(
-                            selected_target_roles=getattr(client_data, 'selected_target_roles', []),
-                            selected_business_priorities=getattr(client_data, 'selected_business_priorities', [])
-                        )
-                        
-                        logger.info("Updated target roles and business priorities based on LinkedIn profile")
-                        
-                        # Force rerun to update the display
-                        st.rerun()
-                        
-                    except Exception as e:
-                        logger.error(f"Error updating roles and priorities: {str(e)}")
-                        set_global_message("Failed to update roles and priorities - Please try again")
-                        
-            elif hasattr(client_data, 'current_selected_profile_url') and client_data.current_selected_profile_url is not None:
-                # Profile was deselected
+        if spoc_name_provided and client_data.linkedin_profiles and client_data.current_selected_profile_url:
+            profile_url = client_data.current_selected_profile_url
+            selected_profile_data = client_data.linkedin_profiles.get(profile_url)
+            
+            if selected_profile_data and isinstance(selected_profile_data, dict):
                 try:
-                    client_state_manager.update_client_data(current_selected_profile_url=None)
-                    profile_changed = True
-                    logger.info("Profile deselected")
-                except Exception as e:
-                    logger.error(f"Error clearing selected profile: {str(e)}")
-                    set_global_message("Failed to clear profile selection - Please try again")
+                    name = selected_profile_data.get('name', 'Unknown')
+                    role = selected_profile_data.get('role', 'Unknown Role')
                     
+                    logger.debug(f"Displayed profile info for: {name}")
+                    
+                except Exception as e:
+                    logger.error(f"Error displaying profile info: {str(e)}")
+                    set_global_message("Profile display error - Please refresh the page", "error")
+            
+            # Handle profile changes and update roles/priorities
+            if spoc_linkedin_profile and spoc_linkedin_profile != getattr(client_data, 'last_processed_profile', None):
+                try:
+                    # Remove previously auto-populated LinkedIn roles if they exist
+                    current_roles = list(getattr(client_data, 'selected_target_roles', []))
+                    current_priorities = list(getattr(client_data, 'selected_business_priorities', []))
+                    
+                    # Remove roles from previous LinkedIn profiles
+                    for url, profile in client_data.linkedin_profiles.items():
+                        if (url != profile_url and 
+                            isinstance(profile, dict) and 
+                            profile.get('role') in current_roles):
+                            try:
+                                current_roles.remove(profile.get('role'))
+                                logger.debug(f"Removed old LinkedIn role: {profile.get('role')}")
+                            except ValueError:
+                                pass  # Role wasn't in list
+                    
+                    # Remove priorities from previous LinkedIn profiles
+                    for url, profile in client_data.linkedin_profiles.items():
+                        if (url != profile_url and 
+                            isinstance(profile, dict)):
+                            old_priorities = profile.get('top_3_priorities', [])
+                            for priority in old_priorities:
+                                if priority in current_priorities:
+                                    current_priorities.remove(priority)
+                                    logger.debug(f"Removed old LinkedIn priority: {priority}")
+                    
+                    # Add new LinkedIn role
+                    linkedin_role = selected_profile_data.get('role')
+                    if linkedin_role and linkedin_role not in current_roles:
+                        current_roles.append(linkedin_role)
+                        logger.debug(f"Added new LinkedIn role: {linkedin_role}")
+                    
+                    # Add new LinkedIn priorities
+                    inferred_priorities = selected_profile_data.get('top_3_priorities', [])
+                    for priority in inferred_priorities:
+                        if priority not in current_priorities:
+                            current_priorities.append(priority)
+                            logger.debug(f"Added new LinkedIn priority: {priority}")
+                    
+                    # Update client data with correct field names (plural)
+                    client_state_manager.update_client_data(
+                        selected_target_roles=current_roles,  # Make sure this is plural
+                        selected_business_priorities=current_priorities,  # Make sure this is plural
+                        last_processed_profile=spoc_linkedin_profile  # Track last processed profile
+                    )
+                    
+                    logger.info("Updated target roles and business priorities based on LinkedIn profile")
+                    set_global_message("Profile information updated successfully", "success")
+                    
+                except Exception as e:
+                    logger.error(f"Error updating roles and priorities: {str(e)}")
+                    set_global_message("Failed to update roles and priorities - Please try again", "error")
+                        
     except Exception as e:
         logger.error(f"Error in selected profile info section: {str(e)}")
-        set_global_message("Profile information section unavailable - Please refresh the page")
+        set_global_message("Profile information section unavailable - Please refresh the page", "error")
 
 
 @st.fragment
@@ -1723,7 +1441,7 @@ def render_fourth_section(logger, is_locked, client_data):
         
     except Exception as e:
         logger.error(f"Critical error in fourth section rendering: {str(e)}")
-        set_global_message("Service interruption - We're experiencing technical difficulties. Please refresh the page or contact support")
+        set_global_message("Service interruption - We're experiencing technical difficulties. Please refresh the page or contact support", "error")
         return False, None
     
 @st.fragment
@@ -1779,7 +1497,7 @@ def render_spoc_role_section(spoc_name_provided, spoc_linkedin_profile, client_d
     # If no LinkedIn profile selected, show all available roles
     if not selected_linkedin_role:
         # Add standard roles from get_roles_list()
-        role_options.extend(target_roles_list)
+        
         
         # Add LinkedIn roles if available (but no specific profile selected)
         if spoc_name_provided and client_data.linkedin_profiles:
@@ -1788,6 +1506,7 @@ def render_spoc_role_section(spoc_name_provided, spoc_linkedin_profile, client_d
                     linkedin_role = profile_data.get('role')
                     if linkedin_role and linkedin_role not in role_options:
                         role_options.append(linkedin_role)
+        role_options.extend(target_roles_list)
 
     # Determine the default/current value for the selectbox
     current_selection = "Select a role..."
@@ -2016,17 +1735,13 @@ def render_spoc_business_priorities_section(spoc_name_provided, client_data, log
             button_help = f"Remove '{priority_title}' from SPOC priorities" if is_selected else f"Add '{priority_title}' to SPOC priorities"
             button_type = "secondary"
             
-            is_enabled = (
-                spoc_name_provided and 
-                current_role and 
-                current_role != "Select a role..."
-            )
             
+            spoc_name_provided = bool(client_data.spoc_name.strip())
             if st.button(button_text, 
                         key=f"toggle_business_priority_{i}_{hash(current_role or 'none')}", 
                         help=button_help,
                         type=button_type,
-                        disabled=not is_enabled or is_locked):
+                        disabled= is_locked or not client_name_provided):
                 
                 try:
                     if is_selected:
@@ -2358,7 +2073,6 @@ def client_tab(st, logger, is_locked):
             client_data=client_state, 
             is_locked=is_locked
         )
-        
         # Section 2: Website URL and analysis
         render_second_section(
             logger=logger, 

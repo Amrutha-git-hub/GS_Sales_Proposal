@@ -50,9 +50,10 @@ class ClientTabState:
     additional_specs_content_map: Dict[str, str] = field(default_factory=dict)
     
     # Role and priority management
+    last_processed_profile: Optional[str] = None
     selected_target_roles: List[str] = field(default_factory=list)
     selected_business_priorities: List[str] = field(default_factory=list)
-    
+    selected_target_role : str = ''
     # Processing states
     show_validation: bool = False
     processing_rfi: bool = False

@@ -43,37 +43,44 @@ import streamlit as st
 from datetime import datetime
 import time
 
+@st.dialog("‼️ Message")
+def show_global_message_dialog(message_type, message_text):
+    """Global message dialog with icon and centered close button"""
+    
+    # Determine icon and display method based on type
+    if message_type == "error":
+        st.error(message_text)
+    elif message_type == "warning":
+        st.warning(message_text)
+    elif message_type == "info":
+        st.info(message_text)
+    elif message_type == "success":
+        st.success(message_text)
+    else:
+        st.write(message_text)
+    
+    # Centered close button
+    col1, col2, col3 = st.columns([1, 1, 1])
+    with col2:
+        if st.button("Close", key=f"close_global_msg_{message_type}", type="primary"):
+            clear_global_error()
+            st.rerun()
+    with col3:
+        if st.button("OK"):
+            print("OK")
+        st.rerun()
+
 def display_global_message():
-    """Display the global message using st.toast if it exists and hasn't expired."""
+    """Display the global message using st.dialog if it exists."""
     if 'global_message' not in st.session_state:
         return
     
     message_data = st.session_state.global_message
-    
-    # Check if message is older than 15 seconds
-    elapsed_time = (datetime.now() - message_data['timestamp']).total_seconds()
-    if elapsed_time > 15:
-        clear_global_error()
-        return
-    
     message_type = message_data['type']
     message_text = message_data['message']
     
-    # Determine icon based on type
-    icon_map = {
-        "error": "❌",
-        "warning": "⚠️", 
-        "info": "ℹ️",
-        "success": "✅"
-    }
-    icon = icon_map.get(message_type, "📢")
-    
-    # Show the toast
-    st.toast(f"{icon} {message_text}", icon=icon)
-    
-    # Clear the message after showing it
-    clear_global_error()
-
+    # Show the dialog
+    show_global_message_dialog(message_type, message_text)
 
 def generate_session_id():
     """Generate a unique session ID for the user"""
@@ -746,7 +753,7 @@ content_area_css = """
 </style>
 """
 st.markdown(content_area_css,unsafe_allow_html=True)
-st.markdown(sticky_header_css, unsafe_allow_html=True)
+# st.markdown(sticky_header_css, unsafe_allow_html=True)
 
 # Add title - place this after your CSS but before the tab buttons
 # Replace your existing title section with this:
@@ -767,7 +774,6 @@ st.markdown("""
 
 
 
-# Add sticky tabs CSS
 st.markdown("""
 <style>
 .sticky-tabs {
@@ -910,8 +916,6 @@ for i, tab_name in enumerate(tab_names):
             ):
                 st.button(display_name, key=f"tab_{i}", use_container_width=True, disabled=True, type='secondary')
 
-# Close sticky tabs container
-st.markdown('</div>', unsafe_allow_html=True)
 
 display_global_message()
 

@@ -745,7 +745,7 @@ sticky_header_css = """
 <style>
 /* Make the app container handle overflow properly */
 .stApp {
-    height: 40vh;
+    height: 20vh;
 }
 
 /* Create sticky header - this will freeze the header */
@@ -772,8 +772,8 @@ sticky_header_css = """
 
 /* Main scrollable content area */
 .scrollable-content {
-    margin-top: 180px; /* Adjust based on header height */
-    height: calc(100vh - 180px);
+    margin-top: 140px; /* Adjust based on header height */
+    height: calc(100vh - 140px);
     overflow-y: auto;
     background-color: #fafafa;
     width: 75%;
