@@ -8,8 +8,8 @@ from Search.Linkedin.linkedin_serp import *
 from Recommendation.recommendation_utils import *
 from Common_Utils.ai_suggestion_utils import *
 from WebScraper.webscraper_without_ai import get_url_details_without_ai
-from Common_Utils.common_utils import set_global_message,get_data
-
+from Common_Utils.common_utils import *
+from Common_Utils.common_utils import set_global_message
 # Configure logger
 logger = logging.getLogger(__name__)
 

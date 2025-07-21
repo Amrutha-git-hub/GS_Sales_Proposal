@@ -240,18 +240,186 @@ def save_uploaded_file_and_get_path(uploaded_file):
         return file_path
     return None
 
-def set_global_message(message, message_type="info", duration=10):
-    """
-    Set a global message to be displayed
+def clear_global_error():
+    """Clear the global error message"""
+    if 'global_message' in st.session_state:
+        del st.session_state.global_message
+
+def is_message_expired():
+    """Check if the current message has expired"""
+    if 'global_message' not in st.session_state:
+        return True
     
-    Args:
-        message (str): The message text to display
-        message_type (str): Type of message - "error", "warning", "info", "success"
-        duration (int): Duration in seconds before auto-dismiss (default: 10)
-    """
-    st.session_state.global_message = {
-        'message': message,
-        'type': message_type,
-        'timestamp': datetime.now(),
-        'duration': duration
-    }
+    message_data = st.session_state.global_message
+    elapsed_time = (datetime.now() - message_data['timestamp']).total_seconds()
+    return elapsed_time > message_data['duration']
+
+@st.dialog("‼️ Error")
+def show_error_dialog(message_text, fun1=None, fun2=None, fun3=None, btn1_text="Close", btn2_text="OK", btn3_text="Cancel", show_third_button=False):
+    """Error message dialog with icon and multiple action buttons"""
+    st.error(message_text)
+    
+    # Two or three buttons layout based on show_third_button parameter
+    if show_third_button:
+        col1, col2, col3 = st.columns([1, 1, 1])
+    else:
+        col1, col2 = st.columns([1, 1])
+    
+    with col1:
+        if st.button(btn1_text, key="error_btn1", type="primary"):
+            if fun1:
+                fun1()
+                st.rerun()
+            else:
+                clear_global_error()
+                st.rerun()
+    
+    with col2:
+        if st.button(btn2_text, key="error_btn2"):
+            if fun2:
+                fun2()
+                st.rerun()
+            # Don't rerun if no function - just close dialog naturally
+    
+    if show_third_button:
+        with col3:
+            if st.button(btn3_text, key="error_btn3"):
+                if fun3:
+                    fun3()
+                    st.rerun()
+                # Don't rerun if no function - just close dialog naturally
+
+@st.dialog("⚠️ Warning")
+def show_warning_dialog(message_text, fun1=None, fun2=None, fun3=None, btn1_text="Close", btn2_text="OK", btn3_text="Cancel", show_third_button=False):
+    """Warning message dialog with icon and multiple action buttons"""
+    st.warning(message_text)
+    
+    # Two or three buttons layout based on show_third_button parameter
+    if show_third_button:
+        col1, col2, col3 = st.columns([1, 1, 1])
+    else:
+        col1, col2 = st.columns([1, 1])
+    
+    with col1:
+        if st.button(btn1_text, key="warning_btn1", type="primary"):
+            if fun1:
+                fun1()
+                st.rerun()
+            else:
+                clear_global_error()
+                st.rerun()
+    
+    with col2:
+        if st.button(btn2_text, key="warning_btn2"):
+            if fun2:
+                fun2()
+                st.rerun()
+            # Don't rerun if no function - just close dialog naturally
+    
+    if show_third_button:
+        with col3:
+            if st.button(btn3_text, key="warning_btn3"):
+                if fun3:
+                    fun3()
+                    st.rerun()
+                # Don't rerun if no function - just close dialog naturally
+
+@st.dialog("✅ Success")
+def show_success_dialog(message_text, fun1=None, fun2=None, fun3=None, btn1_text="Close", btn2_text="OK", btn3_text="Cancel", show_third_button=False):
+    """Success message dialog with icon and multiple action buttons"""
+    st.success(message_text)
+    
+    # Two or three buttons layout based on show_third_button parameter
+    if show_third_button:
+        col1, col2, col3 = st.columns([1, 1, 1])
+    else:
+        col1, col2 = st.columns([1, 1])
+    
+    with col1:
+        if st.button(btn1_text, key="success_btn1", type="primary"):
+            if fun1:
+                fun1()
+                st.rerun()
+            else:
+                clear_global_error()
+                st.rerun()
+    
+    with col2:
+        if st.button(btn2_text, key="success_btn2"):
+            if fun2:
+                fun2()
+                st.rerun()
+            # Don't rerun if no function - just close dialog naturally
+    
+    if show_third_button:
+        with col3:
+            if st.button(btn3_text, key="success_btn3"):
+                if fun3:
+                    fun3()
+                    st.rerun()
+                # Don't rerun if no function - just close dialog naturally
+
+def clear_global_error():
+    """Clear the global message from session state"""
+    if 'global_message' in st.session_state:
+        del st.session_state.global_message
+    if 'showing_dialog' in st.session_state:
+        del st.session_state.showing_dialog
+
+def is_message_expired():
+    """Check if the current message has expired"""
+    if 'global_message' not in st.session_state:
+        return True
+    
+    message_data = st.session_state.global_message
+    elapsed_time = (datetime.now() - message_data['timestamp']).total_seconds()
+    return elapsed_time > message_data['duration']
+
+def set_global_message(message_text, message_type='error', fun1=None, fun2=None, fun3=None, 
+                      btn1_text="Close", btn2_text="OK", btn3_text="Cancel", show_third_button=False):
+    """Helper function to set and immediately display global message"""
+    # Check if we should show the dialog (only if not already showing)
+    if 'showing_dialog' not in st.session_state or not st.session_state.showing_dialog:
+        st.session_state.showing_dialog = True
+        
+        # Direct orchestration - show the appropriate dialog immediately
+        if message_type == "error":
+            show_error_dialog(message_text, fun1, fun2, fun3, btn1_text, btn2_text, btn3_text, show_third_button)
+        elif message_type == "warning":
+            show_warning_dialog(message_text, fun1, fun2, fun3, btn1_text, btn2_text, btn3_text, show_third_button)
+        elif message_type == "success":
+            show_success_dialog(message_text, fun1, fun2, fun3, btn1_text, btn2_text, btn3_text, show_third_button)
+        else:
+            # Fallback for other message types
+            st.info(message_text)
+    clear_global_error()
+
+def display_global_message():
+    """Display the global message using appropriate dialog based on message type."""
+    if 'global_message' not in st.session_state:
+        return
+    
+    message_data = st.session_state.global_message
+    message_type = message_data['type']
+    message_text = message_data['message']
+    
+    # Get optional parameters
+    fun1 = message_data.get('fun1', None)
+    fun2 = message_data.get('fun2', None)
+    fun3 = message_data.get('fun3', None)
+    btn1_text = message_data.get('btn1_text', "Close")
+    btn2_text = message_data.get('btn2_text', "OK")
+    btn3_text = message_data.get('btn3_text', "Cancel")
+    show_third_button = message_data.get('show_third_button', False)
+    
+    # Direct orchestration - show the appropriate dialog
+    if message_type == "error":
+        show_error_dialog(message_text, fun1, fun2, fun3, btn1_text, btn2_text, btn3_text, show_third_button)
+    elif message_type == "warning":
+        show_warning_dialog(message_text, fun1, fun2, fun3, btn1_text, btn2_text, btn3_text, show_third_button)
+    elif message_type == "success":
+        show_success_dialog(message_text, fun1, fun2, fun3, btn1_text, btn2_text, btn3_text, show_third_button)
+    else:
+        # Fallback for other message types
+        st.info(message_text)
+

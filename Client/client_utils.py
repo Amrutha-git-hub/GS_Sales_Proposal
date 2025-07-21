@@ -2,6 +2,10 @@ import streamlit as st
 import pandas as pd
 from typing import List
 import os
+import streamlit as st
+from datetime import datetime
+import time
+import streamlit as st
 
 # from WebScraper.scrape_agent import get_data
 from Search.WebsiteUrl_Agent.agent_runner import get_urls
@@ -91,10 +95,23 @@ def get_editable_content() -> str:
 You can modify this content as needed."""
 
 
-# Function to get summary items (NEW)
-# from Rag.rag import get_pain_points
 
-
+# def set_global_message(message, message_type="info", duration=10):
+#     """
+#     Set a global message to be displayed
+    
+#     Args:
+#         message (str): The message text to display
+#         message_type (str): Type of message - "error", "warning", "info", "success"
+#         duration (int): Duration in seconds before auto-dismiss (default: 10)
+#     """
+#     st.session_state.global_message = {
+#         'message': message,
+#         'type': message_type,
+#         'timestamp': datetime.now(),
+#         'duration': duration
+#     }
+    display_global_message()
 
 
 def get_pain_items(file,company_name):

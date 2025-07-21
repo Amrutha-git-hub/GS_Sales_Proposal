@@ -738,9 +738,61 @@ header {visibility: hidden;}
     font-size: 1.1rem;
     font-weight: 500;
 }
+/* COMPREHENSIVE FOCUS COLOR FIX - CYAN ONLY */
+
+/* Remove Streamlit's default red focus styling */
+textarea,
+input,
+select,
+[contenteditable] {
+    border-color: transparent !important;
+}
+
+/* Apply cyan focus to all input types with highest specificity */
+.stTextInput > div > div > input:focus,
+.stTextArea > div > div > textarea:focus,
+.stNumberInput > div > div > input:focus,
+.stDateInput > div > div > input:focus,
+.stTimeInput > div > div > input:focus,
+.stSelectbox > div > div > div:focus,
+.stMultiSelect > div > div > div:focus,
+textarea:focus,
+input:focus,
+[data-testid="stTextArea"] textarea:focus,
+[data-testid="stTextInput"] input:focus,
+[data-testid="stNumberInput"] input:focus,
+[data-testid="stDateInput"] input:focus,
+[data-testid="stTimeInput"] input:focus {
+    border: 2px solid #42f5e9 !important;
+    box-shadow: 0 0 0 2px rgba(66, 245, 233, 0.2) !important;
+    outline: none !important;
+    background-color: #f5f5f5 !important;
+    color: #2a2a2a !important;
+}
+
+/* Remove any conflicting focus-visible styles */
+textarea:focus-visible,
+input:focus-visible,
+select:focus-visible {
+    border: 2px solid #42f5e9 !important;
+    box-shadow: 0 0 0 2px rgba(66, 245, 233, 0.2) !important;
+    outline: none !important;
+}
+
+/* Override any Streamlit default focus ring */
+*:focus {
+    box-shadow: 0 0 0 2px rgba(66, 245, 233, 0.2) !important;
+    outline: none !important;
+}
+
+/* Specific override for text areas and inputs */
+div[data-baseweb="textarea"] textarea:focus,
+div[data-baseweb="input"] input:focus {
+    border: 2px solid #42f5e9 !important;
+    box-shadow: 0 0 0 2px rgba(66, 245, 233, 0.2) !important;
+}
 </style>
 """
-
 sticky_header_css = """
 <style>
 /* Make the app container handle overflow properly */
@@ -756,7 +808,6 @@ sticky_header_css = """
     right: 0;
     z-index: 1000;
     background-color: white;
-    padding: 10px 0;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
@@ -767,13 +818,12 @@ sticky_header_css = """
     margin-left: auto;
     margin-right: auto;
     background-color: white;
-    padding: 10px 0;
 }
 
 /* Main scrollable content area */
 .scrollable-content {
-    margin-top: 140px; /* Adjust based on header height */
-    height: calc(100vh - 140px);
+    margin-top: 80px; /* Reduced from 140px to 80px */
+    height: calc(100vh - 80px);
     overflow-y: auto;
     background-color: #fafafa;
     width: 75%;

@@ -38,9 +38,9 @@ def render_three_column_selector_unified(
     content_column_width: float = 6.5,   # Content area width within each column
     show_success_messages: bool = False,
     selected_color: str = "#2e7d32",  # Green color
-    selected_border_color: str = "#5a9f9f",  # Green border
+    selected_border_color: str = "#ececec",  # Green border
     unselected_color: str = "#f5f5f5",
-    unselected_border_color: str = "#5a9f9f",
+    unselected_border_color: str = "#ececec",
     text_color: str = "000000",
     
     # Title styling - Made normal size like left title
@@ -532,9 +532,9 @@ def render_two_column_selector(
     content_column_width: float = 6.5,   # Content area width within each column
     show_success_messages: bool = False,
     selected_color: str = "#2e7d32",  # Green color
-    selected_border_color: str = "#5a9f9f",  # Green border
+    selected_border_color: str = "#ececec",  # Green border
     unselected_color: str = "#f5f5f5",
-    unselected_border_color: str = "#5a9f9f",
+    unselected_border_color: str = "#ececec",
     text_color: str = "000000",
     
     # Title styling - Made normal size like left title

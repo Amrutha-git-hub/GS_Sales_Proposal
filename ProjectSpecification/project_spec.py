@@ -311,7 +311,7 @@ def proj_specification_tab(client_data, seller_data,is_locked):
             .stNumberInput > div,
             .stDateInput > div,
             .stTimeInput > div {
-                background-color: white !important;
+                background-color: black !important;
                 border-radius: 4px !important;
             }
 
@@ -390,48 +390,48 @@ def proj_specification_tab(client_data, seller_data,is_locked):
         /* Force override all button styling */
         button[kind="secondary"] {
             height: 48px !important;
-            border: 2.2px solid #618f8f !important;
+            border: 2.2px solid #ececec !important;
             border-radius: 4px !important;
             margin-top: 5px !important;
             transform: translateY(0px) !important;
-            background-color: #4a4a4a !important;
-            color: white !important;
+            background-color: #d3d3d3 !important;
+            color: black !important;
         }
         
         button[kind="secondary"]:hover {
-            border: 2.2px solid #618f8f !important;
+            border: 2.2px solid #ececec !important;
             transform: translateY(0px) !important;
             background-color: #5a5a5a !important;
-            color: white !important;
+            color: black !important;
         }
         
         button[kind="secondary"]:focus {
-            border: 2.2px solid #618f8f !important;
-            outline: 2px solid #618f8f !important;
+            border: 2.2px solid #ececec !important;
+            outline: 2px solid #ececec !important;
             transform: translateY(0px) !important;
-            background-color: #4a4a4a !important;
-            color: white !important;
+            background-color: #d3d3d3 !important;
+            color: black !important;
         }
         
         [data-testid] button {
-            border: 2.2px solid #618f8f !important;
+            border: 2.2px solid #ececec !important;
             height: 48px !important;
             margin-top: 5px !important;
             transform: translateY(0px) !important;
-            background-color: #4a4a4a !important;
-            color: white !important;
+            background-color: #d3d3d3 !important;
+            color: black !important;
         }
         
         button[kind="secondary"] p,
         button[kind="secondary"] span,
         button[kind="secondary"] div {
-            color: white !important;
+            color: black !important;
         }
         
         [data-testid] button p,
         [data-testid] button span,
         [data-testid] button div {
-            color: white !important;
+            color: black !important;
         }
         </style>
     """, unsafe_allow_html=True)

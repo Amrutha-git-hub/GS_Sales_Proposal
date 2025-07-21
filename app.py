@@ -23,64 +23,8 @@ load_env_variables()
 
 import time
 from datetime import datetime, timedelta
+from Common_Utils.common_utils import set_global_message
 
-
-def clear_global_error():
-    """Clear the global error message"""
-    if 'global_message' in st.session_state:
-        del st.session_state.global_message
-
-def is_message_expired():
-    """Check if the current message has expired"""
-    if 'global_message' not in st.session_state:
-        return True
-    
-    message_data = st.session_state.global_message
-    elapsed_time = (datetime.now() - message_data['timestamp']).total_seconds()
-    return elapsed_time > message_data['duration']
-
-import streamlit as st
-from datetime import datetime
-import time
-
-@st.dialog("‼️ Message")
-def show_global_message_dialog(message_type, message_text):
-    """Global message dialog with icon and centered close button"""
-    
-    # Determine icon and display method based on type
-    if message_type == "error":
-        st.error(message_text)
-    elif message_type == "warning":
-        st.warning(message_text)
-    elif message_type == "info":
-        st.info(message_text)
-    elif message_type == "success":
-        st.success(message_text)
-    else:
-        st.write(message_text)
-    
-    # Centered close button
-    col1, col2, col3 = st.columns([1, 1, 1])
-    with col2:
-        if st.button("Close", key=f"close_global_msg_{message_type}", type="primary"):
-            clear_global_error()
-            st.rerun()
-    with col3:
-        if st.button("OK"):
-            print("OK")
-        st.rerun()
-
-def display_global_message():
-    """Display the global message using st.dialog if it exists."""
-    if 'global_message' not in st.session_state:
-        return
-    
-    message_data = st.session_state.global_message
-    message_type = message_data['type']
-    message_text = message_data['message']
-    
-    # Show the dialog
-    show_global_message_dialog(message_type, message_text)
 
 def generate_session_id():
     """Generate a unique session ID for the user"""
@@ -472,137 +416,38 @@ def is_tab_accessible(tab_index):
                 validate_seller_mandatory_fields() and 
                 validate_project_mandatory_fields())
     return False
-
+@st.dialog("‼️ Confirm Tab Lock")
 def show_lock_confirmation_popup(tab_index):
-    """Show compact popup-style confirmation dialog for locking a tab"""
-    tab_names = ["Client Information", "Seller Information", "Project Specifications", "Generate Proposal"]
-    for i in range(5):
-        st.markdown(" ")
-    # Create compact popup modal
-    with stylable_container(
-    f"confirmation_popup_{tab_index}",
-    css_styles="""
-    div[data-testid="stBlock"] {
-        position: fixed !important;
-        top: 75% !important;
-        left: 50% !important;
-        transform: translate(-50%, -50%) !important;
-        z-index: 9999 !important;
-        background: black !important;
-        border: 7px solid #e74c3c !important;
-        border-radius: 10px !important;
-        padding: 20px !important;
-        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3) !important;
-        width: 60px !important;
-        height: 180px !important;
-        max-width: 90vw !important;
-        display: flex !important;
-        flex-direction: column !important;
-        justify-content: space-between !important;
-    }
-    div[data-testid="stBlock"]:before {
-        content: '' !important;
-        position: fixed !important;
-        top: 0 !important;
-        left: 0 !important;
-        width: 100vw !important;
-        height: 100vh !important;
-        background: rgba(0, 0, 0, 0.4) !important;
-        z-index: -1 !important;
-    }
-    """
-):
-
-        # Text message
-        st.markdown(
-    """
-    <div style="
-        border: 1px solid #e2e8f0;
-        border-radius: 6px;
-        padding: 15px;
-        margin-bottom: 15px;
-        background-color: #f8f9fa;
-        width:40%;
-        text-align: center;
-        margin: 0 auto;
-    ">
-        <h4 style="color: #e74c3c; margin: 0 0 10px 0; font-size: 18px; font-weight: 600;">
-            ⚠️ Confirm Tab Lock
-        </h4>
-        <p style="font-size: 14px; color: #4a5568; line-height: 1.4; margin: 0 0 15px 0;">
-            Lock <strong>tab</strong>?<br>
-            <span style="color: #718096; font-size: 13px;">You won't be able to modify this tab once locked.</span>
-        </p>
-    </div>
-    """, 
-    unsafe_allow_html=True)
-
-
-# Action buttons in the same container, positioned right under the box
-    col1, col2 = st.columns(2, gap="small")
-
+    """Show confirmation dialog for locking a tab using st.dialog"""
+    
+    # Warning message
+    st.error(
+        f"**Lock this tab?**\n\n"
+        f"You won't be able to modify this tab once locked."
+    )
+    
+    # Two buttons layout
+    col1, col2 = st.columns([1, 1])
+    
     with col1:
-        with stylable_container(
-            f"cancel_btn_{tab_index}",
-            css_styles="""
-            button {
-                background-color: #f7fafc !important;
-                color: #4a5568 !important;
-                border: 1px solid #e2e8f0 !important;
-                border-radius: 6px !important;
-                padding: 8px 16px !important;
-                font-weight: 500 !important;
-                width: 40% !important;
-                font-size: 14px !important;
-                height: 40px !important;
-                margin-left: auto !important;
-display: block !important;
-                
-            }
-            button:hover {
-                background-color: #edf2f7 !important;
-                border-color: #cbd5e0 !important;
-            }
-            """,
-        ):
-            if st.button("Back", key=f"cancel_lock_{tab_index}"):
-                # Clear confirmation state
-                if f"show_confirmation_{tab_index}" in st.session_state:
-                    del st.session_state[f"show_confirmation_{tab_index}"]
-                st.rerun()
-
+        if st.button("Back", key=f"cancel_lock_{tab_index}", type="secondary"):
+            # Clear confirmation state
+            if f"show_confirmation_{tab_index}" in st.session_state:
+                del st.session_state[f"show_confirmation_{tab_index}"]
+            st.rerun()
+    
     with col2:
-        with stylable_container(
-            f"confirm_btn_{tab_index}",
-            css_styles="""
-            button {
-                background-color: #e74c3c !important;
-                color: black !important;
-                border: 1px solid #e74c3c !important;
-                border-radius: 6px !important;
-                padding: 8px 16px !important;
-                font-weight: 500 !important;
-                width: 40% !important;
-                font-size: 14px !important;
-                height: 40px !important;
-            }
-            button:hover {
-                background-color: #c53030 !important;
-                border-color: #c53030 !important;
-            }
-            """,
-        ):
-            if st.button("Lock & Continue", key=f"confirm_lock_{tab_index}"):
-                # Clear confirmation state
-                if f"show_confirmation_{tab_index}" in st.session_state:
-                    del st.session_state[f"show_confirmation_{tab_index}"]
-                # Lock the current tab
-                st.session_state.locked_tabs.add(tab_index)
-                # Move to next tab
-                st.session_state.active_tab = tab_index + 1
-                st.session_state.highest_reached_tab = max(st.session_state.highest_reached_tab, st.session_state.active_tab)
-                st.rerun()
-
+        if st.button("Lock & Continue", key=f"confirm_lock_{tab_index}", type="primary"):
+            # Clear confirmation state
+            if f"show_confirmation_{tab_index}" in st.session_state:
+                del st.session_state[f"show_confirmation_{tab_index}"]
+            # Lock the current tab
+            st.session_state.locked_tabs.add(tab_index)
+            # Move to next tab
+            st.session_state.active_tab = tab_index + 1
+            st.session_state.highest_reached_tab = max(st.session_state.highest_reached_tab, st.session_state.active_tab)
+            st.rerun()
+    
     return True
 
 def navigate_to_next_tab():
@@ -753,26 +598,32 @@ content_area_css = """
 </style>
 """
 st.markdown(content_area_css,unsafe_allow_html=True)
-# st.markdown(sticky_header_css, unsafe_allow_html=True)
+st.markdown(sticky_header_css, unsafe_allow_html=True)
 
 # Add title - place this after your CSS but before the tab buttons
 # Replace your existing title section with this:
-st.markdown("""
-<div class="sticky-header">
-    <div class="header-content" style="display: flex; align-items: center; justify-content: space-between; margin: 0 0 20px 0; width: 100%;">
-        <div style="margin-left: 480px;">
-            <h1 style="color: #2c3e50; font-size: 48px; font-weight: bold; margin: 0; padding: 0; text-shadow: 2px 2px 4px rgba(0,0,0,0.1);">
-                CoXprt
-            </h1>
-        </div>
-        <div style="margin-right: 15px;">
-            <img src="https://static.wixstatic.com/media/cb6b3d_5c8f2b020ebe48b69bc8c163cc480156~mv2.png/v1/fill/w_60,h_60,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/GrowthSutra%20Logo.png" alt="Logo" style="height: 60px;">
+st.markdown("""  
+<div class="sticky-header" style="width: 100%; display: flex; justify-content: center; padding: 0; margin: 0;">
+    <div style="width: 100%; display: flex; justify-content: center; padding: 0; margin: 0;">
+        <div style="width: 70%; background-color: black; padding: 5px 0;">
+            <div style="display: flex; align-items: center; margin: 0; width: 100%; padding: 0 40px;">
+                <!-- Text and logo container -->
+                <div style="display: flex; align-items: center;">
+                    <div style="display: flex; flex-direction: column; margin-right: 20px;">
+                        <h1 style="color: white; font-size: 48px; font-weight: bold; margin: 0; padding: 0;">
+                            CoXprt
+                        </h1>
+                        <p style="color: white; font-size: 16px; margin: 5px 0 0 0; padding: 0;">
+                            AI automated sales proposal generator
+                        </p>
+                    </div>
+                    <img src="https://static.wixstatic.com/media/cb6b3d_5c8f2b020ebe48b69bc8c163cc480156~mv2.png/v1/fill/w_60,h_60,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/GrowthSutra%20Logo.png" alt="Logo" style="height: 60px;">
+                </div>
+            </div>
         </div>
     </div>
 </div>
 """, unsafe_allow_html=True)
-
-
 
 st.markdown("""
 <style>
@@ -916,8 +767,6 @@ for i, tab_name in enumerate(tab_names):
             ):
                 st.button(display_name, key=f"tab_{i}", use_container_width=True, disabled=True, type='secondary')
 
-
-display_global_message()
 
 # Handle confirmation dialogs - POPUP STYLE
 current_tab = st.session_state.active_tab

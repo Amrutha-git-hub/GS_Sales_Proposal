@@ -15,7 +15,9 @@ from .client_dataclass import *
 from datetime import datetime 
 # Configure logging
 from WebScraper.webscraper_without_ai import get_url_details_without_ai
+from Common_Utils.common_utils import *
 from Common_Utils.common_utils import set_global_message
+
 
 def normalize_url(url: str) -> str:
     url = url.strip()
@@ -140,8 +142,9 @@ def render_client_name_section(logger, client_data, is_locked):
                     
                 except Exception as e:
                     logger.error(f"Error updating enterprise name: {str(e)}")
+                    # Don't call st.rerun() immediately after set_global_message
                     set_global_message("Unable to save enterprise name. Please try again.", 'error')
-                    st.rerun()
+                    return client_enterprise_name  # Early return to prevent further processing
         
         with button_col:
             try:
@@ -159,7 +162,7 @@ def render_client_name_section(logger, client_data, is_locked):
                 logger.error(f"Error in Find URLs button section: {str(e)}")
                 find_urls_clicked = False
                 set_global_message("Unable to initialize website search. Please refresh the page.", 'error')
-                st.rerun()
+                return client_enterprise_name
         
         # Add spinner container that spans both columns
         spinner_container = st.container()
@@ -184,16 +187,17 @@ def render_client_name_section(logger, client_data, is_locked):
                         logger.debug("Updated client data with URLs list")
                         
                         if urls_list:
+                            print("successfully found ")
                             set_global_message(f"Successfully found {len(urls_list)} website URLs for {client_enterprise_name.strip()}", 'success')
                         else:
                             set_global_message(f"No website URLs found for {client_enterprise_name.strip()}", "error")
-                        st.rerun()
+                        # Let the dialog handle its own lifecycle - don't force rerun
                         
                     except Exception as e:
                         logger.error(f"Error finding URLs for {client_enterprise_name.strip()}: {str(e)}")
                         client_state_manager.update_field('website_urls_list', [])
-                        set_global_message("The requested websites couldn't be found. Please try again later.", "error")
-                        st.rerun()
+                        set_global_message(f"Not able to fetch the websites for {client_enterprise_name}, please try after some time.", "warning")
+                        # Let the dialog handle its own lifecycle - don't force rerun
         
         # Clear URLs if company name is cleared
         try:
@@ -204,12 +208,14 @@ def render_client_name_section(logger, client_data, is_locked):
                     enterprise_name="",
                     last_company_name=""
                 )
-                set_global_message("Company name cleared, website URLs reset", 'info')
+                # Use a less intrusive message type for this action
+                # set_global_message("Company name cleared, website URLs reset", 'info')
+                # Consider removing this message entirely as it might be too frequent
                 st.rerun()
         except Exception as e:
             logger.error(f"Error clearing URLs when company name cleared: {str(e)}")
             set_global_message("Unable to clear website data. Please refresh the page.", 'error')
-            st.rerun()
+            return client_enterprise_name
         
         # Show validation warning if triggered and field is empty
         try:
@@ -219,12 +225,12 @@ def render_client_name_section(logger, client_data, is_locked):
         except Exception as e:
             logger.error(f"Error showing validation warning: {str(e)}")
             set_global_message("Validation check failed. Please verify your input.", "error")
-            st.rerun()
+            return client_enterprise_name
     
     except Exception as e:
         logger.error(f"Error in client enterprise name column: {str(e)}")
         set_global_message("Something went wrong with the client name section. Please refresh the page.", 'error')
-        st.rerun()
+        return client_enterprise_name
     
     return client_enterprise_name
 @st.fragment
@@ -329,30 +335,16 @@ def render_client_website_section(logger, client_data, is_locked):
         # Show redirect link when website is selected
         if client_website_url:
             client_website_url = normalize_url(client_website_url)
-            with st.container():
-                st.markdown(f'''
-            <style>
-                .plain-link {{
-                    margin-bottom: 30px; 
-                    margin-left: 10px;
-                    display: inline-block;
-                    font-size: 14px;
-                    font-family: Arial, sans-serif;
-                }}
-                
-                .plain-link a {{
-                    color: #0c5460;
-                    text-decoration: none;
-                }}
-                
-                .plain-link a:hover {{
-                    text-decoration: underline;
-                }}
-            </style>
-            <div class="plain-link">
-                🌐 <a href="{client_website_url}" target="_blank">Visit Website</a>
-            </div>
-        ''', unsafe_allow_html=True)
+            st.markdown(
+    f'<div style="text-align: left; margin-top: -7px; padding-bottom: 15px;">'
+    f'🌐 <a href="{client_website_url}" target="_blank" style="color: #0066cc; text-decoration: none; font-size: 14px;">Visit Website</a>'
+    f'</div>',
+    unsafe_allow_html=True
+)
+
+
+
+
 
         # Handle refresh action
         if refresh_clicked and client_name_provided:
@@ -411,7 +403,7 @@ def render_client_website_section(logger, client_data, is_locked):
                             scraping_in_progress=False,
                             pending_scrape_url=None
                         )
-                        set_global_message("Website scraping failed - No content could be extracted from the website. Please check if the URL is accessible and contains readable content.", "error")
+                        set_global_message("Not able to fetch the information from the selected website, check the website link once", "error")
                         st.rerun()
                     else:
                         logger.info(f"Successfully scraped website details, length: {len(website_details)}")
@@ -728,38 +720,68 @@ def doc_upload_section(logger, client_data, is_locked):
                             set_global_message("Client name required - Please enter your client's enterprise name to continue", 'error')
                         else:
                             logger.info("Starting RFI analysis process")
-                            set_global_message("Analyzing RFI document... 🔄", "info")
                             
-                            # Perform the actual processing
-                            try:
-                                logger.info("Starting RFI document processing")
-                                file_path = save_uploaded_file_and_get_path(rfi_document_upload, logger, client_enterprise_name)
-                                
-                                if file_path and client_enterprise_name:
-                                    logger.info(f"Processing RFI file: {file_path}")
-                                    pain_points_data = get_pain_points(file_path, client_enterprise_name)
-                                    logger.info(f"Successfully extracted pain points, count: {len(pain_points_data) if pain_points_data else 0}")
+                            # Create a placeholder for the spinner
+                            spinner_placeholder = st.empty()
+                            
+                            # Show spinner while processing
+                            with spinner_placeholder:
+                                with st.spinner("🔍 Analyzing document and extracting pain points..."):
                                     
-                                    client_state_manager.update_client_data(
-                                        uploaded_file_path=file_path,
-                                        rfi_pain_points_items=pain_points_data,
-                                        document_analyzed=True,
-                                        processing_rfi=False
-                                    )
-                                    set_global_message("✅ RFI document analyzed successfully!", "success")
-                                else:
-                                    logger.error("Error saving the uploaded file or missing client name")
-                                    set_global_message("Upload failed - We couldn't process your file. Please try again or contact support if the issue persists", 'error')
-                                    
-                            except Exception as e:
-                                logger.error(f"Error analyzing RFI document: {str(e)}")
-                                set_global_message("Analysis unavailable - We're having trouble analyzing your document right now. Please try uploading again", 'error')
-                                client_state_manager.update_client_data(
-                                    rfi_pain_points_items={},
-                                    document_analyzed=False,
-                                    processing_rfi=False
-                                )
-                                
+                                    # Perform the actual processing
+                                    try:
+                                        logger.info("Starting RFI document processing")
+                                        file_path = save_uploaded_file_and_get_path(rfi_document_upload, logger, client_enterprise_name)
+                                        
+                                        if file_path and client_enterprise_name:
+                                            logger.info(f"Processing RFI file: {file_path}")
+                                            pain_points_data = get_pain_points(file_path, client_enterprise_name)
+                                            
+                                            # Clear the spinner
+                                            spinner_placeholder.empty()
+                                            
+                                            # Check if we got pain points data
+                                            if pain_points_data and len(pain_points_data) > 0:
+                                                logger.info(f"Successfully extracted pain points, count: {len(pain_points_data)}")
+                                                
+                                                client_state_manager.update_client_data(
+                                                    uploaded_file_path=file_path,
+                                                    rfi_pain_points_items=pain_points_data,
+                                                    document_analyzed=True,
+                                                    processing_rfi=False
+                                                )
+                                                
+                                                # Success message with count
+                                                pain_points_count = len(pain_points_data)
+                                                set_global_message(f" AI has successfully suggested {pain_points_count} pain point categories from your document!", "success")
+                            
+
+                                            else:
+                                                logger.warning("No pain points extracted from document")
+                                                client_state_manager.update_client_data(
+                                                    uploaded_file_path=file_path,
+                                                    rfi_pain_points_items={},
+                                                    document_analyzed=False,
+                                                    processing_rfi=False
+                                                )
+                                                set_global_message("⚠️ No pain points could be extracted from this document. Please try a different file or use the default suggestions.", 'warning')
+                                        else:
+                                            # Clear the spinner
+                                            spinner_placeholder.empty()
+                                            logger.error("Error saving the uploaded file or missing client name")
+                                            set_global_message("Uploaded  document does not have pain points.  Please upload the correct document OR select from the default pain points displayed", 'error')
+                                            
+                                    except Exception as e:
+                                        # Clear the spinner
+                                        spinner_placeholder.empty()
+                                        logger.error(f"Error analyzing RFI document: {str(e)}")
+                                        set_global_message(" There was an issue analyzing your document. Please try uploading again or use the default suggestions.", 'error')
+                                        client_state_manager.update_client_data(
+                                            rfi_pain_points_items={},
+                                            document_analyzed=False,
+                                            processing_rfi=False
+                                        )
+                                        
                     except Exception as e:
                         logger.error(f"Error handling analyze button click: {str(e)}")
                         set_global_message("Analysis initialization failed - Please try again", 'error')
@@ -1101,7 +1123,6 @@ def render_client_pain_points_section(logger, client_data, is_locked):
         logger.error(f"Critical error in pain points section rendering: {str(e)}")
         set_global_message("Service interruption - We're experiencing technical difficulties. Please refresh the page or contact support")
 
-
 @st.fragment
 def render_third_section(logger, client_data, is_locked):
     """Main function to render both client requirements and pain points sections"""
@@ -1145,7 +1166,7 @@ def render_spoc_name_section(logger, client_data, is_locked):
                                        not client_name_provided or is_locked)
             
             linkedin_button_clicked = st.button(
-                "Get LinkedIn",
+                "Get LinkedIn Profile",
                 key="get_linkedin_button",
                 disabled=linkedin_button_disabled,
                 help="Search for LinkedIn profiles of the SPOC"
@@ -1179,7 +1200,7 @@ def render_spoc_name_section(logger, client_data, is_locked):
                             logger.info(f"Found {len(processed_profiles)} LinkedIn profiles")
                             set_global_message(f"Successfully found {len(processed_profiles)} LinkedIn profiles for {spoc_name.strip()}", "success")
                         else:
-                            set_global_message("No LinkedIn profiles found", "info")
+                            set_global_message(f"Not able to fetch the Linkedin for {spoc_name} , please try after some time.", "warning")
                             logger.info("No LinkedIn profiles found for SPOC")
                         
                         try:
@@ -1195,7 +1216,7 @@ def render_spoc_name_section(logger, client_data, is_locked):
                             logger.error(f"Error updating LinkedIn profiles: {str(e)}")
                             set_global_message("Failed to save LinkedIn profiles - Please try searching again", "error")
                         
-                        st.rerun()
+                        # REMOVED: st.rerun() - Let Streamlit handle the natural refresh
                         
                     except Exception as e:
                         logger.error(f"Error searching LinkedIn profiles: {str(e)}")
@@ -1286,7 +1307,7 @@ def render_linkedin_profile_section(logger, client_data, is_locked, spoc_name):
                             selected_profile_data = client_data.linkedin_profiles.get(spoc_linkedin_profile)
                             if selected_profile_data and isinstance(selected_profile_data, dict):
                                 st.markdown(
-                                    f'<div style="text-align: right; margin-top: 10px;">'
+                                    f'<div style="text-align: left; margin-top: -5px;">'
                                     f'<a href="{spoc_linkedin_profile}" target="_blank" '
                                     f'style="color: #0066cc; text-decoration: none; font-size: 14px;">'
                                     f'🔗 Visit LinkedIn Profile</a></div>', 
@@ -1419,8 +1440,7 @@ def render_selected_profile_info(logger, client_data, spoc_name_provided, spoc_l
     except Exception as e:
         logger.error(f"Error in selected profile info section: {str(e)}")
         set_global_message("Profile information section unavailable - Please refresh the page", "error")
-
-
+        
 @st.fragment
 def render_fourth_section(logger, is_locked, client_data):
     """Main function to render both SPOC name and LinkedIn profile sections"""
@@ -1519,16 +1539,88 @@ def render_spoc_role_section(spoc_name_provided, spoc_linkedin_profile, client_d
         if current_value in role_options:
             current_selection = current_value
 
-    # ROLES DROPDOWN - Only one role can be selected
-    selected_target_role = st.selectbox(
-        label="Target Role Selector", 
-        options=role_options,
-        index=role_options.index(current_selection) if current_selection in role_options else 0,
-        key="target_role_selector_dropdown",
-        label_visibility="collapsed",
-        disabled=not (client_name_provided and spoc_name_provided) or is_locked,
-        accept_new_options=True
-    )
+    # Create columns for dropdown and button
+    col_dropdown, col_button = st.columns([3, 1])
+    
+    with col_dropdown:
+        # ROLES DROPDOWN - Only one role can be selected
+        selected_target_role = st.selectbox(
+            label="Target Role Selector", 
+            options=role_options,
+            index=role_options.index(current_selection) if current_selection in role_options else 0,
+            key="target_role_selector_dropdown",
+            label_visibility="collapsed",
+            disabled=not (client_name_provided and spoc_name_provided) or is_locked,
+            accept_new_options=True
+        )
+    
+    with col_button:
+
+        
+        if st.button("Get AI Priorities", 
+                    key="get_ai_priorities_btn",
+                    help=f"Get AI-suggested business priorities for {selected_target_role}" if selected_target_role and selected_target_role != "Select a role..." else "Select a role first",
+                    type="primary",
+                    disabled=not client_name_provided or is_locked):
+            
+            # Initialize session state for priorities loading
+            priorities_loading_key = "priorities_loading"
+            priorities_session_key = "current_business_priorities_list"
+            session_key = "last_role_for_priorities"
+            
+            # Set loading state
+            st.session_state[priorities_loading_key] = True
+            
+            try:
+                # Show spinner while loading
+                with st.spinner("Fetching AI business priorities..."):
+                    # Get AI business priorities
+                    role_priorities = get_ai_business_priorities(selected_target_role)
+                    
+                    # Default priorities if AI fails
+                    default_priorities = [
+                        {'title': 'Revenue Growth and Market Share Expansion', 'icon': '📈'}, 
+                        {'title': 'Profitability and Cost Optimization', 'icon': '💰'}, 
+                        {'title': 'Digital Transformation and Innovation', 'icon': '🤖'}
+                    ]
+                    
+                    if role_priorities:
+                        business_priorities_list = role_priorities
+                        success_message = f"AI priorities loaded successfully for {selected_target_role}!"
+                    else:
+                        business_priorities_list = default_priorities
+                        success_message = f"Default priorities loaded for {selected_target_role}"
+                    
+                    # Store in session state
+                    st.session_state[priorities_session_key] = business_priorities_list
+                    st.session_state[session_key] = selected_target_role
+                    
+                    # Clear previous selections when new priorities are loaded
+                    client_state_manager.update_client_data(selected_business_priorities=[])
+                    
+                    # Clear checkbox initialization flags
+                    keys_to_remove = [key for key in st.session_state.keys() if key.startswith("business_priority_checkbox_")]
+                    for key in keys_to_remove:
+                        del st.session_state[key]
+                    
+                    # Clear loading state and show success message
+                    st.session_state[priorities_loading_key] = False
+                    set_global_message(success_message, "success")
+                    
+            except Exception as e:
+                # Handle error case
+                default_priorities = [
+                    {'title': 'Revenue Growth and Market Share Expansion', 'icon': '📈'}, 
+                    {'title': 'Profitability and Cost Optimization', 'icon': '💰'}, 
+                    {'title': 'Digital Transformation and Innovation', 'icon': '🤖'}
+                ]
+                
+                st.session_state[priorities_session_key] = default_priorities
+                st.session_state[session_key] = selected_target_role
+                st.session_state[priorities_loading_key] = False
+                
+                set_global_message("Failed to load AI priorities. Using default priorities.", "error")
+                logger.error(f"Error loading AI role priorities: {str(e)}")
 
     # Update client_data with the single selected role
     if selected_target_role and selected_target_role != "Select a role...":
@@ -1548,6 +1640,33 @@ def render_spoc_business_priorities_section(spoc_name_provided, client_data, log
     # Enhanced CSS for styling
     st.markdown("""
     <style>
+                /* Change text area focus border color */
+textarea:focus {
+    border-color: #42f5e9 !important;
+    box-shadow: 0 0 0 2px rgba(66, 245, 233, 0.2) !important;
+}
+
+/* Target Streamlit's specific text area component */
+.stTextArea textarea:focus {
+    border-color: #42f5e9 !important;
+    box-shadow: 0 0 0 2px rgba(66, 245, 233, 0.2) !important;
+    outline: none !important;
+}
+
+/* Also target text input fields if needed */
+.stTextInput input:focus {
+    border-color: #42f5e9 !important;
+    box-shadow: 0 0 0 2px rgba(66, 245, 233, 0.2) !important;
+    outline: none !important;
+}
+
+/* Target all input elements in Streamlit */
+[data-testid="stTextArea"] textarea:focus,
+[data-testid="stTextInput"] input:focus {
+    border-color: #42f5e9 !important;
+    box-shadow: 0 0 0 2px rgba(66, 245, 233, 0.2) !important;
+    outline: none !important;
+}
     .tooltip-label {
         position: relative;
         display: inline-flex;
@@ -1591,6 +1710,55 @@ def render_spoc_business_priorities_section(spoc_name_provided, client_data, log
         border-top-color: #333;
         z-index: 1000;
     }
+    
+    /* Force override all button styling */
+    button[kind="secondary"] {
+        height: 48px !important;
+        border: 2.2px solid #ececec !important;
+        border-radius: 4px !important;
+        margin-top: -5px !important;
+        transform: translateY(-5px) !important;
+        background-color: #d3d3d3 !important;  
+        color: black !important;
+    }
+        
+    button[kind="secondary"]:hover {
+        border: 2.2px solid #ececec !important;
+        transform: translateY(-5px) !important;
+        background-color: #d3d3d3 !important;
+        color: black !important;
+    }
+        
+    button[kind="secondary"]:focus {
+        border: 2.2px solid #ececec !important;
+        outline: 2px solid #ececec !important;
+        transform: translateY(-5px) !important;
+        background-color: #d3d3d3 !important;
+        color: black !important;
+    }
+        
+    /* Try targeting by data attributes */
+    [data-testid] button {
+        border: 2.2px solid #ececec !important;
+        height: 48px !important;
+        margin-top: -5px !important;
+        transform: translateY(-5px) !important;
+        background-color: #d3d3d3 !important;
+        color: black !important;
+    }
+    
+    /* Additional targeting for button text specifically */
+    button[kind="secondary"] p,
+    button[kind="secondary"] span,
+    button[kind="secondary"] div {
+        color: black !important;
+    }
+    
+    [data-testid] button p,
+    [data-testid] button span,
+    [data-testid] button div {
+        color: black !important;
+    }
     </style>
     """, unsafe_allow_html=True)
     
@@ -1617,192 +1785,117 @@ def render_spoc_business_priorities_section(spoc_name_provided, client_data, log
     current_role = getattr(client_data, 'selected_target_role', None)
     session_key = "last_role_for_priorities"
     priorities_session_key = "current_business_priorities_list"
-    loading_session_key = "priorities_loading"
+    priorities_loading_key = "priorities_loading"
 
     # Initialize session state tracking for last role
     if session_key not in st.session_state:
         st.session_state[session_key] = None
     if priorities_session_key not in st.session_state:
         st.session_state[priorities_session_key] = default_priorities
-    if loading_session_key not in st.session_state:
-        st.session_state[loading_session_key] = False
+    if priorities_loading_key not in st.session_state:
+        st.session_state[priorities_loading_key] = False
 
-    # Load role-based priorities only when role changes or is first loaded
-    if current_role and current_role != "Select a role..." and current_role != st.session_state[session_key]:
-        # Show loading message using set_global_message
-        set_global_message("Getting AI suggestions", "info")
-        
-        try:
-            role_priorities = get_ai_business_priorities(current_role)
-            if role_priorities:
-                business_priorities_list = role_priorities
-                client_state_manager.update_client_data(current_role_priorities=role_priorities)
-            else:
-                business_priorities_list = default_priorities
-                client_state_manager.update_client_data(current_role_priorities=default_priorities)
-            
-            # Store in session state
-            st.session_state[priorities_session_key] = business_priorities_list
-            st.session_state[session_key] = current_role
-            
-            # Clear previous selections when role changes
-            client_state_manager.update_client_data(selected_business_priorities=[])
-            
-            # Clear checkbox initialization flags when role changes
-            keys_to_remove = [key for key in st.session_state.keys() if key.startswith("business_priority_checkbox_")]
-            for key in keys_to_remove:
-                del st.session_state[key]
-                
-        except Exception as e:
-            business_priorities_list = default_priorities
-            st.session_state[priorities_session_key] = default_priorities
-            client_state_manager.update_client_data(current_role_priorities=default_priorities)
-            st.session_state[session_key] = current_role
-        
-        finally:
-            # Clear the loading message
-            set_global_message("", "clear")
     # Use cached priorities from session state
     business_priorities_list = st.session_state.get(priorities_session_key, default_priorities)
     
-    # Show priorities with add/remove buttons (similar to pain points)
-    for i, priority in enumerate(business_priorities_list):
-        priority_title = priority.get('title') if isinstance(priority, dict) else str(priority)
-        priority_icon = priority.get('icon', '📋') if isinstance(priority, dict) else '📋'
-        
-        # Check if this priority is selected
-        is_selected = priority_title in client_data.selected_business_priorities
-        
-        # Create a box container with +/- button and content on same horizontal level
-        col_add, col_content = st.columns([0.5, 9], gap="medium")
-        
-        with col_add:
-            # Style the button to align vertically with the content box
-            st.markdown("""
-        <style>
-        /* Force override all button styling */
-        button[kind="secondary"] {
-            height: 48px !important;
-            border: 2.2px solid #ececec !important;
-            border-radius: 4px !important;
-            margin-top: -5px !important;  /* Move button up */
-            transform: translateY(-5px) !important;  /* Additional upward adjustment */
-            background-color: #d3d3d3 !important;  
-            color: black !important;  /* black text */
-        }
+    # Only show priorities if not currently loading
+    if not st.session_state.get(priorities_loading_key, False):
+        # Show priorities with add/remove buttons (similar to pain points)
+        for i, priority in enumerate(business_priorities_list):
+            priority_title = priority.get('title') if isinstance(priority, dict) else str(priority)
+            priority_icon = priority.get('icon', '📋') if isinstance(priority, dict) else '📋'
             
-        button[kind="secondary"]:hover {
-            border: 2.2px solid #ececec !important;
-            transform: translateY(-5px) !important;  /* Keep position on hover */
-            background-color: #d3d3d3 !important;  /* Slightly lighter on hover */
-            color: black !important;  /* Keep black text on hover */
-        }
+            # Check if this priority is selected - REFRESH client_data before checking
+            # Get fresh data to ensure we have the latest state
+            fresh_client_data = getattr(client_state_manager, 'get_client_data', lambda: client_data)()
+            is_selected = priority_title in getattr(fresh_client_data, 'selected_business_priorities', [])
             
-        button[kind="secondary"]:focus {
-            border: 2.2px solid #ececec !important;
-            outline: 2px solid #ececec !important;
-            transform: translateY(-5px) !important;  /* Keep position on focus */
-            background-color: #d3d3d3 !important;  /* Keep dark background on focus */
-            color: black !important;  /* Keep black text on focus */
-        }
+            # Create a box container with +/- button and content on same horizontal level
+            col_add, col_content = st.columns([0.5, 9], gap="medium")
             
-        /* Try targeting by data attributes */
-        [data-testid] button {
-            border: 2.2px solid #ececec !important;
-            height: 48px !important;
-            margin-top: -5px !important;  /* Move button up */
-            transform: translateY(-5px) !important;  /* Additional upward adjustment */
-            background-color: #d3d3d3 !important;  /* Dark greyish background */
-            color: black !important;  /* black text */
-        }
-        
-        /* Additional targeting for button text specifically */
-        button[kind="secondary"] p,
-        button[kind="secondary"] span,
-        button[kind="secondary"] div {
-            color: black !important;
-        }
-        
-        [data-testid] button p,
-        [data-testid] button span,
-        [data-testid] button div {
-            color: black !important;
-        }
-        </style>
-        """, unsafe_allow_html=True) 
-            
-            button_text = "❌" if is_selected else "➕"
-            button_help = f"Remove '{priority_title}' from SPOC priorities" if is_selected else f"Add '{priority_title}' to SPOC priorities"
-            button_type = "secondary"
-            
-            
-            spoc_name_provided = bool(client_data.spoc_name.strip())
-            if st.button(button_text, 
-                        key=f"toggle_business_priority_{i}_{hash(current_role or 'none')}", 
-                        help=button_help,
-                        type=button_type,
-                        disabled= is_locked or not client_name_provided):
+            with col_add:
+                button_text = "❌" if is_selected else "➕"
+                button_help = f"Remove '{priority_title}' from SPOC priorities" if is_selected else f"Add '{priority_title}' to SPOC priorities"
+                button_type = "secondary"
                 
-                try:
-                    if is_selected:
-                        # REMOVE FUNCTIONALITY
-                        logger.info(f"Removing priority '{priority_title}' from SPOC priorities")
-                        
-                        # Remove from selected priorities
-                        updated_priorities = [p for p in client_data.selected_business_priorities if p != priority_title]
-                        
-                        client_state_manager.update_client_data(selected_business_priorities=updated_priorities)
-                        logger.info(f"Successfully removed priority '{priority_title}'")
-                        
-                    else:
-                        # ADD FUNCTIONALITY
-                        logger.info(f"Adding priority '{priority_title}' to SPOC priorities")
-                        
-                        # Add to selected priorities
-                        updated_priorities = list(client_data.selected_business_priorities) + [priority_title]
-                        
-                        client_state_manager.update_client_data(selected_business_priorities=updated_priorities)
-                        logger.info(f"Successfully added priority '{priority_title}'")
+                # Create a unique key that includes timestamp to avoid caching issues
+                import time
+                button_key = f"toggle_business_priority_{i}_{hash(priority_title)}_{hash(current_role or 'none')}"
+                
+                spoc_name_provided = bool(client_data.spoc_name.strip())
+                if st.button(button_text, 
+                            key=button_key, 
+                            help=button_help,
+                            type=button_type,
+                            disabled=is_locked or not client_name_provided):
                     
-                    st.rerun()
-                    
-                except Exception as e:
-                    logger.error(f"Error handling priority button click for '{priority_title}': {str(e)}")
-                    set_global_message("Priority update failed - Please try your selection again", "error")
+                    try:
+                        if is_selected:
+                            # REMOVE FUNCTIONALITY
+                            logger.info(f"Removing priority '{priority_title}' from SPOC priorities")
+                            
+                            # Remove from selected priorities
+                            current_priorities = list(getattr(fresh_client_data, 'selected_business_priorities', []))
+                            updated_priorities = [p for p in current_priorities if p != priority_title]
+                            
+                            client_state_manager.update_client_data(selected_business_priorities=updated_priorities)
+                            logger.info(f"Successfully removed priority '{priority_title}'")
+                            
+                        else:
+                            # ADD FUNCTIONALITY
+                            logger.info(f"Adding priority '{priority_title}' to SPOC priorities")
+                            
+                            # Add to selected priorities
+                            current_priorities = list(getattr(fresh_client_data, 'selected_business_priorities', []))
+                            if priority_title not in current_priorities:  # Avoid duplicates
+                                updated_priorities = current_priorities + [priority_title]
+                                client_state_manager.update_client_data(selected_business_priorities=updated_priorities)
+                                logger.info(f"Successfully added priority '{priority_title}'")
+                        
+                        # Force a rerun to reflect changes immediately
+                        st.rerun()
+                        
+                    except Exception as e:
+                        logger.error(f"Error handling priority button click for '{priority_title}': {str(e)}")
+                        set_global_message("Priority update failed - Please try your selection again", "error")
 
-        with col_content:
-            # Style the content box based on selection state
-            if is_selected:
-                background_color = "#DCEBD6"
-                border_color = "#ececec"
-                text_color = "#000000"
-                display_icon = "✅"
-                box_shadow = "0 2px 8px rgba(76, 175, 80, 0.3)"
-            else:
-                background_color = "#f5f5f5"
-                border_color = "#ececec"
-                text_color = "#000000"
-                display_icon = priority_icon
-                box_shadow = "0 2px 4px rgba(0,0,0,0.1)"
-            
-            st.markdown(f"""
-            <div style="
-                padding: 12px;
-                border-radius: 6px;
-                margin: 5px 0;
-                background-color: {background_color};
-                border: 2px solid {border_color};
-                color: {text_color};
-                font-weight: 500;
-                box-shadow: {box_shadow};
-                min-height: 24px;
-                display: flex;
-                align-items: center;
-                transition: all 0.3s ease;
-            ">
-                {display_icon} {priority_title}
-            </div>
-            """, unsafe_allow_html=True)
+            with col_content:
+                # Style the content box based on selection state
+                if is_selected:
+                    background_color = "#DCEBD6"
+                    border_color = "#ececec"
+                    text_color = "#000000"
+                    display_icon = "✅"
+                    box_shadow = "0 2px 8px rgba(76, 175, 80, 0.3)"
+                else:
+                    background_color = "#f5f5f5"
+                    border_color = "#ececec"
+                    text_color = "#000000"
+                    display_icon = priority_icon
+                    box_shadow = "0 2px 4px rgba(0,0,0,0.1)"
+                
+                st.markdown(f"""
+<div style="
+    padding: 12px;
+    border-radius: 6px;
+    margin: -5px 0 5px 0;
+    background-color: {background_color};
+    border: 2px solid {border_color};
+    color: {text_color};
+    font-weight: 500;
+    box-shadow: {box_shadow};
+    min-height: 24px;
+    display: flex;
+    align-items: center;
+    transition: all 0.3s ease;
+    transform: translateY(-8px);
+">
+    {display_icon} {priority_title}
+</div>
+""", unsafe_allow_html=True)
+    else:
+        # Show loading message when priorities are being fetched
+        st.info("🤖 Loading AI business priorities...")
 
 
 @st.fragment
@@ -1815,6 +1908,7 @@ def render_fifth_section(spoc_name_provided, spoc_linkedin_profile, client_data,
 
     with col8:
         render_spoc_business_priorities_section(spoc_name_provided, client_data, logger, is_locked)
+        
 @st.fragment
 def render_sixth_section(logger, is_locked, client_data):
     # Get current client state
@@ -2215,3 +2309,4 @@ def clear_client_tab_data():
         set_global_message("Error clearing client data", "error")
         return False
              
+

@@ -2,13 +2,9 @@ from dataclasses import dataclass, field
 from typing import List, Dict, Set, Optional, Any
 import streamlit as st
 import logging
-
+from Common_Utils.common_utils import set_global_message
 logger = logging.getLogger(__name__)
 
-def set_global_message(message: str, message_type: str = "info"):
-    """Set global message for user feedback"""
-    st.session_state['global_message'] = message
-    st.session_state['global_message_type'] = message_type
 
 @dataclass
 class ClientTabState:
