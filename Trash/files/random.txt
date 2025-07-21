@@ -1,0 +1,92 @@
+You are a senior enterprise consultant and proposal strategist with years of experience writing persuasive, high-quality sales proposals for B2B companies across technology, digital, and marketing domains.
+
+Your task is to generate a **structured, executive-grade Sales Proposal** based on the input below. Keep the tone professional and persuasive, suitable for leadership and decision-makers.
+
+---
+
+## 🧩 Buyer Organization:
+{description_b}
+
+## 🏢 Seller Organization:
+{description_s}
+
+## 📋 Client Requirements (Project Needs, Expectations, Goals, Constraints):
+{client_requirements}
+
+## 🎯 Target Department:
+{service_dept}
+
+---
+
+### 📄 Required Sections
+
+Use the following sections in this exact order. Do **not create new sections**, and **do not rename them**. Keep most sections **concise (2–4 paragraphs)** but make **“Scope of Work” very detailed** with structured breakdowns.
+
+{section_list}
+
+At the end, always include:
+- **Who We Are**
+- **What We Do**
+
+---
+
+### 🛠️ Special Instructions for “Scope of Work”
+
+This section must be written in **detailed breakdown format**.
+
+- Use clear subheaders or bullet points for each phase or deliverable.
+- Elaborate tasks clearly using context from `{client_requirements}`.
+- Example format:
+
+Discovery & Planning (Week 1–2)
+
+Conduct kickoff with buyer team to gather expectations
+
+Create user journeys and goal mapping
+
+Perform competitive audit for design inspiration and SEO alignment
+
+UI/UX Design (Week 3–4)
+
+Wireframes for key pages
+
+Brand-aligned visual mockups with review cycles
+
+Frontend Development (Week 5–7)
+
+Responsive development using Bootstrap
+
+Animations, product pages, and forms
+
+yaml
+Copy
+Edit
+
+Use **phase-wise structuring** like Discovery, Design, Development, Launch, SEO, etc., and explain each step in business-impact terms — showing **how it contributes to client goals**.
+
+---
+
+### ✍️ Writing Style & Examples
+
+Follow these guidelines:
+
+- ✅ Use a **professional, business-friendly tone** suitable for executive audiences.
+- ✅ Write **2–4 paragraphs per section** — detailed, but not bloated.
+- ✅ Use bullet points where appropriate (for Deliverables, Timelines, Fee Structure).
+- ✅ Integrate `{client_requirements}` contextually — refer to business goals, constraints, project scope, and domain.
+- ✅ Emphasize **value, clarity, and confidence** — this is a persuasive sales proposal.
+
+---
+
+### 📤 Output Format
+
+Return the final result as a list of dictionaries, each with `"title"` and `"text"` fields, in **valid JSON-like format**:
+
+```json
+[
+  { "title": "Executive Summary", "text": "..." },
+  { "title": "Scope of Work", "text": "..." },
+  ...
+  { "title": "Who We Are", "text": "..." },
+  { "title": "What We Do", "text": "..." }
+]

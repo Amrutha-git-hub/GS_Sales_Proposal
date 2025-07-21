@@ -14,19 +14,19 @@ def add_professional_css():
     
     /* Header styling - more compact */
     .main-header {
-        background: linear-gradient(135deg, #333333 0%, #7fffff 100%);
+        background: linear-gradient(135deg, #333333 0%, #ffffff 100%);
         padding: 1rem;
         border-radius: 6px;
         margin-bottom: 1rem;
         text-align: center;
-        color: #0088ff;
+        color: #599cd4;
     }
     
     .main-header h1 {
         margin: 0;
         font-size: 1.6rem;
         font-weight: 600;
-        color: #0088ff;
+        color: #599cd4;
     }
     
     .main-header p {
@@ -42,12 +42,12 @@ def add_professional_css():
         border-radius: 6px;
         box-shadow: 0 1px 4px rgba(255,255,255,0.1);
         margin-bottom: 0.8rem;
-        border: 1px solid #666666;
-        background: #7fffff;
+        border: 1px solid #ececec;
+        background: #ffffff;
     }
     
     .section-title {
-        color: #0088ff;
+        color: #599cd4;
         font-size: 1rem;
         font-weight: 600;
         margin-bottom: 0.6rem;
@@ -65,7 +65,7 @@ def add_professional_css():
     }
     
     .required-asterisk {
-        color: #0088ff;
+        color: #599cd4;
         font-weight: bold;
         margin-left: 3px;
     }
@@ -73,66 +73,66 @@ def add_professional_css():
     /* Input field improvements - MUCH MORE COMPACT */
     .stTextInput > div > div > input {
         border-radius: 4px;
-        border: 1px solid #666666;
+        border: 1px solid #ececec;
         padding: 0.4rem 0.6rem;
         font-size: 0.85rem;
         transition: all 0.3s ease;
-        background: #7fffff;
-        color: #0088ff;
-        height: 2.2rem;
+        background: #ffffff;
+        color: #599cd4;
+        height: 2rem;
     }
     
     .stTextInput > div > div > input:focus {
         border-color: #999999;
-        box-shadow: 0 0 0 2px rgba(153, 153, 153, 0.3);
-        background: #7fffff;
+        box-shadow: 0 0 0 2px rgba(89, 156, 212, 0.3);
+        background: #ffffff;
     }
     
     .stSelectbox > div > div > div {
         border-radius: 4px;
-        border: 1px solid #666666;
+        border: 1px solid #ececec;
         transition: all 0.3s ease;
-        background: #7fffff;
-        color: #0088ff;
-        min-height: 2.2rem;
+        background: #ffffff;
+        color: #599cd4;
+        min-height: 2rem;
     }
     
     .stSelectbox > div > div > div:focus-within {
         border-color: #999999;
-        box-shadow: 0 0 0 2px rgba(153, 153, 153, 0.3);
-        background: #7fffff;
+        box-shadow: 0 0 0 2px rgba(89, 156, 212, 0.3);
+        background: #ffffff;
     }
     
     .stTextArea > div > div > textarea {
         border-radius: 4px;
-        border: 1px solid #666666;
+        border: 1px solid #ececec;
         padding: 0.4rem 0.6rem;
         font-size: 0.85rem;
         transition: all 0.3s ease;
-        background: #7fffff;
-        color: #0088ff;
+        background: #ffffff;
+        color: #599cd4;
     }
     
     .stTextArea > div > div > textarea:focus {
         border-color: #999999;
-        box-shadow: 0 0 0 2px rgba(153, 153, 153, 0.3);
-        background: #7fffff;
+        box-shadow: 0 0 0 2px rgba(89, 156, 212, 0.3);
+        background: #ffffff;
     }
     
     /* File uploader styling - more compact */
     .stFileUploader > div {
-        border: 2px dashed #999999;
+        border: 2px dashed #ececec;
         border-radius: 6px;
         padding: 0.8rem;
         text-align: center;
         transition: all 0.3s ease;
-        background: #7fffff;
+        background: #ffffff;
         color: #cccccc;
     }
     
     .stFileUploader > div:hover {
-        border-color: #0088ff;
-        background: #7fffff;
+        border-color:  #ececec;
+        background: #ffffff;
     }
     
     /* Link button styling - more compact */
@@ -146,21 +146,21 @@ def add_professional_css():
         transition: all 0.3s ease;
         display: inline-block;
         font-size: 0.75rem;
-        color: #0088ff;
-        height: 2.2rem;
+        color: #599cd4;
+        height: 2rem;
         line-height: 1.6rem;
     }
     
     .external-link-btn:hover {
-        background: #7fffff;
+        background: #ffffff;
         transform: translateY(-1px);
         text-decoration: none;
-        color: #0088ff;
+        color: #599cd4;
     }
     
     /* Validation styling - more compact */
     .validation-success {
-        color: #0088ff;
+        color: #599cd4;
         font-size: 0.75rem;
         margin-top: 0.2rem;
         display: flex;
@@ -182,14 +182,14 @@ def add_professional_css():
         padding: 0.8rem;
         border-radius: 6px;
         box-shadow: 0 1px 4px rgba(255,255,255,0.1);
-        border: 1px solid #666666;
-        background: #7fffff;
-        color: #0088ff;
+        border: 1px solid #ececec;
+        background: #ffffff;
+        color: #599cd4;
     }
     
     /* Info styling - more compact */
     .info-container {
-        background: #7fffff;
+        background: #ffffff;
         border-left: 4px solid #666666;
         padding: 0.6rem;
         border-radius: 0 4px 4px 0;
@@ -211,18 +211,18 @@ def add_professional_css():
     .css-1d391kg {
         padding-top: 0.8rem;
         background:#ffffff;
-        color: #0088ff;
+        color: #599cd4;
     }
     
     /* General dark theme colors */
     .stApp {
         background:#ffffff;
-        color: #0088ff;
+        color: #599cd4;
     }
     
     /* Streamlit element colors */
     .stMarkdown {
-        color: #0088ff;
+        color: #599cd4;
     }
     
     /* Hide default streamlit styling */
@@ -239,18 +239,19 @@ def add_professional_css():
         padding: 0.6rem;
         border-radius: 6px;
         box-shadow: 0 1px 4px rgba(255,255,255,0.1);
-        border: 1px solid #666666;
-        background: #7fffff;
+        border: 1px solid #ececec;
+        background: #ffffff;
         height: 100%;
     }
     
     .column-header {
-        color: #0088ff;
+        color: #599cd4;
         font-size: 0.95rem;
         font-weight: 600;
         margin-bottom: 0.6rem;
         padding-bottom: 0.2rem;
         border-bottom: 2px solid #666666;
+                height:6rem!important;
     }
     
     .column-content {
@@ -258,8 +259,8 @@ def add_professional_css():
     }
     
     .suggestion-container {
-        background: #7fffff;
-        border: 1px solid #666666;
+        background: #ffffff;
+        border: 1px solid #ececec;
         padding: 0.5rem;
         margin: 0.3rem 0;
         border-radius: 4px;
@@ -267,19 +268,19 @@ def add_professional_css():
     }
     
     .suggestion-container:hover {
-        background: #7fffff;
-        border-color: #999999;
+        background: #ffffff;
+        border-color:  #ececec;
     }
     
     .suggestion-title {
         font-size: 0.8rem;
         font-weight: 500;
-        color: #0088ff;
+        color: #599cd4;
     }
     
     .suggestion-added {
-        background: #7fffff !important;
-        border-color: #999999 !important;
+        background: #ffffff !important;
+        border-color:  #ececec !important;
     }
     
     .warning-container, .info-container {
@@ -290,8 +291,8 @@ def add_professional_css():
     }
     
     .warning-container {
-        background: #7fffff;
-        border: 1px solid #666666;
+        background: #ffffff;
+        border: 1px solid #ececec;
         color: #cccccc;
     }
     
@@ -340,8 +341,8 @@ app_css = """
     width: 100%;
     padding: 3rem 0;
     margin-bottom: 2rem;
-    background: #7fffff;
-    border: 1px solid #666666;
+    background: #ffffff;
+    border: 1px solid #ececec;
     border-radius: 20px;
     box-shadow: 0 8px 32px rgba(255, 255, 255, 0.1);
     position: relative;
@@ -349,7 +350,7 @@ app_css = """
 }
 
 .main-header h1 {
-    color: #0088ff;
+    color: #599cd4;
     font-size: 4rem;
     font-weight: 800;
     margin: 0;
@@ -363,6 +364,7 @@ app_css = """
     width: 100%;
     position: relative;
     margin-bottom: 2rem;
+
 }
 
 .tab-separator-line {
@@ -385,17 +387,17 @@ app_css = """
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    height: 4rem;
+    height: 3rem;
     position: relative;
 }
 
 .separator-diamond {
     width: 8px;
     height: 8px;
-    background: #0088ff;
+    background: #599cd4;
     transform: rotate(45deg);
     border-radius: 2px;
-    box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+    box-shadow: 0 0 15px rgba(89, 156, 212, 0.3);
     animation: pulse-diamond 2s ease-in-out infinite;
     z-index: 2;
 }
@@ -416,26 +418,26 @@ app_css = """
 @keyframes pulse-diamond {
     0%, 100% {
         transform: rotate(45deg) scale(1);
-        box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+        box-shadow: 0 0 15px rgba(89, 156, 212, 0.3);
     }
     50% {
         transform: rotate(45deg) scale(1.2);
-        box-shadow: 0 0 25px rgba(255, 255, 255, 0.5);
+        box-shadow: 0 0 25px rgba(89, 156, 212, 0.5);
     }
 }
 
 /* Tab styling - Improved modern design */
 .stButton > button {
     background: #2a2a2a !important;
-    color: #0088ff !important;
-    border: 1px solid #666666 !important;
+    color: #599cd4 !important;
+    border: 1px solid #ececec !important;
     font-weight: 600 !important;
     font-size: 1.1rem !important;
     text-transform: uppercase !important;
     letter-spacing: 1px !important;
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
-    height: 4rem !important;
+    height: 3rem !important;
     border-radius: 15px !important;
     position: relative !important;
     overflow: hidden !important;
@@ -466,21 +468,21 @@ app_css = """
 /* Active tab styling */
 .stButton > button:focus,
 .stButton > button:active {
-    background: #0088ff !important;
+    background: #599cd4 !important;
     color:#ffffff !important;
     border-color: #cccccc !important;
     transform: translateY(-2px) scale(1.03) !important;
-    box-shadow: 0 10px 40px rgba(255, 255, 255, 0.2) !important;
+    box-shadow: 0 10px 40px rgba(89, 156, 212, 0.2) !important;
     font-weight: 700 !important;
 }
 
 /* Content area - Full width within the 75% container */
 .content-area {
-    background: #7fffff;
+    background: #ffffff;
     padding: 3rem;
     border-radius: 20px;
     margin-bottom: 2rem;
-    border: 1px solid #666666;
+    border: 1px solid #ececec;
     min-height: 70vh;
     width: 100%;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
@@ -489,7 +491,7 @@ app_css = """
 }
 
 .content-area h2 {
-    color: #0088ff;
+    color: #599cd4;
     font-size: 2.5rem;
     margin-bottom: 1.5rem;
     font-weight: 700;
@@ -523,7 +525,7 @@ app_css = """
     background: #2a2a2a;
     padding: 2rem;
     border-radius: 15px;
-    border: 1px solid #666666;
+    border: 1px solid #ececec;
     transition: all 0.3s ease;
 }
 
@@ -535,12 +537,12 @@ app_css = """
 
 /* Footer styling - Full width within container */
 .footer {
-    background: #7fffff;
+    background: #ffffff;
     padding: 2rem;
     border-radius: 20px;
     text-align: center;
     margin-top: 3rem;
-    border: 1px solid #666666;
+    border: 1px solid #ececec;
     width: 100%;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
@@ -577,7 +579,7 @@ app_css = """
 /* Refresh Button */
 .footer div[data-testid="column"]:nth-child(1) .stButton > button {
     background: #666666 !important;
-    color: #0088ff !important;
+    color: #599cd4 !important;
     box-shadow: 0 6px 20px rgba(255, 255, 255, 0.1) !important;
 }
 
@@ -589,15 +591,15 @@ app_css = """
 
 /* Generate Presentation Button */
 .footer div[data-testid="column"]:nth-child(2) .stButton > button {
-    background: #0088ff !important;
+    background: #599cd4 !important;
     color:#ffffff !important;
-    box-shadow: 0 6px 20px rgba(255, 255, 255, 0.2) !important;
+    box-shadow: 0 6px 20px rgba(89, 156, 212, 0.2) !important;
 }
 
 .footer div[data-testid="column"]:nth-child(2) .stButton > button:hover {
     transform: translateY(-3px) scale(1.05) !important;
-    box-shadow: 0 10px 30px rgba(255, 255, 255, 0.3) !important;
-    background: #cccccc !important;
+    box-shadow: 0 10px 30px rgba(89, 156, 212, 0.3) !important;
+    background: #4a8bc2 !important;
 }
 
 /* Input styling - Modern glassmorphism */
@@ -605,8 +607,8 @@ app_css = """
 .stTextInput > div > div > input,
 .stTextArea > div > div > textarea {
     background: #2a2a2a !important;
-    color: #0088ff !important;
-    border: 1px solid #666666 !important;
+    color: #599cd4 !important;
+    border: 1px solid #ececec !important;
     border-radius: 10px !important;
     font-size: 1.1rem !important;
     transition: all 0.3s ease !important;
@@ -616,7 +618,7 @@ app_css = """
 .stTextInput > div > div > input:focus,
 .stTextArea > div > div > textarea:focus {
     border-color: #999999 !important;
-    box-shadow: 0 0 20px rgba(255, 255, 255, 0.1) !important;
+    box-shadow: 0 0 20px rgba(89, 156, 212, 0.1) !important;
     background: #333333 !important;
 }
 
@@ -635,8 +637,8 @@ app_css = """
 }
 
 .stFileUploader label, .stFileUploader p, .stFileUploader svg {
-    color: #0088ff !important;
-    fill: #0088ff !important;
+    color: #599cd4 !important;
+    fill: #599cd4 !important;
 }
 
 /* Sidebar removal */
@@ -711,7 +713,7 @@ header {visibility: hidden;}
 /* Enhanced metrics and cards */
 .metric-card {
     background: #2a2a2a;
-    border: 1px solid #666666;
+    border: 1px solid #ececec;
     border-radius: 15px;
     padding: 2rem;
     text-align: center;
@@ -727,7 +729,7 @@ header {visibility: hidden;}
 .metric-value {
     font-size: 2.5rem;
     font-weight: 800;
-    color: #0088ff;
+    color: #599cd4;
     margin-bottom: 0.5rem;
 }
 
@@ -735,6 +737,109 @@ header {visibility: hidden;}
     color: #999999;
     font-size: 1.1rem;
     font-weight: 500;
+}
+/* COMPREHENSIVE FOCUS COLOR FIX - CYAN ONLY */
+
+/* Remove Streamlit's default red focus styling */
+textarea,
+input,
+select,
+[contenteditable] {
+    border-color: transparent !important;
+}
+
+/* Apply cyan focus to all input types with highest specificity */
+.stTextInput > div > div > input:focus,
+.stTextArea > div > div > textarea:focus,
+.stNumberInput > div > div > input:focus,
+.stDateInput > div > div > input:focus,
+.stTimeInput > div > div > input:focus,
+.stSelectbox > div > div > div:focus,
+.stMultiSelect > div > div > div:focus,
+textarea:focus,
+input:focus,
+[data-testid="stTextArea"] textarea:focus,
+[data-testid="stTextInput"] input:focus,
+[data-testid="stNumberInput"] input:focus,
+[data-testid="stDateInput"] input:focus,
+[data-testid="stTimeInput"] input:focus {
+    border: 2px solid #42f5e9 !important;
+    box-shadow: 0 0 0 2px rgba(66, 245, 233, 0.2) !important;
+    outline: none !important;
+    background-color: #f5f5f5 !important;
+    color: #2a2a2a !important;
+}
+
+/* Remove any conflicting focus-visible styles */
+textarea:focus-visible,
+input:focus-visible,
+select:focus-visible {
+    border: 2px solid #42f5e9 !important;
+    box-shadow: 0 0 0 2px rgba(66, 245, 233, 0.2) !important;
+    outline: none !important;
+}
+
+/* Override any Streamlit default focus ring */
+*:focus {
+    box-shadow: 0 0 0 2px rgba(66, 245, 233, 0.2) !important;
+    outline: none !important;
+}
+
+/* Specific override for text areas and inputs */
+div[data-baseweb="textarea"] textarea:focus,
+div[data-baseweb="input"] input:focus {
+    border: 2px solid #42f5e9 !important;
+    box-shadow: 0 0 0 2px rgba(66, 245, 233, 0.2) !important;
+}
+</style>
+"""
+sticky_header_css = """
+<style>
+/* Make the app container handle overflow properly */
+.stApp {
+    height: 20vh;
+}
+
+/* Create sticky header - this will freeze the header */
+.sticky-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    background-color: white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Header content container with 75% width */
+.header-content {
+    width: 75%;
+    max-width: 75%;
+    margin-left: auto;
+    margin-right: auto;
+    background-color: white;
+}
+
+/* Main scrollable content area */
+.scrollable-content {
+    margin-top: 80px; /* Reduced from 140px to 80px */
+    height: calc(100vh - 80px);
+    overflow-y: auto;
+    background-color: #fafafa;
+    width: 75%;
+    max-width: 75%;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 20px;
+}
+
+/* Override streamlit's default container behavior */
+[data-testid="block-container"] {
+    background-color: transparent !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
 }
 </style>
 """

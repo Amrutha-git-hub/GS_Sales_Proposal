@@ -1,0 +1,8 @@
+Hover : #618f8f
+Button bg : #d3d3d3
+Tab color bg : #569fd6
+Primary 70% bg color : #f7f7f7 to be changed to #fafafa
+
+border for boxes input ares = 
+
+#5a6268 

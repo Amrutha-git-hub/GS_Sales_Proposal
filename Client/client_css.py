@@ -22,7 +22,7 @@ client_css = """
         background: #f5f5f5;
         padding: 1.5rem;
         border-radius: 10px;
-        border: 2px solid #5a9f9f;
+        border: 2px solid ececec;
         margin-bottom: 1rem;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
         color: #2a2a2a;
@@ -131,7 +131,7 @@ client_css = """
     /* Summary item styling */
     .summary-item {
         background: #f5f5f5;
-        border: 1px solid #5a9f9f;
+        border: 1px solid ececec;
         border-radius: 8px;
         padding: 12px;
         margin-bottom: 8px;
@@ -147,7 +147,7 @@ client_css = """
     }
     
     .add-button {
-        background: #28a745;
+        background:"#d2ebfb";
         color: white;
         border: none;
         padding: 6px 12px;
@@ -232,7 +232,7 @@ client_css = """
     .stTextInput > div > div > input {
         background-color: #f5f5f5 !important;
         color: #2a2a2a !important;
-        border: 2px solid #5a9f9f !important;
+        border: 2px solid ececec !important;
         border-radius: 8px !important;
         padding: 12px !important;
         font-size: 14px !important;
@@ -242,7 +242,7 @@ client_css = """
     .stTextArea > div > div > textarea {
         background-color: #f5f5f5 !important;
         color: #2a2a2a !important;
-        border: 2px solid #5a9f9f !important;
+        border: 2px solid ececec !important;
         border-radius: 8px !important;
         padding: 12px !important;
         font-size: 14px !important;
@@ -252,7 +252,7 @@ client_css = """
     .stNumberInput > div > div > input {
         background-color: #f5f5f5 !important;
         color: #2a2a2a !important;
-        border: 2px solid #5a9f9f !important;
+        border: 2px solid ececec !important;
         border-radius: 8px !important;
         padding: 12px !important;
         font-size: 14px !important;
@@ -262,7 +262,7 @@ client_css = """
     .stSelectbox > div > div > div {
         background-color: #f5f5f5 !important;
         color: #2a2a2a !important;
-        border: 2px solid #5a9f9f !important;
+        border: 2px solid ececec !important;
         border-radius: 8px !important;
     }
     
@@ -270,7 +270,7 @@ client_css = """
     .stMultiSelect > div > div > div {
         background-color: #f5f5f5 !important;
         color: #2a2a2a !important;
-        border: 2px solid #5a9f9f !important;
+        border: 2px solid ececec !important;
         border-radius: 8px !important;
     }
     
@@ -278,7 +278,7 @@ client_css = """
     .stDateInput > div > div > input {
         background-color: #f5f5f5 !important;
         color: #2a2a2a !important;
-        border: 2px solid #5a9f9f !important;
+        border: 2px solid ececec !important;
         border-radius: 8px !important;
         padding: 12px !important;
         font-size: 14px !important;
@@ -288,7 +288,7 @@ client_css = """
     .stTimeInput > div > div > input {
         background-color: #f5f5f5 !important;
         color: #2a2a2a !important;
-        border: 2px solid #5a9f9f !important;
+        border: 2px solid ececec !important;
         border-radius: 8px !important;
         padding: 12px !important;
         font-size: 14px !important;
@@ -298,7 +298,7 @@ client_css = """
     .stFileUploader > div > div {
         background-color: #f5f5f5 !important;
         color: #2a2a2a !important;
-        border: 2px solid #5a9f9f !important;
+        border: 2px solid ececec !important;
         border-radius: 8px !important;
     }
     
@@ -362,7 +362,7 @@ client_css = """
     /* File uploader drag and drop area */
     .stFileUploader section {
         background-color: #f5f5f5 !important;
-        border: 2px dashed #5a9f9f !important;
+        border: 2px dashed ececec !important;
         border-radius: 8px !important;
     }
     
@@ -378,7 +378,7 @@ client_css = """
     /* Color Picker */
     .stColorPicker > div > div > input {
         background-color: #f5f5f5 !important;
-        border: 2px solid #5a9f9f !important;
+        border: 2px solid ececec !important;
         border-radius: 8px !important;
     }
     
@@ -443,6 +443,216 @@ select,
 .stMultiSelect {
     color: #2a2a2a !important;
 }
+/* --- Main Container & Layout --- */
+[data-testid="block-container"], .block-container, .stApp .main .block-container {
+    background-color: none !important;
+    width: 70% !important;
+    max-width: 70% !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
 
+/* --- Tooltip Styles --- */
+.tooltip-label {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 15px;
+}
+
+.tooltip-icon {
+    cursor: help;
+    color: #666;
+    font-size: 14px;
+    position: relative;
+}
+
+.tooltip-icon:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #333;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    white-space: pre-wrap; /* Allows multiline tooltips */
+    width: 250px; /* Adjust width as needed */
+    z-index: 1000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+.tooltip-icon:hover::before {
+    content: '';
+    position: absolute;
+    bottom: 115%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-top-color: #333;
+    z-index: 1000;
+}
+
+/* --- File Uploader --- */
+.stFileUploader {
+    margin-top: -40px !important;
+}
+
+.stFileUploader > div > div {
+    background-color: #f0f5f5 !important;
+    border: 2px solid ececec !important;
+    border-radius: 8px !important;
+}
+
+.stFileUploader section[data-testid="stFileUploaderDropzone"] {
+    min-height: 50px !important;
+    height: auto !important;
+    padding: 12px !important;
+    margin: 6px 0 !important;
+    background-color: #f0f5f5 !important;
+    border: 2px dashed ececec !important;
+}
+
+.stFileUploader div[data-testid="stFileUploaderFileName"] {
+    min-height: 40px !important;
+    height: 40px !important;
+    padding: 8px 12px !important;
+    margin: 4px 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    font-size: 12px !important;
+    line-height: 1.2 !important;
+    background-color: #f0f5f5 !important;
+}
+
+.stFileUploader * {
+    background-color: #f0f5f5 !important;
+}
+
+.stFileUploader span, .stFileUploader small, .stFileUploader p {
+    color: #333333 !important;
+    font-size: 12px !important;
+    line-height: 1.2 !important;
+}
+
+/* --- General Button Styles --- */
+/* Analyze RFI Button */
+div.stButton > button.st-emotion-cache-1pr600o {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+}
+
+/* Add/Remove buttons for Pain Points & Priorities */
+button[kind="secondary"] {
+    height: 48px !important;
+    border: 2.2px solid #618f8f !important;
+    border-radius: 4px !important;
+    margin-top: -5px !important;
+    transform: translateY(-3px) !important;
+    background-color: #d3d3d3 !important;
+    color: black !important;
+}
+
+button[kind="secondary"]:hover {
+    border-color: #618f8f !important;
+    transform: translateY(-3px) !important;
+    background-color: #b0b0b0 !important; /* Slightly darker on hover */
+    color: black !important;
+}
+
+button[kind="secondary"]:focus {
+    border-color: #618f8f !important;
+    outline: 2px solid #618f8f !important;
+    transform: translateY(-3px) !important;
+    background-color: #d3d3d3 !important;
+    color: black !important;
+}
+
+button[kind="secondary"] p,
+button[kind="secondary"] span,
+button[kind="secondary"] div {
+    color: black !important;
+}
+
+/* --- Link Styles --- */
+/* Website link */
+.plain-link {
+    margin-top: -120px;
+    margin-left: 10px;
+    display: inline-block;
+    font-size: 14px;
+    font-family: Arial, sans-serif;
+}
+
+.plain-link a {
+    color: #0c5460;
+    text-decoration: none;
+}
+
+.plain-link a:hover {
+    text-decoration: underline;
+}
+
+/* LinkedIn Profile link */
+.linkedin-visit-link {
+    text-align: center;
+    margin-top: 10px;
+}
+
+.linkedin-visit-link a {
+    color: #0077b5;
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.linkedin-visit-link a:hover {
+    text-decoration: underline;
+}
+/* Change text area focus border color */
+textarea:focus {
+    border-color: #42f5e9 !important;
+    box-shadow: 0 0 0 2px rgba(66, 245, 233, 0.2) !important;
+}
+
+/* Target Streamlit's specific text area component */
+.stTextArea textarea:focus {
+    border-color: #42f5e9 !important;
+    box-shadow: 0 0 0 2px rgba(66, 245, 233, 0.2) !important;
+    outline: none !important;
+}
+
+/* Also target text input fields if needed */
+.stTextInput input:focus {
+    border-color: #42f5e9 !important;
+    box-shadow: 0 0 0 2px rgba(66, 245, 233, 0.2) !important;
+    outline: none !important;
+}
+
+/* Target all input elements in Streamlit */
+[data-testid="stTextArea"] textarea:focus,
+[data-testid="stTextInput"] input:focus {
+    border-color: #42f5e9 !important;
+    box-shadow: 0 0 0 2px rgba(66, 245, 233, 0.2) !important;
+    outline: none !important;
+}
+
+    .stTextInput > div > div > input:focus,
+    .stTextArea > div > div > textarea:focus,
+    .stNumberInput > div > div > input:focus,
+    .stDateInput > div > div > input:focus,
+    .stTimeInput > div > div > input:focus {
+        border-color: #42f5e9 !important;
+        box-shadow: 0 0 0 2px rgba(66, 245, 233, 0.2) !important;
+        outline: none !important;
+        background-color: #f5f5f5 !important;
+        color: #2a2a2a !important;
+    }
 </style>
 """
+

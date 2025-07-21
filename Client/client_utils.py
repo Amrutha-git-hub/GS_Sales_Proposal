@@ -2,10 +2,15 @@ import streamlit as st
 import pandas as pd
 from typing import List
 import os
+import streamlit as st
+from datetime import datetime
+import time
+import streamlit as st
 
-from WebsiteUrl_Agent.agent_runner import get_urls
+# from WebScraper.scrape_agent import get_data
+from Search.WebsiteUrl_Agent.agent_runner import get_urls
 import asyncio 
-from Document_Upload_Vectordb.pain_points_extractor import *
+from Common_Utils.pain_points_extractor import *
 # Function to get URLs (placeholder function)
 
 def get_urls_list(company_name) -> List[str]:
@@ -37,17 +42,19 @@ def get_roles_list() -> List[str]:
     ]
 
 
-from WebScraper.scrape import get_data
 
-def get_url_details(url:str):
-    """Use this if you want to run async function synchronously"""
-    try:
-        # Run the async function synchronously
-        website_details = asyncio.run(get_data(url))
-        return website_details
-    except Exception as e:
-        print(f"Error: {e}")
-        return None
+# def get_url_details(url:str):
+#     """Use this if you want to run async function synchronously"""
+#     try:
+#         # Run the async function synchronously
+
+#         website_details,logo = asyncio.run(get_data(url))
+#         print(logo,website_details)
+#         return (website_details,logo)
+#     except Exception as e:
+#         print(f"Error: {e}")
+#         return None
+    
 
 def get_priority_suggestions() -> List[dict]:
     """
@@ -88,10 +95,23 @@ def get_editable_content() -> str:
 You can modify this content as needed."""
 
 
-# Function to get summary items (NEW)
-# from Rag.rag import get_pain_points
 
-
+# def set_global_message(message, message_type="info", duration=10):
+#     """
+#     Set a global message to be displayed
+    
+#     Args:
+#         message (str): The message text to display
+#         message_type (str): Type of message - "error", "warning", "info", "success"
+#         duration (int): Duration in seconds before auto-dismiss (default: 10)
+#     """
+#     st.session_state.global_message = {
+#         'message': message,
+#         'type': message_type,
+#         'timestamp': datetime.now(),
+#         'duration': duration
+#     }
+    display_global_message()
 
 
 def get_pain_items(file,company_name):
@@ -121,7 +141,7 @@ def save_uploaded_file(uploaded_file, save_dir="uploaded_rf_is"):
 
     return save_path
 
-def save_uploaded_file_and_get_path(uploaded_file):
+def save_uploaded_file_and_get_path(uploaded_file,):
     """Save uploaded file to a temporary directory and return the file path"""
     if uploaded_file is not None:
         # Create uploads directory if it doesn't exist
