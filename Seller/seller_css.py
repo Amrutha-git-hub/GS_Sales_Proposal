@@ -116,7 +116,7 @@ seller_css = """
     
     .url-button {
         background: #ececec;
-        color: white;
+        color: black;
         border: none;
         padding: 8px 12px;
         border-radius: 6px;
@@ -149,7 +149,7 @@ seller_css = """
     
     .add-button {
         background: #28a745;
-        color: white;
+        color: black;
         border: none;
         padding: 6px 12px;
         border-radius: 4px;
@@ -170,7 +170,7 @@ seller_css = """
     
     .summary-control-btn {
         background: #007bff;
-        color: white;
+        color: black;
         border: #ececec;
         padding: 6px 12px;
         border-radius: 4px;
@@ -384,21 +384,21 @@ select,
                         border: 2.2px solid #ececec !important;
                         border-radius: 4px !important;
                         margin-top: -5px !important;  /* Move button up */
-                        background-color: #4a4a4a !important;  /* Dark greyish background */
-                        color: white !important;  /* White text */
+                        background-color: #ececec !important;  /* Dark greyish background */
+                        color: black !important;  /* black text */
                     }
                      
                     button[kind="secondary"]:hover {
                         border: 2.2px solid #ececec !important;
                         background-color: #5a5a5a !important;  /* Slightly lighter on hover */
-                        color: white !important;  /* Keep white text on hover */
+                        color: black !important;  /* Keep black text on hover */
                     }
                      
                     button[kind="secondary"]:focus {
                         border: 2.2px solid #ececec !important;
                         outline: 2px solid #618f8f !important;
-                        background-color: #4a4a4a !important;  /* Keep dark background on focus */
-                        color: white !important;  /* Keep white text on focus */
+                        background-color: #ececec !important;  /* Keep dark background on focus */
+                        color: black !important;  /* Keep black text on focus */
                     }
                      
                     /* Try targeting by data attributes */
@@ -406,22 +406,153 @@ select,
                         border: 2.2px solid #ececec !important;
                         height: 48px !important;
                         margin-top: -5px !important;  /* Move button up */
-                        background-color: #4a4a4a !important;  /* Dark greyish background */
-                        color: white !important;  /* White text */
+                        background-color: #ececec !important;  /* Dark greyish background */
+                        color: black !important;  /* black text */
                     }
                     
                     /* Additional targeting for button text specifically */
                     button[kind="secondary"] p,
                     button[kind="secondary"] span,
                     button[kind="secondary"] div {
-                        color: white !important;
+                        color: black !important;
                     }
                     
                     [data-testid] button p,
                     [data-testid] button span,
                     [data-testid] button div {
-                        color: white !important;
+                        color: black !important;
                     }
 
 </style>
 """
+
+content_area_css = """
+            <style>
+            /* Primary targeting for block container - 70% width grey background */
+            [data-testid="block-container"] {
+                background-color: #fafafa !important;
+                width: 70% !important;
+                max-width: 70% !important;
+                margin-left: auto !important;
+                margin-right: auto !important;
+            }
+            
+            /* Alternative targeting for older Streamlit versions */
+            .block-container {
+                background-color: #fafafa !important;
+                width: 70% !important;
+                max-width: 70% !important;
+                margin-left: auto !important;
+                margin-right: auto !important;
+            }
+            
+            /* Target the element that contains your tab content */
+            .stApp .main .block-container {
+                background-color: #fafafa !important;
+                width: 70% !important;
+                max-width: 70% !important;
+                margin-left: auto !important;
+                margin-right: auto !important;
+            }
+            
+            /* Secondary button styling */
+            </style>
+        """
+
+
+button_css = """
+        <style>
+        /* Force override all button styling */
+        button[kind="secondary"] {
+            height: 40px !important;
+            border: 2.2px solid #ececec !important;
+            border-radius: 4px !important;
+            margin-top: -5px !important;  /* Move button up */
+            transform: translateY(-3px) !important;  /* Additional upward adjustment */
+            background-color: #d3d3d3 !important;  
+            color: black !important;  /* black text */
+        }
+            
+        button[kind="secondary"]:hover {
+            border: 2.2px solid #ececec !important;
+            transform: translateY(-3px) !important;  /* Keep position on hover */
+            background-color: #d3d3d3 !important;  /* Slightly lighter on hover */
+            color: black !important;  /* Keep black text on hover */
+        }
+            
+        button[kind="secondary"]:focus {
+            border: 2.2px solid #ececec !important;
+            outline: 2px solid #ececec !important;
+            transform: translateY(-3px) !important;  /* Keep position on focus */
+            background-color: #d3d3d3 !important;  /* Keep dark background on focus */
+            color: black !important;  /* Keep black text on focus */
+        }
+            
+        /* Try targeting by data attributes */
+        [data-testid] button {
+            border: 2.2px solid #ececec !important;
+            height: 40px !important;
+            margin-top: -5px !important;  /* Move button up */
+            transform: translateY(-2.5px) !important;  /* Additional upward adjustment */
+            background-color: #d3d3d3 !important;  /* Dark greyish background */
+            color: black !important;  /* black text */
+        }
+        
+        /* Additional targeting for button text specifically */
+        button[kind="secondary"] p,
+        button[kind="secondary"] span,
+        button[kind="secondary"] div {
+            color: black !important;
+        }
+        
+        [data-testid] button p,
+        [data-testid] button span,
+        [data-testid] button div {
+            color: black !important;
+        }
+        </style>
+        """
+file_upload_css = """
+        <style>
+        .stFileUploader > div > div > div {
+            padding: 0.5rem !important;
+            min-height: 2rem !important;
+        }
+        .stFileUploader > div > div {
+            min-height: 2rem !important;
+        }
+        [data-testid="stFileUploader"] {
+            height: auto !important;
+        }
+        [data-testid="stFileUploader"] > div {
+            padding: 0.25rem 0.5rem !important;
+            min-height: 2rem !important;
+        }
+        
+        /* Animation for processing file */
+        .processing-file {
+            animation: pulse 1.5s ease-in-out infinite;
+            background: linear-gradient(90deg, #e3f2fd, #bbdefb, #e3f2fd);
+            background-size: 200% 100%;
+            animation: shimmer 2s linear infinite;
+            border-radius: 4px;
+            padding: 2px 4px;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+        
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+        
+        .analyzing-text {
+            color: #1976d2;
+            font-weight: 500;
+        }
+        </style>
+        """

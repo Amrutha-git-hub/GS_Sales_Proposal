@@ -159,33 +159,7 @@ def show_validation_popup(missing_tab_name, missing_fields=None):
     # Create professional popup modal
     with stylable_container(
         f"validation_popup_{missing_tab_name.replace(' ', '_')}",
-        css_styles="""
-        div[data-testid="stBlock"] {
-            position: fixed !important;
-            top: 20% !important;
-            left: 50% !important;
-            transform: translateX(-50%) !important;
-            z-index: 9999 !important;
-            background: black !important;
-            border: 1px solid #ddd !important;
-            border-radius: 12px !important;
-            padding: 30px !important;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15) !important;
-            width: 450px !important;
-            max-width: 90vw !important;
-            border-top: 4px solid #f56565 !important;
-        }
-        div[data-testid="stBlock"]:before {
-            content: '' !important;
-            position: fixed !important;
-            top: 0 !important;
-            left: 0 !important;
-            width: 100vw !important;
-            height: 180vh !important;
-            background: rgba(0, 0, 0, 0.4) !important;
-            z-index: -1 !important;
-        }
-        """,
+        css_styles=css_styles,
     ):
         # Header with icon and title
         st.markdown(
@@ -365,7 +339,7 @@ def validate_seller_mandatory_fields():
     seller = st.session_state.seller_data_from_tab
 
     # Ensure both fields are non-empty after stripping blackspace
-    return seller is not None and bool(seller.seller_enterprise_name.strip()) and bool(seller.seller_enterprise_details_content.strip())
+    return seller is not None and bool(seller.seller_enterprise_name.strip()) and bool(seller.seller_requirements_content.strip())
 
 
 def validate_project_mandatory_fields():
@@ -422,7 +396,7 @@ def show_lock_confirmation_popup(tab_index):
     
     # Warning message
     st.error(
-        f"**Lock this tab?**\n\n"
+        f"Lock **{tab_names[tab_index]}** ?\n\n"
         f"You won't be able to modify this tab once locked."
     )
     
@@ -430,14 +404,14 @@ def show_lock_confirmation_popup(tab_index):
     col1, col2 = st.columns([1, 1])
     
     with col1:
-        if st.button("Back", key=f"cancel_lock_{tab_index}", type="secondary"):
+        if st.button("Back", key=f"cancel_lock_{tab_index}", type="secondary",use_container_width=True):
             # Clear confirmation state
             if f"show_confirmation_{tab_index}" in st.session_state:
                 del st.session_state[f"show_confirmation_{tab_index}"]
             st.rerun()
     
     with col2:
-        if st.button("Lock & Continue", key=f"confirm_lock_{tab_index}", type="primary"):
+        if st.button("Lock & Continue", key=f"confirm_lock_{tab_index}", type="secondary",use_container_width=True):
             # Clear confirmation state
             if f"show_confirmation_{tab_index}" in st.session_state:
                 del st.session_state[f"show_confirmation_{tab_index}"]
@@ -567,133 +541,25 @@ st.markdown(app_css, unsafe_allow_html=True)
 # }
 # </style>
 # """, unsafe_allow_html=True)
-content_area_css = """
-<style>
-/* Primary targeting for block container - 75% width grey background */
-[data-testid="block-container"] {
-    background-color: #fafafa !important;
-    width: 75% !important;
-    max-width: 75% !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
-}
 
-/* Alternative targeting for older Streamlit versions */
-.block-container {
-    background-color: #fafafa !important;
-    width: 75% !important;
-    max-width: 75% !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
-}
-
-/* Target the element that contains your tab content */
-.stApp .main .block-container {
-    background-color: #fafafa !important;
-    width: 75% !important;
-    max-width: 75% !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
-}
-</style>
-"""
 st.markdown(content_area_css,unsafe_allow_html=True)
 st.markdown(sticky_header_css, unsafe_allow_html=True)
 
 # Add title - place this after your CSS but before the tab buttons
 # Replace your existing title section with this:
-st.markdown("""  
-<div class="sticky-header" style="width: 100%; display: flex; justify-content: center; padding: 0; margin: 0;">
-    <div style="width: 100%; display: flex; justify-content: center; padding: 0; margin: 0;">
-        <div style="width: 70%; background-color: black; padding: 5px 0;">
-            <div style="display: flex; align-items: center; margin: 0; width: 100%; padding: 0 40px;">
-                <!-- Text and logo container -->
-                <div style="display: flex; align-items: center;">
-                    <div style="display: flex; flex-direction: column; margin-right: 20px;">
-                        <h1 style="color: white; font-size: 48px; font-weight: bold; margin: 0; padding: 0;">
-                            CoXprt
-                        </h1>
-                        <p style="color: white; font-size: 16px; margin: 5px 0 0 0; padding: 0;">
-                            AI automated sales proposal generator
-                        </p>
-                    </div>
-                    <img src="https://static.wixstatic.com/media/cb6b3d_5c8f2b020ebe48b69bc8c163cc480156~mv2.png/v1/fill/w_60,h_60,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/GrowthSutra%20Logo.png" alt="Logo" style="height: 60px;">
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-""", unsafe_allow_html=True)
+st.markdown(header_css, unsafe_allow_html=True)
 
-st.markdown("""
-<style>
-.sticky-tabs {
-    position: sticky;
-    top: 120px; /* Adjust based on your header height */
-    z-index: 999;
-    background-color: white;
-    padding: 10px 0;
-    border-bottom: 1px solid #e0e0e0;
-    margin-bottom: 20px;
-}
 
-/* Force override all button styling */
-button[kind="secondary"] {
-    height: 48px !important;
-    border: 2.2px solid #ececec !important;
-    border-radius: 4px !important;
-    margin-top: -5px !important;  /* Move button up */
-    transform: translateY(-3px) !important;  /* Additional upward adjustment */
-    background-color: #d3d3d3 !important;  
-    color: black !important;  /* black text */
-}
-    
-button[kind="secondary"]:hover {
-    border: 2.2px solid #ececec !important;
-    transform: translateY(-3px) !important;  /* Keep position on hover */
-    background-color: #d3d3d3 !important;  /* Slightly lighter on hover */
-    color: black !important;  /* Keep black text on hover */
-}
-    
-button[kind="secondary"]:focus {
-    border: 2.2px solid #ececec !important;
-    outline: 2px solid #ececec !important;
-    transform: translateY(-3px) !important;  /* Keep position on focus */
-    background-color: #d3d3d3 !important;  /* Keep dark background on focus */
-    color: black !important;  /* Keep black text on focus */
-}
-    
-/* Try targeting by data attributes */
-[data-testid] button {
-    border: 2.2px solid #ececec !important;
-    height: 48px !important;
-    margin-top: -5px !important;  /* Move button up */
-    transform: translateY(-2.5px) !important;  /* Additional upward adjustment */
-    background-color: #d3d3d3 !important;  /* Dark greyish background */
-    color: black !important;  /* black text */
-}
+st.markdown(button_css_2, unsafe_allow_html=True)
 
-/* Additional targeting for button text specifically */
-button[kind="secondary"] p,
-button[kind="secondary"] span,
-button[kind="secondary"] div {
-    color: black !important;
-}
 
-[data-testid] button p,
-[data-testid] button span,
-[data-testid] button div {
-    color: black !important;
-}
-</style>
-""", unsafe_allow_html=True)
+st.markdown(button_css, unsafe_allow_html=True)
 
 # Initialize session state for active tab - ENSURE CLIENT TAB IS DEFAULT
 if 'active_tab' not in st.session_state:
     st.session_state.active_tab = 0
 
-# Tab buttons with sticky container
-st.markdown('<div class="sticky-tabs">', unsafe_allow_html=True)
+
 
 tab_names = ["Client Information", "Seller Information", "Project Specifications", "Generate Proposal"]
 
@@ -723,7 +589,6 @@ for i, tab_name in enumerate(tab_names):
                     border: 2px solid #ececec !important;
                     font-weight: bold !important;
                     box-shadow: 0 4px 8px rgba(89, 156, 212, 0.3) !important;
-                    pointer-events: none !important;
                 }
                 button:focus {
                     background-color: #599cd4 !important;
@@ -732,7 +597,7 @@ for i, tab_name in enumerate(tab_names):
                 }
                 """,
             ):
-                if st.button(display_name, key=f"tab_{i}", use_container_width=True, disabled=True, type="secondary"):
+                if st.button(display_name, key=f"tab_{i}", use_container_width=True, type="primary"):
                     st.session_state.active_tab = i
                     st.rerun()
         elif tab_enabled:
@@ -740,14 +605,13 @@ for i, tab_name in enumerate(tab_names):
                 f"inactive_tab_{i}",
                 css_styles="""
                 button {
-                    background-color: #ececec !important;
+                    background-color: #6c757d !important;
                     color: white !important;
                     border: 1px solid #ececec !important;
-                    pointer-events: none !important;
                 }
                 """,
             ):
-                if st.button(display_name, key=f"tab_{i}", use_container_width=True, disabled=True, type='secondary'):
+                if st.button(display_name, key=f"tab_{i}", use_container_width=True,  type="primary"):
                     st.session_state.active_tab = i
                     st.rerun()
         else:
@@ -756,16 +620,15 @@ for i, tab_name in enumerate(tab_names):
                 f"disabled_tab_{i}",
                 css_styles="""
                 button {
-                    background-color: #ececec !important;
+                    background-color: #6c757d !important;
                     color: white !important;
                     border: 1px solid #ececec !important;
                     cursor: not-allowed !important;
                     opacity: 1 !important;
-                    pointer-events: none !important;
                 }
                 """,
             ):
-                st.button(display_name, key=f"tab_{i}", use_container_width=True, disabled=True, type='secondary')
+                st.button(display_name, key=f"tab_{i}", use_container_width=True, disabled=True, type="primary")
 
 
 # Handle confirmation dialogs - POPUP STYLE
@@ -783,60 +646,6 @@ st.session_state.is_active = True
 # Show lock status message for locked tabs
 if is_tab_locked(current_tab):
     st.info(f"🔒 This tab is locked. You cannot modify the data in this tab.")
-
-
-st.markdown("""
-                    <style>
-                    /* Force override all button styling */
-                    button[kind="secondary"] {
-                        height: 48px !important;
-                        border: 2.2px solid #ececec !important;
-                        border-radius: 4px !important;
-                        margin-top: -5px !important;  /* Move button up */
-                        transform: translateY(-3px) !important;  /* Additional upward adjustment */
-                        background-color: #edf2f1 !important;  /* Dark greyish background */
-                        color: black !important;  /* black text */
-                    }
-                     
-                    button[kind="secondary"]:hover {
-                        border: 2.2px solid #ececec !important;
-                        transform: translateY(-3px) !important;  /* Keep position on hover */
-                        background-color: #5a5a5a !important;  /* Slightly lighter on hover */
-                        color: black !important;  /* Keep black text on hover */
-                    }
-                     
-                    button[kind="secondary"]:focus {
-                        border: 2.2px solid #ececec !important;
-                        outline: 2px solid #ececec !important;
-                        transform: translateY(-3px) !important;  /* Keep position on focus */
-                        background-color: #edf2f1 !important;  /* Keep dark background on focus */
-                        color: black !important;  /* Keep black text on focus */
-                    }
-                     
-                    /* Try targeting by data attributes */
-                    [data-testid] button {
-                        border: 2.2px solid #ececec !important;
-                        height: 48px !important;
-                        margin-top: -5px !important;  /* Move button up */
-                        transform: translateY(-2.5px) !important;  /* Additional upward adjustment */
-                        background-color: #edf2f1 !important;  /* Dark greyish background */
-                        color: black !important;  /* black text */
-                    }
-                    
-                    /* Additional targeting for button text specifically */
-                    button[kind="secondary"] p,
-                    button[kind="secondary"] span,
-                    button[kind="secondary"] div {
-                        color: black !important;
-                    }
-                    
-                    [data-testid] button p,
-                    [data-testid] button span,
-                    [data-testid] button div {
-                        color: black !important;
-                    }
-                    </style>
-                    """, unsafe_allow_html=True)  
 
 
 # Content area with validation-aware tab switching
@@ -893,7 +702,7 @@ else:  # Generate Proposal Tab
         )
 
 # Bottom navigation buttons with enhanced styling
-col1, col2, col3 = st.columns(3, gap="large")
+col1, col2, col3 = st.columns(3, gap="medium")
 
 # Previous Button
 with col1:
@@ -905,7 +714,7 @@ with col1:
             "prev_button_disabled",
             css_styles="""
             button {
-                background-color: #D4D4D !important;
+                background-color: #6c757d !important;
                 color: black !important;
                 border: 1px solid #dee2e6 !important;
                 cursor: not-allowed !important;
@@ -914,32 +723,32 @@ with col1:
             }
             """,
         ):
-            st.button(prev_button_text, key="prev_btn", use_container_width=True, disabled=True)
+            st.button(prev_button_text, key="prev_btn", use_container_width=True, disabled=True,type="primary")
     else:
         with stylable_container(
             "prev_button",
             css_styles="""
             button {
-                background-color: #ececec !important;
+                background-color:#6c757d !important;
                 color: black !important;
                 border: 1px solid #5a6268 !important;
                 font-weight: bold !important;
                 transition: all 0.3s ease !important;
             }
             button:hover {
-                background-color: #ececec !important;
+                background-color: #6c757d !important;
                 color: black !important;
                 transform: translateY(-1px) !important;
             }
             button:active {
-                background-color: #ececec !important;
+                background-color: #6c757dc !important;
                 border: 2px solid #ececec !important;
                 transform: translateY(0px) !important;
                 box-shadow: 0 2px 4px rgba(89, 156, 212, 0.4) !important;
             }
             """,
         ):
-            if st.button(prev_button_text, key="prev_btn", use_container_width=True):
+            if st.button(prev_button_text, key="prev_btn", use_container_width=True,type="primary"):
                 navigate_to_previous_tab()
 
 # Refresh Button
@@ -948,26 +757,26 @@ with col2:
         "refresh_button",
         css_styles="""
         button {
-            background-color: #ececec !important;
+            background-color: #6c757d !important;
             color: black !important;
             border: 1px solid #5a6268 !important;
             font-weight: bold !important;
             transition: all 0.3s ease !important;
         }
         button:hover {
-            background-color: #ececec !important;
+            background-color: #6c757d !important;
             color: black !important;
             transform: translateY(-1px) !important;
         }
         button:active {
-            background-color:#ececec !important;
+            background-color:#6c757d !important;
             border: 2px solid #ececec !important;
             transform: translateY(0px) !important;
             box-shadow: 0 2px 4px rgba(89, 156, 212, 0.4) !important;
         }
         """,
     ):
-        if st.button("🔄 Refresh All Data", key="refresh_btn", use_container_width=True):
+        if st.button("🔄 Refresh All Data", key="refresh_btn", use_container_width=True,type="primary"):
             refresh_all_data()
 
 # Next Button
@@ -980,7 +789,7 @@ with col3:
             "next_button_disabled",
             css_styles="""
             button {
-                background-color:#D4D4D !important;
+                background-color:#6c757d !important;
                 color: black !important;
                 border: 1px solid #dee2e6 !important;
                 cursor: not-allowed !important;
@@ -989,25 +798,25 @@ with col3:
             }
             """,
         ):
-            st.button(next_button_text, key="next_btn", use_container_width=True, disabled=True)
+            st.button(next_button_text, key="next_btn", use_container_width=True, disabled=True,type="primary")
     else:
         with stylable_container(
             "next_button",
             css_styles="""
             button {
-                background-color: #ececec!important;
+                background-color: #6c757d!important;
                 color: black !important;
                 border: 1px solid #5a6268 !important;
                 font-weight: bold !important;
                 transition: all 0.3s ease !important;
             }
             button:active {
-                background-color: #ececec !important;
+                background-color: #6c757d !important;
                 border: 2px solid #ececec !important;
                 transform: translateY(0px) !important;
                 box-shadow: 0 2px 4px rgba(89, 156, 212, 0.4) !important;
             }
             """,
         ):
-            if st.button(next_button_text, key="next_btn", use_container_width=True):
+            if st.button(next_button_text, key="next_btn", use_container_width=True,type="primary"):
                 navigate_to_next_tab()

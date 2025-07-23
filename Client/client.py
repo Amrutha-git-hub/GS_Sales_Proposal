@@ -17,7 +17,7 @@ from datetime import datetime
 from WebScraper.webscraper_without_ai import get_url_details_without_ai
 from Common_Utils.common_utils import *
 from Common_Utils.common_utils import set_global_message
-
+from .client_css  import *
 
 def normalize_url(url: str) -> str:
     url = url.strip()
@@ -30,7 +30,7 @@ def normalize_url(url: str) -> str:
     domain_part = re.sub(r'^https?://', '', url).split('/')[0]
 
     # If no known domain suffix present, append '.com'
-    if not re.search(r'\.(com|in|org|net|co|io|edu|gov)(/|$)', domain_part):
+    if not re.search(r'\.(com|in|org|net|co|io|edu|gov|pro)(/|$)', domain_part):
         url = url.rstrip('/') + '.com'
 
     return url
@@ -99,6 +99,7 @@ def validate_client_mandatory_fields():
         
         # Uncomment below for actual validation
         result = client_data.validate_mandatory_fields()
+        print(f"--------------------------The result is {result}")
         return result
         
     except Exception as e:
@@ -275,7 +276,7 @@ def render_client_website_section(logger, client_data, is_locked):
                     label="Client Website URL",
                     options=url_options,
                     index=default_index,
-                    key="client_website_url_selector",
+                    #key="client_website_url_selector",
                     label_visibility="collapsed",
                     disabled=not client_name_provided or is_locked,
                     accept_new_options=True,
@@ -324,12 +325,12 @@ def render_client_website_section(logger, client_data, is_locked):
                         pending_scrape_url=client_website_url,
                         scraping_in_progress=True
                     )
-                    set_global_message(f"Starting website analysis for {client_website_url}", 'info')
+                    #set_global_message(f"Starting website analysis for {client_website_url}", 'info')
                     st.rerun()
             except Exception as e:
                 logger.error(f"Error creating scrape button: {str(e)}")
                 set_global_message("Error creating scrape button", 'error')
-                st.rerun()
+                # st.rerun()
                 scrape_clicked = False
 
         # Show redirect link when website is selected
@@ -341,10 +342,6 @@ def render_client_website_section(logger, client_data, is_locked):
     f'</div>',
     unsafe_allow_html=True
 )
-
-
-
-
 
         # Handle refresh action
         if refresh_clicked and client_name_provided:
@@ -367,79 +364,83 @@ def render_client_website_section(logger, client_data, is_locked):
             except Exception as e:
                 logger.error(f"Error refreshing URLs: {str(e)}")
                 set_global_message(f"Failed to refresh URLs: {str(e)}", 'error')
-                st.rerun()
+                # st.rerun()
 
-        # Handle pending scraping operation
+        # Handle pending scraping operation with spinner
         if client_data.scraping_in_progress and client_data.pending_scrape_url:
             try:
-                logger.info(f"Starting website scraping for: {client_data.pending_scrape_url}")
-                set_global_message(f"Scraping website details from {client_data.pending_scrape_url}...", 'info')
+                #logger.info(f"Starting website scraping for: {client_data.pending_scrape_url}")
                 
-                try:
-                    # Get website details from the URL
-                    scrape_result = get_url_details_without_ai(client_data.pending_scrape_url)
+                # Use Streamlit spinner for the entire scraping process
+                with st.spinner(f"🔍 Analyzing website to fetch enterprise details : {client_data.pending_scrape_url}"):
                     
-                    # Extract data from the User object
-                    website_name = scrape_result.name
-                    logo_url = scrape_result.logo
-                    description = scrape_result.description
-                    services = scrape_result.services
-                    
-                    # Format the website details with description and services in bullet points
-                    website_details = f"Company: {website_name}\n\n"
-                    
-                    if description:
-                        website_details += f"Description:\n{description}\n\n"
-                    
-                    if services:
-                        website_details += "Services:\n"
-                        for service in services:
-                            website_details += f"• {service}\n"
-                    
-                    # Check if scraping returned empty or no data
-                    if not website_details or len(website_details.strip()) < 10:
-                        logger.warning(f"Website scraping returned empty data for: {client_data.pending_scrape_url}")
+                    try:
+                        # Get website details from the URL
+                        scrape_result = get_url_details_without_ai(client_data.pending_scrape_url)
+                        print(scrape_result)
+                        print(scrape_result.name)
+                        
+                        # Extract data from the User object
+                        website_name = scrape_result.name
+                        logo_url = scrape_result.logo
+                        description = scrape_result.description
+                        services = scrape_result.services
+                        
+                        # Format the website details with description and services in bullet points
+                        website_details = f"Company: {website_name}\n\n"
+                        
+                        if description:
+                            website_details += f"Description:\n{description}\n\n"
+                        
+                        if services:
+                            website_details += "Services:\n"
+                            for service in services:
+                                website_details += f"• {service}\n"
+                        
+                        # Check if scraping returned empty or no data
+                        if not website_details or len(website_details.strip()) < 10:
+                            logger.warning(f"Website scraping returned empty data for: {client_data.pending_scrape_url}")
+                            client_state_manager.update_multiple_fields(
+                                scraping_in_progress=False,
+                                pending_scrape_url=None
+                            )
+                            set_global_message("Not able to fetch the information from the selected website, check the website link once", "error")
+                            # st.rerun()
+                        else:
+                            logger.info(f"Successfully scraped website details, length: {len(website_details)}")
+                            
+                            # Prepare update parameters
+                            update_params = {
+                                'enterprise_details_content': website_details,
+                                'last_analyzed_url': client_data.pending_scrape_url,
+                                'scraping_in_progress': False,
+                                'pending_scrape_url': None
+                            }
+                            
+                            # Add logo to update parameters if available (storing in enterprise_logo)
+                            if logo_url:
+                                update_params['enterprise_logo'] = logo_url
+                            
+                            client_state_manager.update_multiple_fields(**update_params)
+                            
+                            # Show success message with logo info
+                            if logo_url:
+                                set_global_message("Website details and logo extracted successfully!", 'success')
+                            else:
+                                set_global_message("Website details extracted successfully!", 'success')
+                            
+
+                            
+                    except Exception as scrape_error:
+                        logger.error(f"Error during website scraping for {client_data.pending_scrape_url}: {str(scrape_error)}", exc_info=True)
                         client_state_manager.update_multiple_fields(
                             scraping_in_progress=False,
                             pending_scrape_url=None
                         )
-                        set_global_message("Not able to fetch the information from the selected website, check the website link once", "error")
-                        st.rerun()
-                    else:
-                        logger.info(f"Successfully scraped website details, length: {len(website_details)}")
+                        set_global_message("Error scraping website", 'error')
+                        logger.error(f"Error scraping: {str(scrape_error)}")
+                        # st.rerun()
                         
-                        # Prepare update parameters
-                        update_params = {
-                            'enterprise_details_content': website_details,
-                            'last_analyzed_url': client_data.pending_scrape_url,
-                            'scraping_in_progress': False,
-                            'pending_scrape_url': None
-                        }
-                        
-                        # Add logo to update parameters if available (storing in enterprise_logo)
-                        if logo_url:
-                            update_params['enterprise_logo'] = logo_url
-                        
-                        client_state_manager.update_multiple_fields(**update_params)
-                        
-                        # Show success message with logo info
-                        if logo_url:
-                            set_global_message("Website details and logo extracted successfully!", 'success')
-                        else:
-                            set_global_message("Website details extracted successfully!", 'success')
-                        
-                        st.rerun()
-                        
-                except Exception as scrape_error:
-                    logger.error(f"Error during website scraping for {client_data.pending_scrape_url}: {str(scrape_error)}", exc_info=True)
-                    client_state_manager.update_multiple_fields(
-                        scraping_in_progress=False,
-                        pending_scrape_url=None
-                    )
-                    set_global_message("Error scraping website", 'error')
-                    logger.error(f"Error scraping: {str(scrape_error)}")
-                    st.rerun()
-                    
             except Exception as e:
                 logger.error(f"Critical error in website scraping process: {str(e)}", exc_info=True)
                 # Ensure scraping state is cleared even on critical errors
@@ -452,12 +453,12 @@ def render_client_website_section(logger, client_data, is_locked):
                     logger.error(f"Error during cleanup: {str(cleanup_error)}")
                 
                 set_global_message("A critical error occurred during website scraping. Please try again.", 'error')
-                st.rerun()
+                # st.rerun()
                                     
     except Exception as e:
         logger.error(f"Error in scraping operation: {str(e)}")
         set_global_message(f"Error in website scraping operation: {str(e)}", 'error')
-        st.rerun()
+        # st.rerun()
 
 
 @st.fragment
@@ -539,122 +540,7 @@ def doc_upload_section(logger, client_data, is_locked):
         ''', unsafe_allow_html=True)
         
         # Add custom CSS for file uploader
-        st.markdown("""
-        <style>
-        .stFileUploader > div > div > div {
-            padding: 0.5rem !important;
-            min-height: 2rem !important;
-        }
-        
-        /* Move entire file uploader upwards */
-        .stFileUploader {
-            margin-top: -40px !important;
-        }
-        
-        /* File Uploader */
-        .stFileUploader > div > div {
-            background-color: #f0f5f5 !important;
-            color: black !important;
-            border: 2px solid #ececec !important;
-            border-radius: 8px !important;
-        }
-        
-        /* REDUCED HEIGHT FOR UPLOADED FILE DISPLAY */
-        /* Target the uploaded file container */
-        .stFileUploader div[data-testid="stFileUploaderFileName"] {
-            min-height: 40px !important;
-            height: 40px !important;
-            padding: 8px 12px !important;
-            margin: 4px 0 !important;
-            display: flex !important;
-            align-items: center !important;
-            color: black !important;
-            font-size: 12px !important;
-            line-height: 1.2 !important;
-            background-color: #f0f5f5 !important;
-        }
-        
-        /* Reduce height of the file uploader section after upload */
-        .stFileUploader section[data-testid="stFileUploaderDropzone"] {
-            min-height: 50px !important;
-            height: auto !important;
-            padding: 12px !important;
-            margin: 6px 0 !important;
-            background-color: #f0f5f5 !important;
-        }
-        
-        /* Target any uploaded file display elements */
-        .stFileUploader [data-testid="fileUploaderFileName"],
-        .stFileUploader [data-testid="stFileUploaderFileName"] > div,
-        .stFileUploader div[role="button"] {
-            min-height: 40px !important;
-            height: 40px !important;
-            padding: 8px 12px !important;
-            margin: 4px 0 !important;
-            line-height: 1.2 !important;
-            font-size: 12px !important;
-            background-color: #f0f5f5 !important;
-        }
-        
-        /* Compact the entire file uploader when files are uploaded */
-        .stFileUploader:has([data-testid="stFileUploaderFileName"]) {
-            min-height: 40px !important;
-        }
-        
-        .stFileUploader:has([data-testid="stFileUploaderFileName"]) > div {
-            min-height: 40px !important;
-            padding: 4px !important;
-        }
-        
-        /* File Uploader - Uploaded file display text (light grey) */
-        .stFileUploader div[data-testid="stFileUploaderFileName"],
-        .stFileUploader div[data-testid="fileUploaderDropzone"] span,
-        .stFileUploader div[data-testid="fileUploaderDropzone"] p,
-        .stFileUploader section span,
-        .stFileUploader section p,
-        .stFileUploader [data-testid="fileUploaderFileName"],
-        .stFileUploader small {
-            color: black !important; /* Light grey for uploaded file names and text */
-            font-size: 12px !important;
-            line-height: 1.2 !important;
-        }
-        
-        /* File uploader drag and drop area */
-        .stFileUploader section {
-            background-color: #f0f5f5 !important;
-            border: 2px dashed #ececec !important;
-            border-radius: 8px !important;
-        }
-        
-        /* File uploader text content - making it light grey */
-        .stFileUploader section div,
-        .stFileUploader section span,
-        .stFileUploader section small {
-            color: black !important; /* Light grey for all file uploader text */
-            font-size: 12px !important;
-            line-height: 1.2 !important;
-        }
-        
-        /* Fix for uploaded file dark background */
-        .stFileUploader div[data-testid="stFileUploaderFileName"],
-        .stFileUploader div[data-testid="stFileUploaderFileName"] > div,
-        .stFileUploader .uploadedFile,
-        .stFileUploader [data-baseweb="file-uploader"] div {
-            background-color: #f0f5f5 !important;
-            color: black !important;
-        }
-        
-        /* Override any dark backgrounds in file uploader */
-        .stFileUploader * {
-            background-color: #f0f5f5 !important;
-        }
-        
-        /* Make sure the file name text is visible */
-        .stFileUploader span, .stFileUploader small {
-            color: black!important;
-        }
-        </style>
-        """, unsafe_allow_html=True)
+        st.markdown(file_upload_css, unsafe_allow_html=True)
         
         # FILE UPLOAD
         try:
@@ -693,7 +579,7 @@ def doc_upload_section(logger, client_data, is_locked):
                         <style>
                         div.stButton > button:first-child {{
                             background-color: #4CAF50;
-                            color: #f0f5f5;
+                            color: #f5f5f5;
                             border: none;
                         }}
                         </style>
@@ -919,58 +805,7 @@ def render_client_pain_points_section(logger, client_data, is_locked):
                         with col_add:
                             try:
                                 # Style the button to align vertically with the content box
-                                st.markdown("""
-        <style>
-        /* Force override all button styling */
-        button[kind="secondary"] {
-            height: 48px !important;
-            border: 2.2px solid #ececec !important;
-            border-radius: 4px !important;
-            margin-top: -5px !important;  /* Move button up */
-            transform: translateY(-3px) !important;  /* Additional upward adjustment */
-            background-color: #d3d3d3 !important;  
-            color: black !important;  /* black text */
-        }
-            
-        button[kind="secondary"]:hover {
-            border: 2.2px solid #ececec !important;
-            transform: translateY(-3px) !important;  /* Keep position on hover */
-            background-color: #d3d3d3 !important;  /* Slightly lighter on hover */
-            color: black !important;  /* Keep black text on hover */
-        }
-            
-        button[kind="secondary"]:focus {
-            border: 2.2px solid #ececec !important;
-            outline: 2px solid #ececec !important;
-            transform: translateY(-3px) !important;  /* Keep position on focus */
-            background-color: #d3d3d3 !important;  /* Keep dark background on focus */
-            color: black !important;  /* Keep black text on focus */
-        }
-            
-        /* Try targeting by data attributes */
-        [data-testid] button {
-            border: 2.2px solid #ececec !important;
-            height: 48px !important;
-            margin-top: -5px !important;  /* Move button up */
-            transform: translateY(-2.5px) !important;  /* Additional upward adjustment */
-            background-color: #d3d3d3 !important;  /* Dark greyish background */
-            color: black !important;  /* black text */
-        }
-        
-        /* Additional targeting for button text specifically */
-        button[kind="secondary"] p,
-        button[kind="secondary"] span,
-        button[kind="secondary"] div {
-            color: black !important;
-        }
-        
-        [data-testid] button p,
-        [data-testid] button span,
-        [data-testid] button div {
-            color: black !important;
-        }
-        </style>
-        """, unsafe_allow_html=True)  
+                                st.markdown(secondary_button_css, unsafe_allow_html=True)  
                                 button_text = "❌" if is_selected else "➕"
                                 button_help = f"Remove '{key}' from client requirements" if is_selected else f"Add '{key}' to client requirements section"
                                 button_type = "secondary" 
@@ -1077,7 +912,7 @@ def render_client_pain_points_section(logger, client_data, is_locked):
                                     background_color = "#DCEBD6"
                                     border_color = "#ececec"
                                     text_color = "#000000"
-                                    icon = "✅"
+                                    icon = "📋"
                                     box_shadow = "0 2px 8px rgba(76, 175, 80, 0.3)"
                                 else:
                                     background_color = "#f5f5f5"
@@ -1286,7 +1121,6 @@ def render_linkedin_profile_section(logger, client_data, is_locked, spoc_name):
                     label="SPOC LinkedIn Profile",
                     options=linkedin_options,
                     index=current_index,
-                    key="spoc_linkedin_profile_selector",
                     label_visibility="collapsed",
                     disabled=not client_name_provided or is_locked,
                 )
@@ -1339,7 +1173,6 @@ def render_linkedin_profile_section(logger, client_data, is_locked, spoc_name):
             st.selectbox(
                 label="SPOC LinkedIn Profile",
                 options=["No LinkedIn profiles found. Try a different name."],
-                key="spoc_linkedin_profile_selector",
                 label_visibility="collapsed",
                 disabled=is_locked,
             )
@@ -1349,7 +1182,6 @@ def render_linkedin_profile_section(logger, client_data, is_locked, spoc_name):
             st.selectbox(
                 label="SPOC LinkedIn Profile",
                 options=["Enter SPOC name to get LinkedIn profiles"],
-                key="spoc_linkedin_profile_selector",
                 label_visibility="collapsed",
                 disabled=is_locked or not spoc_name_provided,
             )
@@ -1548,7 +1380,6 @@ def render_spoc_role_section(spoc_name_provided, spoc_linkedin_profile, client_d
             label="Target Role Selector", 
             options=role_options,
             index=role_options.index(current_selection) if current_selection in role_options else 0,
-            key="target_role_selector_dropdown",
             label_visibility="collapsed",
             disabled=not (client_name_provided and spoc_name_provided) or is_locked,
             accept_new_options=True
@@ -1557,7 +1388,7 @@ def render_spoc_role_section(spoc_name_provided, spoc_linkedin_profile, client_d
     with col_button:
 
         
-        if st.button("Get AI Priorities", 
+        if st.button("Get Role Priorities", 
                     key="get_ai_priorities_btn",
                     help=f"Get AI-suggested business priorities for {selected_target_role}" if selected_target_role and selected_target_role != "Select a role..." else "Select a role first",
                     type="primary",
@@ -1638,129 +1469,7 @@ def render_spoc_business_priorities_section(spoc_name_provided, client_data, log
     client_name_provided = bool(client_data.enterprise_name and client_data.enterprise_name.strip())
     
     # Enhanced CSS for styling
-    st.markdown("""
-    <style>
-                /* Change text area focus border color */
-textarea:focus {
-    border-color: #42f5e9 !important;
-    box-shadow: 0 0 0 2px rgba(66, 245, 233, 0.2) !important;
-}
-
-/* Target Streamlit's specific text area component */
-.stTextArea textarea:focus {
-    border-color: #42f5e9 !important;
-    box-shadow: 0 0 0 2px rgba(66, 245, 233, 0.2) !important;
-    outline: none !important;
-}
-
-/* Also target text input fields if needed */
-.stTextInput input:focus {
-    border-color: #42f5e9 !important;
-    box-shadow: 0 0 0 2px rgba(66, 245, 233, 0.2) !important;
-    outline: none !important;
-}
-
-/* Target all input elements in Streamlit */
-[data-testid="stTextArea"] textarea:focus,
-[data-testid="stTextInput"] input:focus {
-    border-color: #42f5e9 !important;
-    box-shadow: 0 0 0 2px rgba(66, 245, 233, 0.2) !important;
-    outline: none !important;
-}
-    .tooltip-label {
-        position: relative;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        font-weight: 600;
-        color: #333;
-        margin-bottom: 15px;
-    }
-    
-    .tooltip-icon {
-        cursor: help;
-        color: #666;
-        font-size: 14px;
-        position: relative;
-    }
-    
-    .tooltip-icon:hover::after {
-        content: attr(data-tooltip);
-        position: absolute;
-        bottom: 125%;
-        left: 50%;
-        transform: translateX(-50%);
-        background: #333;
-        color: white;
-        padding: 8px 12px;
-        border-radius: 6px;
-        font-size: 12px;
-        white-space: nowrap;
-        z-index: 1000;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    }
-    
-    .tooltip-icon:hover::before {
-        content: '';
-        position: absolute;
-        bottom: 115%;
-        left: 50%;
-        transform: translateX(-50%);
-        border: 5px solid transparent;
-        border-top-color: #333;
-        z-index: 1000;
-    }
-    
-    /* Force override all button styling */
-    button[kind="secondary"] {
-        height: 48px !important;
-        border: 2.2px solid #ececec !important;
-        border-radius: 4px !important;
-        margin-top: -5px !important;
-        transform: translateY(-5px) !important;
-        background-color: #d3d3d3 !important;  
-        color: black !important;
-    }
-        
-    button[kind="secondary"]:hover {
-        border: 2.2px solid #ececec !important;
-        transform: translateY(-5px) !important;
-        background-color: #d3d3d3 !important;
-        color: black !important;
-    }
-        
-    button[kind="secondary"]:focus {
-        border: 2.2px solid #ececec !important;
-        outline: 2px solid #ececec !important;
-        transform: translateY(-5px) !important;
-        background-color: #d3d3d3 !important;
-        color: black !important;
-    }
-        
-    /* Try targeting by data attributes */
-    [data-testid] button {
-        border: 2.2px solid #ececec !important;
-        height: 48px !important;
-        margin-top: -5px !important;
-        transform: translateY(-5px) !important;
-        background-color: #d3d3d3 !important;
-        color: black !important;
-    }
-    
-    /* Additional targeting for button text specifically */
-    button[kind="secondary"] p,
-    button[kind="secondary"] span,
-    button[kind="secondary"] div {
-        color: black !important;
-    }
-    
-    [data-testid] button p,
-    [data-testid] button span,
-    [data-testid] button div {
-        color: black !important;
-    }
-    </style>
-    """, unsafe_allow_html=True)
+    st.markdown(elements_css, unsafe_allow_html=True)
     
     # Label with tooltip
     st.markdown('''
@@ -1865,7 +1574,7 @@ textarea:focus {
                     background_color = "#DCEBD6"
                     border_color = "#ececec"
                     text_color = "#000000"
-                    display_icon = "✅"
+                    display_icon = priority_icon
                     box_shadow = "0 2px 8px rgba(76, 175, 80, 0.3)"
                 else:
                     background_color = "#f5f5f5"
@@ -2071,7 +1780,7 @@ def render_sixth_section(logger, is_locked, client_data):
                         background_color = "#DCEBD6"
                         border_color = "#ececec"
                         text_color = "#000000"
-                        icon = "✅"
+                        icon = "📋"
                         box_shadow = "0 2px 8px rgba(76, 175, 80, 0.3)"
                     else:
                         background_color = "#f5f5f5"
@@ -2112,36 +1821,7 @@ def client_tab(st, logger, is_locked):
         # Apply CSS for styling
         try:
             # Re-apply CSS after every rerun to ensure persistence
-            content_area_css = """
-            <style>
-            /* Primary targeting for block container - 70% width grey background */
-            [data-testid="block-container"] {
-                background-color: #fafafa !important;
-                width: 70% !important;
-                max-width: 70% !important;
-                margin-left: auto !important;
-                margin-right: auto !important;
-            }
             
-            /* Alternative targeting for older Streamlit versions */
-            .block-container {
-                background-color: #fafafa !important;
-                width: 70% !important;
-                max-width: 70% !important;
-                margin-left: auto !important;
-                margin-right: auto !important;
-            }
-            
-            /* Target the element that contains your tab content */
-            .stApp .main .block-container {
-                background-color: #fafafa !important;
-                width: 70% !important;
-                max-width: 70% !important;
-                margin-left: auto !important;
-                margin-right: auto !important;
-            }
-            </style>
-            """
             st.markdown(content_area_css, unsafe_allow_html=True)
             
             # Apply additional client-specific CSS if available

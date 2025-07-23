@@ -16,14 +16,15 @@ image_prompt = """You are a highly meticulous AI assistant that extracts and sum
     Your goal is to allow someone to fully understand the image without seeing it, preserving maximum detail for use in downstream AI models or search systems."""
 
 
-
-
 rfi_painpoint_prompt = """
-You are a highly capable business analyst AI with deep expertise in sales, technology, and market research. Your task is to analyze an RFI (Request for Information) document from a client who is seeking digital or technology solutions.
+You are a highly capable business analyst AI with deep expertise in sales, technology, and market research. Your task is to analyze a document and determine whether it is a Request for Information (RFI) or is related to a sales proposal for digital or technology solutions.
 
-From this document, extract and synthesize **three key insights or business pain points** that the client organization is implicitly or explicitly concerned about. Each pain point should be labeled under a relevant category, followed by a brief, insightful summary.
+If the document **is not** an RFI or **not** related to a sales or technology solution proposal, respond with:
+null
 
-Here is the context of the sales proposal:
+If the document **is** relevant, extract and synthesize **three key insights or business pain points** that the client organization is implicitly or explicitly concerned about. Each pain point should be labeled under a relevant category, followed by a brief, insightful summary.
+
+Here is the document context:
 {context}
 
 Respond with **only** a valid JSON dictionary using the following format:
@@ -35,5 +36,9 @@ Respond with **only** a valid JSON dictionary using the following format:
 }}
 
 ❌ Do **not** add any explanation, text before or after the dictionary, markdown, comments, or labels.  
-✅ Return **only** the raw JSON dictionary — nothing else.
+✅ Return **only** the raw JSON dictionary or null — nothing else.
+
+!!!IMPORTANT 
+
+if the given document (context ) is not related to the Sales proposal then return NULL i.e empty json : Keep this in mind 
 """

@@ -22,12 +22,12 @@ def init_async_session_state():
         st.session_state.loading_progress = 0
     if 'current_analysis_step' not in st.session_state:
         st.session_state.current_analysis_step = ""
-    if 'current_step' not in st.session_state:
-        st.session_state.current_step = 0
     if 'ai_processing_started' not in st.session_state:
         st.session_state.ai_processing_started = False
     if 'analysis_complete' not in st.session_state:
         st.session_state.analysis_complete = False
+    if 'ai_futures' not in st.session_state:
+        st.session_state.ai_futures = None
 
 def get_ai_recommendations_async(section_name, prompt, client_data, seller_data, default_data):
     """
@@ -43,126 +43,102 @@ def get_ai_recommendations_async(section_name, prompt, client_data, seller_data,
         # Log the error if needed
         return default_data
 
-def update_progress(step, progress_value, analysis_text):
-    """Update the progress bar and analysis text"""
-    st.session_state.loading_progress = progress_value
-    st.session_state.current_analysis_step = analysis_text
-    # Force UI update
-    time.sleep(0.1)
+def check_ai_progress():
+    """Check if AI processing is complete and update session state accordingly"""
+    if not hasattr(st.session_state, 'ai_futures') or st.session_state.ai_futures is None:
+        return False
+    
+    all_complete = True
+    for section_name, future in st.session_state.ai_futures.items():
+        if future.done():
+            if section_name not in st.session_state.ai_recommendations_ready or not st.session_state.ai_recommendations_ready[section_name]:
+                try:
+                    result = future.result()
+                    st.session_state.ai_recommendation_data[section_name] = result
+                    st.session_state.ai_recommendations_ready[section_name] = True
+                except Exception as e:
+                    # Keep default data if AI fails
+                    st.session_state.ai_recommendations_ready[section_name] = True
+        else:
+            all_complete = False
+    
+    if all_complete and st.session_state.ai_recommendations_loading:
+        st.session_state.ai_recommendations_loading = False
+        st.session_state.analysis_complete = True
+        st.session_state.loading_progress = 100
+        st.session_state.current_analysis_step = "🎉 Analysis complete! Loading your personalized recommendations..."
+        return True
+    
+    return False
 
-# Global variable to store AI processing results (accessible from threads)
-ai_processing_results = {}
-
-def start_async_recommendations(client_data, seller_data):
-    """
-    Start async loading of all AI recommendations with progress tracking
-    """
-    if st.session_state.ai_recommendations_loading:
-        
-        # Analysis steps with corresponding messages
-        analysis_steps = [
-            "🔍 Analyzing client requirements and business context...",
-            "🏢 Processing seller capabilities and expertise...", 
-            "📋 Generating intelligent scope recommendations...",
-            "⏱️ Creating optimized timeline structure...",
-            "💪 Calculating effort estimations and resource needs...",
-            "👥 Designing optimal team composition...",
-            "💰 Formulating competitive pricing strategies...",
-            "✨ Finalizing AI-enhanced recommendations..."
-        ]
-        
-        # Default data definitions
-        default_data_map = {
-            'scope': {
-                "Project Planning": "**Project Planning** • Define project objectives and success criteria\n• Create detailed work breakdown structure\n• Establish project milestones and deliverables\n\n",
-                "Requirements Analysis": "**Requirements Analysis** • Conduct stakeholder interviews and workshops\n• Document functional and non-functional requirements\n• Create user stories and acceptance criteria\n\n",
-                "Solution Design": "**Solution Design** • Develop system architecture and technical specifications\n• Create wireframes and user interface mockups\n• Design database schema and integration points\n\n"
-            },
-            'timeline': {
-                "Phase 1 - Discovery": "**Phase 1 - Discovery (2-3 weeks)** • Stakeholder interviews and requirement gathering\n• Current state analysis and gap assessment\n• Technical feasibility study\n\n",
-                "Phase 2 - Design": "**Phase 2 - Design (3-4 weeks)** • System architecture and technical design\n• User experience and interface design\n• Development environment setup\n\n",
-                "Phase 3 - Development": "**Phase 3 - Development (8-12 weeks)** • Core functionality development\n• Integration with existing systems\n• Unit testing and code reviews\n\n"
-            },
-            'effort': {
-                "Business Analysis": "**Business Analysis (120-160 hours)** • Requirements gathering and documentation\n• Process mapping and workflow analysis\n• Stakeholder management and communication\n\n",
-                "Technical Development": "**Technical Development (400-600 hours)** • Frontend and backend development\n• Database design and implementation\n• API development and integration\n\n",
-                "Testing & QA": "**Testing & QA (80-120 hours)** • Test planning and test case creation\n• Manual and automated testing execution\n• Bug fixing and regression testing\n\n"
-            },
-            'team': {
-                "Core Team": "**Core Team (4-6 members)** • Project Manager and Scrum Master\n• Senior Business Analyst\n• Lead Developer and Frontend Developer\n• QA Engineer and DevOps Specialist\n\n",
-                "Extended Team": "**Extended Team (2-3 members)** • UI/UX Designer for user experience\n• Database Administrator for data management\n• Security Specialist for compliance review\n\n",
-                "Support Team": "**Support Team (1-2 members)** • Technical Writer for documentation\n• Change Management Specialist\n• Subject Matter Experts as needed\n\n"
-            },
-            'pricing': {
-                "Fixed Price Model": "**Fixed Price Model** • Total project cost: $150,000 - $200,000\n• 30% upfront, 40% at milestone delivery, 30% on completion\n• Includes 3 months post-launch support\n\n",
-                "Time & Materials": "**Time & Materials Model** • Senior resources: $150-180/hour\n• Mid-level resources: $100-130/hour\n• Junior resources: $70-90/hour\n\n",
-                "Hybrid Approach": "**Hybrid Approach** • Fixed price for core deliverables: $120,000\n• T&M for additional features and changes\n• Monthly retainer for ongoing support: $8,000/month\n\n"
-            }
+def start_ai_processing(client_data, seller_data):
+    """Start AI processing in background threads"""
+    if st.session_state.ai_processing_started:
+        return
+    
+    # Default data definitions
+    default_data_map = {
+        'scope': {
+            "Project Planning": "**Project Planning** • Define project objectives and success criteria\n• Create detailed work breakdown structure\n• Establish project milestones and deliverables\n\n",
+            "Requirements Analysis": "**Requirements Analysis** • Conduct stakeholder interviews and workshops\n• Document functional and non-functional requirements\n• Create user stories and acceptance criteria\n\n",
+            "Solution Design": "**Solution Design** • Develop system architecture and technical specifications\n• Create wireframes and user interface mockups\n• Design database schema and integration points\n\n"
+        },
+        'timeline': {
+            "Phase 1 - Discovery": "**Phase 1 - Discovery (2-3 weeks)** • Stakeholder interviews and requirement gathering\n• Current state analysis and gap assessment\n• Technical feasibility study\n\n",
+            "Phase 2 - Design": "**Phase 2 - Design (3-4 weeks)** • System architecture and technical design\n• User experience and interface design\n• Development environment setup\n\n",
+            "Phase 3 - Development": "**Phase 3 - Development (8-12 weeks)** • Core functionality development\n• Integration with existing systems\n• Unit testing and code reviews\n\n"
+        },
+        'effort': {
+            "Business Analysis": "**Business Analysis (120-160 hours)** • Requirements gathering and documentation\n• Process mapping and workflow analysis\n• Stakeholder management and communication\n\n",
+            "Technical Development": "**Technical Development (400-600 hours)** • Frontend and backend development\n• Database design and implementation\n• API development and integration\n\n",
+            "Testing & QA": "**Testing & QA (80-120 hours)** • Test planning and test case creation\n• Manual and automated testing execution\n• Bug fixing and regression testing\n\n"
+        },
+        'team': {
+            "Core Team": "**Core Team (4-6 members)** • Project Manager and Scrum Master\n• Senior Business Analyst\n• Lead Developer and Frontend Developer\n• QA Engineer and DevOps Specialist\n\n",
+            "Extended Team": "**Extended Team (2-3 members)** • UI/UX Designer for user experience\n• Database Administrator for data management\n• Security Specialist for compliance review\n\n",
+            "Support Team": "**Support Team (1-2 members)** • Technical Writer for documentation\n• Change Management Specialist\n• Subject Matter Experts as needed\n\n"
+        },
+        'pricing': {
+            "Fixed Price Model": "**Fixed Price Model** • Total project cost: $150,000 - $200,000\n• 30% upfront, 40% at milestone delivery, 30% on completion\n• Includes 3 months post-launch support\n\n",
+            "Time & Materials": "**Time & Materials Model** • Senior resources: $150-180/hour\n• Mid-level resources: $100-130/hour\n• Junior resources: $70-90/hour\n\n",
+            "Hybrid Approach": "**Hybrid Approach** • Fixed price for core deliverables: $120,000\n• T&M for additional features and changes\n• Monthly retainer for ongoing support: $8,000/month\n\n"
         }
-        
-        prompt_map = {
-            'scope': scope_prompt,
-            'timeline': timeline_prompt,
-            'effort': effort_prompt,
-            'team': team_prompt,
-            'pricing': pricing_prompt
-        }
-        
-        # Initialize with default data immediately
-        for section in default_data_map.keys():
-            if section not in st.session_state.ai_recommendation_data:
-                st.session_state.ai_recommendation_data[section] = default_data_map[section]
-                st.session_state.ai_recommendations_ready[section] = False
-        
-        # Simulate progress for the first few steps
-        current_step = st.session_state.get('current_step', 0)
-        
-        if current_step < len(analysis_steps):
-            progress = min(95, 10 + (current_step * 12))
-            update_progress(current_step, progress, analysis_steps[current_step])
-            st.session_state.current_step = current_step + 1
-            
-            # If we're at the processing steps, start AI calls
-            if current_step >= 2 and not st.session_state.get('ai_processing_started', False):
-                st.session_state.ai_processing_started = True
-                
-                # Start AI processing in background using ThreadPoolExecutor
-                with ThreadPoolExecutor(max_workers=5) as executor:
-                    futures = {}
-                    for section_name, prompt in prompt_map.items():
-                        future = executor.submit(
-                            get_ai_recommendations_async,
-                            section_name,
-                            prompt,
-                            client_data,
-                            seller_data,
-                            default_data_map[section_name]
-                        )
-                        futures[section_name] = future
-                    
-                    # Store futures in session state for later processing
-                    st.session_state.ai_futures = futures
-            
-            # Check if AI processing is complete
-            if hasattr(st.session_state, 'ai_futures') and current_step >= len(analysis_steps) - 1:
-                all_complete = True
-                for section_name, future in st.session_state.ai_futures.items():
-                    if future.done():
-                        try:
-                            result = future.result()
-                            st.session_state.ai_recommendation_data[section_name] = result
-                            st.session_state.ai_recommendations_ready[section_name] = True
-                        except Exception as e:
-                            # Keep default data if AI fails
-                            st.session_state.ai_recommendations_ready[section_name] = True
-                    else:
-                        all_complete = False
-                
-                if all_complete:
-                    # Final completion - set both flags to False to stop loading
-                    update_progress(len(analysis_steps), 100, "🎉 Analysis complete! Loading your personalized recommendations...")
-                    st.session_state.ai_recommendations_loading = False
-                    st.session_state.analysis_complete = True
+    }
+    
+    prompt_map = {
+        'scope': scope_prompt,
+        'timeline': timeline_prompt,
+        'effort': effort_prompt,
+        'team': team_prompt,
+        'pricing': pricing_prompt
+    }
+    
+    # Initialize with default data immediately
+    for section in default_data_map.keys():
+        if section not in st.session_state.ai_recommendation_data:
+            st.session_state.ai_recommendation_data[section] = default_data_map[section]
+            st.session_state.ai_recommendations_ready[section] = False
+    
+    # Start AI processing in background
+    st.session_state.ai_processing_started = True
+    st.session_state.loading_progress = 20
+    st.session_state.current_analysis_step = "🤖 Starting AI analysis..."
+    
+    # Start AI processing in background using ThreadPoolExecutor
+    executor = ThreadPoolExecutor(max_workers=5)
+    futures = {}
+    for section_name, prompt in prompt_map.items():
+        future = executor.submit(
+            get_ai_recommendations_async,
+            section_name,
+            prompt,
+            client_data,
+            seller_data,
+            default_data_map[section_name]
+        )
+        futures[section_name] = future
+    
+    st.session_state.ai_futures = futures
 
 def show_loading_screen():
     """Display the loading screen with progress bar and analysis steps"""
@@ -174,6 +150,16 @@ def show_loading_screen():
             </p>
         </div>
     """, unsafe_allow_html=True)
+    
+    # Update progress based on completion status
+    if st.session_state.ai_futures:
+        completed_count = sum(1 for future in st.session_state.ai_futures.values() if future.done())
+        total_count = len(st.session_state.ai_futures)
+        progress = min(95, 20 + (completed_count / total_count * 75))
+        st.session_state.loading_progress = progress
+        
+        if completed_count < total_count:
+            st.session_state.current_analysis_step = f"🔄 Processing recommendations... ({completed_count}/{total_count} complete)"
     
     # Progress bar
     progress_bar = st.progress(st.session_state.loading_progress / 100)
@@ -191,7 +177,7 @@ def show_loading_screen():
     
     # Show estimated time remaining
     if st.session_state.loading_progress < 100:
-        estimated_time = max(1, int((100 - st.session_state.loading_progress) / 10))
+        estimated_time = max(1, int((100 - st.session_state.loading_progress) / 15))
         st.markdown(f"""
             <div style="text-align: center; margin-top: 1rem;">
                 <small style="color: #666;">
@@ -209,180 +195,60 @@ def get_section_data(section_name):
     else:
         return {}
 
-def proj_specification_tab(client_data, seller_data,is_locked):
-
+@st.fragment
+def proj_specification_tab(client_data, seller_data, is_locked):
     # Initialize async session state
     init_async_session_state()
     
-    # Show loading screen if still loading
+    # Start AI processing if not started and still loading
+    if st.session_state.ai_recommendations_loading and not st.session_state.ai_processing_started:
+        start_ai_processing(client_data, seller_data)
+    
+    # Check AI progress and update state
     if st.session_state.ai_recommendations_loading:
+        progress_complete = check_ai_progress()
+        
+        # Show loading screen
         show_loading_screen()
         
-        # Start async loading if not already started
-        start_async_recommendations(client_data, seller_data)
-        
-        # Auto-refresh every 1 second during loading
-        time.sleep(1)
-        st.rerun()
-        return None  # Don't render the main content yet
+        # Only rerun if we're still loading (avoid unnecessary reruns when complete)
+        if not progress_complete:
+            # Use a more reasonable refresh rate
+            time.sleep(0.5)  # Reduced from 1 second for better responsiveness
+            st.rerun()
+        return None  # Don't render main content during loading
 
-    
     # Main content - only shown after loading is complete
     content_area_css = """
             <style>
-            /* More aggressive targeting for Streamlit's structure */
-            .stApp > div:first-child > div:first-child > div:first-child {
-                background-color: #f7f7f7 !important;
-            }
-
-            /* Target the main content area */
-            .main {
-                background-color: #f7f7f7 !important;
-            }
-
-            /* Primary targeting for block container with full height and width control */
+            /* Primary targeting for block container - 70% width grey background */
             [data-testid="block-container"] {
-                background-color: #f7f7f7 !important;
-                padding: 2rem !important;
-                border-radius: 8px !important;
-                margin-top: 1rem !important;
+                background-color: #fafafa !important;
+                width: 70% !important;
+                max-width: 70% !important;
                 margin-left: auto !important;
                 margin-right: auto !important;
-                width: 80% !important;
-                max-width: 80% !important;
-                min-height: 250vh !important;
-                height: auto !important;
-                padding-bottom: 5rem !important; /* Extra padding at bottom */
             }
-
+            
             /* Alternative targeting for older Streamlit versions */
             .block-container {
-                background-color: #f7f7f7 !important;
-                padding: 2rem !important;
-                border-radius: 8px !important;
-                margin-top: 1rem !important;
+                background-color: #fafafa !important;
+                width: 70% !important;
+                max-width: 70% !important;
                 margin-left: auto !important;
                 margin-right: auto !important;
-                width: 80% !important;
-                max-width: 80% !important;
-                min-height: 250vh !important;
-                height: auto !important;
-                padding-bottom: 5rem !important;
             }
-
+            
             /* Target the element that contains your tab content */
             .stApp .main .block-container {
-                background-color: #f7f7f7 !important;
-                padding: 2rem !important;
-                border-radius: 8px !important;
-                margin-top: 1rem !important;
+                background-color: #fafafa !important;
+                width: 70% !important;
+                max-width: 70% !important;
                 margin-left: auto !important;
                 margin-right: auto !important;
-                width: 80% !important;
-                max-width: 80% !important;
-                min-height: 250vh !important;
-                height: auto !important;
-                padding-bottom: 5rem !important;
-            }
-
-            /* Ensure the main container expands to content */
-            .main > div {
-                min-height: 250vh !important;
-                height: auto !important;
-            }
-
-            /* Target specific Streamlit containers that might override height */
-            div[data-testid="stVerticalBlock"] {
-                min-height: inherit !important;
-                height: auto !important;
-            }
-
-            /* Ensure tabs container has proper height */
-            .stTabs [data-baseweb="tab-panel"] {
-                min-height: 80vh !important;
-                height: auto !important;
-                padding-bottom: 3rem !important;
-            }
-
-            /* Style form elements to stand out on the background */
-            .stSelectbox > div,
-            .stTextInput > div,
-            .stTextArea > div,
-            .stNumberInput > div,
-            .stDateInput > div,
-            .stTimeInput > div {
-                background-color: black !important;
-                border-radius: 4px !important;
-            }
-
-            /* Style expander containers */
-            .streamlit-expanderHeader,
-            .streamlit-expanderContent {
-                background-color: rgba(255, 255, 255, 0.9) !important;
-                border-radius: 4px !important;
-            }
-
-            /* Style metric containers */
-            [data-testid="metric-container"] {
-                background-color: rgba(255, 255, 255, 0.9) !important;
-                border-radius: 4px !important;
-                padding: 8px !important;
-            }
-
-            /* Additional fallback for main content area */
-            section[data-testid="stSidebar"] ~ div {
-                background-color: #f7f7f7 !important;
-                width: 80% !important;
-                margin-left: auto !important;
-                margin-right: auto !important;
-                min-height: 250vh !important;
-                height: auto !important;
-            }
-
-            /* Ensure columns maintain proper height */
-            div[data-testid="column"] {
-                min-height: inherit !important;
-                height: auto !important;
-            }
-
-            /* Additional height coverage for dynamic content */
-            .stApp {
-                min-height: 250vh !important;
-                height: auto !important;
-            }
-
-            /* Fallback for very long content */
-            @media screen and (min-height: 800px) {
-                [data-testid="block-container"] {
-                    min-height: 250vh !important;
-                }
-                
-                .block-container {
-                    min-height: 250vh !important;
-                }
-                
-                .stApp .main .block-container {
-                    min-height: 250vh !important;
-                }
-            }
-
-            /* For extra long content (like many form fields) */
-            @media screen and (min-height: 1200px) {
-                [data-testid="block-container"] {
-                    min-height: 150vh !important;
-                }
-                
-                .block-container {
-                    min-height: 150vh !important;
-                }
-                
-                .stApp .main .block-container {
-                    min-height: 150vh !important;
-                }
             }
             </style>
             """
-
     st.markdown(content_area_css, unsafe_allow_html=True)
     st.markdown(proj_spec_css, unsafe_allow_html=True)
     st.markdown("""
@@ -435,9 +301,7 @@ def proj_specification_tab(client_data, seller_data,is_locked):
         }
         </style>
     """, unsafe_allow_html=True)
-    
 
-    
     # Section 1: Scope of Work
     scope_data = get_section_data('scope')
     scope_content, scope_provided = render_two_column_selector(
@@ -452,7 +316,7 @@ def proj_specification_tab(client_data, seller_data,is_locked):
         right_title="Scope Options",
         right_tooltip="Select scope elements to include in your project definition.",
         selected_border_color="#4a90e2",
-                selected_color="#d2ebfb",
+        selected_color="#d2ebfb",
     )
     
     st.markdown("---")
@@ -544,4 +408,4 @@ def proj_specification_tab(client_data, seller_data,is_locked):
     )
     
     st.markdown("---")
-    return [scope_content, effort_content, timeline_content, team_content, pricing_content,additional_notes]
+    return [scope_content, effort_content, timeline_content, team_content, pricing_content, additional_notes]

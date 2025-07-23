@@ -843,3 +843,233 @@ sticky_header_css = """
 }
 </style>
 """
+
+button_css = """
+<style>
+/* Primary buttons - 48px height */
+div.stButton > button[kind="primary"] {
+    height: 48px !important;
+    min-height: 48px !important;
+    line-height: 1.2 !important;
+    padding: 0 16px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    color : white !important;
+    
+}
+
+/* Alternative selector in case the above doesn't work */
+button[data-testid="baseButton-primary"] {
+    height: 48px !important;
+    min-height: 48px !important;
+    line-height: 1.2 !important;
+    padding: 0 16px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    color : white !important;
+}
+
+/* For buttons with specific styling classes */
+.stButton button[kind="primary"],
+.stButton button[type="primary"] {
+    height: 48px !important;
+    min-height: 48px !important;
+    line-height: 1.2 !important;
+    padding: 0 16px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    color : white !important;
+}
+
+/* Ensure text is centered vertically */
+div.stButton > button[kind="primary"] p {
+    margin: 0 !important;
+    line-height: 1.2 !important;
+}
+</style>
+"""
+css_styles = """
+        div[data-testid="stBlock"] {
+            position: fixed !important;
+            top: 20% !important;
+            left: 50% !important;
+            transform: translateX(-50%) !important;
+            z-index: 9999 !important;
+            background: black !important;
+            border: 1px solid #ddd !important;
+            border-radius: 12px !important;
+            padding: 30px !important;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15) !important;
+            width: 450px !important;
+            max-width: 90vw !important;
+            border-top: 4px solid #f56565 !important;
+        }
+        div[data-testid="stBlock"]:before {
+            content: '' !important;
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            height: 180vh !important;
+            background: rgba(0, 0, 0, 0.4) !important;
+            z-index: -1 !important;
+        }
+        """
+content_area_css = """
+<style>
+/* Primary targeting for block container - 75% width grey background */
+[data-testid="block-container"] {
+    background-color: #fafafa !important;
+    width: 75% !important;
+    max-width: 75% !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+
+/* Alternative targeting for older Streamlit versions */
+.block-container {
+    background-color: #fafafa !important;
+    width: 75% !important;
+    max-width: 75% !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+
+/* Target the element that contains your tab content */
+.stApp .main .block-container {
+    background-color: #fafafa !important;
+    width: 75% !important;
+    max-width: 75% !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+</style>
+"""
+button_css_2 = """
+<style>
+.sticky-tabs {
+    position: sticky;
+    top: 120px; /* Adjust based on your header height */
+    z-index: 999;
+    background-color: white;
+    padding: 10px 0;
+    border-bottom: 1px solid #e0e0e0;
+    margin-bottom: 20px;
+}
+
+/* Force override all button styling */
+button[kind="secondary"] {
+    height: 48px !important;
+    border: 2.2px solid #ececec !important;
+    border-radius: 4px !important;
+    margin-top: -5px !important;  /* Move button up */
+    transform: translateY(-3px) !important;  /* Additional upward adjustment */
+    background-color: #d3d3d3 !important;  
+    color: black !important;  /* black text */
+}
+    
+button[kind="secondary"]:hover {
+    border: 2.2px solid #ececec !important;
+    transform: translateY(-3px) !important;  /* Keep position on hover */
+    background-color: #d3d3d3 !important;  /* Slightly lighter on hover */
+    color: black !important;  /* Keep black text on hover */
+}
+    
+button[kind="secondary"]:focus {
+    border: 2.2px solid #ececec !important;
+    outline: 2px solid #ececec !important;
+    transform: translateY(-3px) !important;  /* Keep position on focus */
+    background-color: #d3d3d3 !important;  /* Keep dark background on focus */
+    color: black !important;  /* Keep black text on focus */
+}
+    
+/* Try targeting by data attributes */
+[data-testid] button {
+    border: 2.2px solid #ececec !important;
+    height: 48px !important;
+    margin-top: -5px !important;  /* Move button up */
+    transform: translateY(-2.5px) !important;  /* Additional upward adjustment */
+    background-color: #d3d3d3 !important;  /* Dark greyish background */
+    color: black !important;  /* black text */
+}
+
+/* Additional targeting for button text specifically */
+button[kind="secondary"] p,
+button[kind="secondary"] span,
+button[kind="secondary"] div {
+    color: black !important;
+}
+
+[data-testid] button p,
+[data-testid] button span,
+[data-testid] button div {
+    color: black !important;
+}
+</style>
+"""
+
+header_css = """
+<style>
+.sticky-tabs {
+    position: sticky;
+    top: 120px; /* Adjust based on your header height */
+    z-index: 999;
+    background-color: white;
+    padding: 10px 0;
+    border-bottom: 1px solid #e0e0e0;
+    margin-bottom: 20px;
+}
+
+/* Force override all button styling */
+button[kind="secondary"] {
+    height: 48px !important;
+    border: 2.2px solid #ececec !important;
+    border-radius: 4px !important;
+    margin-top: -5px !important;  /* Move button up */
+    transform: translateY(-3px) !important;  /* Additional upward adjustment */
+    background-color: #d3d3d3 !important;  
+    color: black !important;  /* black text */
+}
+    
+button[kind="secondary"]:hover {
+    border: 2.2px solid #ececec !important;
+    transform: translateY(-3px) !important;  /* Keep position on hover */
+    background-color: #d3d3d3 !important;  /* Slightly lighter on hover */
+    color: black !important;  /* Keep black text on hover */
+}
+    
+button[kind="secondary"]:focus {
+    border: 2.2px solid #ececec !important;
+    outline: 2px solid #ececec !important;
+    transform: translateY(-3px) !important;  /* Keep position on focus */
+    background-color: #d3d3d3 !important;  /* Keep dark background on focus */
+    color: black !important;  /* Keep black text on focus */
+}
+    
+/* Try targeting by data attributes */
+[data-testid] button {
+    border: 2.2px solid #ececec !important;
+    height: 48px !important;
+    margin-top: -5px !important;  /* Move button up */
+    transform: translateY(-2.5px) !important;  /* Additional upward adjustment */
+    background-color: #d3d3d3 !important;  /* Dark greyish background */
+    color: black !important;  /* black text */
+}
+
+/* Additional targeting for button text specifically */
+button[kind="secondary"] p,
+button[kind="secondary"] span,
+button[kind="secondary"] div {
+    color: black !important;
+}
+
+[data-testid] button p,
+[data-testid] button span,
+[data-testid] button div {
+    color: black !important;
+}
+</style>
+"""

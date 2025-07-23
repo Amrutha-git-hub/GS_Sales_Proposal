@@ -616,6 +616,217 @@ button[kind="secondary"] div {
 }
 /* Change text area focus border color */
 textarea:focus {
+    border-color: #a6a4a4 !important;
+    box-shadow: 0 0 0 2px rgba(66, 245, 233, 0.2) !important;
+}
+
+/* Target Streamlit's specific text area component */
+.stTextArea textarea:focus {
+    border-color: #a6a4a4 !important;
+    box-shadow: 0 0 0 2px rgba(66, 245, 233, 0.2) !important;
+    outline: none !important;
+}
+
+/* Also target text input fields if needed */
+.stTextInput input:focus {
+    border-color: #a6a4a4 !important;
+    box-shadow: 0 0 0 2px rgba(66, 245, 233, 0.2) !important;
+    outline: none !important;
+}
+
+/* Target all input elements in Streamlit */
+[data-testid="stTextArea"] textarea:focus,
+[data-testid="stTextInput"] input:focus {
+    border-color: #a6a4a4 !important;
+    box-shadow: 0 0 0 2px rgba(66, 245, 233, 0.2) !important;
+    outline: none !important;
+}
+
+    .stTextInput > div > div > input:focus,
+    .stTextArea > div > div > textarea:focus,
+    .stNumberInput > div > div > input:focus,
+    .stDateInput > div > div > input:focus,
+    .stTimeInput > div > div > input:focus {
+        border-color: #a6a4a4 !important;
+        box-shadow: 0 0 0 2px rgba(66, 245, 233, 0.2) !important;
+        outline: none !important;
+        background-color: #f5f5f5 !important;
+        color: #2a2a2a !important;
+    }
+</style>
+"""
+
+secondary_button_css = """
+        <style>
+        /* Force override all button styling */
+        button[kind="secondary"] {
+            height: 40px !important;
+            border: 2.2px solid #ececec !important;
+            border-radius: 4px !important;
+            margin-top: -5px !important;  /* Move button up */
+            transform: translateY(-3px) !important;  /* Additional upward adjustment */
+            background-color: #d3d3d3 !important;  
+            color: black !important;  /* black text */
+        }
+            
+        button[kind="secondary"]:hover {
+            border: 2.2px solid #ececec !important;
+            transform: translateY(-3px) !important;  /* Keep position on hover */
+            background-color: #d3d3d3 !important;  /* Slightly lighter on hover */
+            color: black !important;  /* Keep black text on hover */
+        }
+            
+        button[kind="secondary"]:focus {
+            border: 2.2px solid #ececec !important;
+            outline: 2px solid #ececec !important;
+            transform: translateY(-3px) !important;  /* Keep position on focus */
+            background-color: #d3d3d3 !important;  /* Keep dark background on focus */
+            color: black !important;  /* Keep black text on focus */
+        }
+            
+        /* Try targeting by data attributes */
+        [data-testid] button {
+            border: 2.2px solid #ececec !important;
+            height: 40px !important;
+            margin-top: -5px !important;  /* Move button up */
+            transform: translateY(-2.5px) !important;  /* Additional upward adjustment */
+            background-color: #d3d3d3 !important;  /* Dark greyish background */
+            color: black !important;  /* black text */
+        }
+        
+        /* Additional targeting for button text specifically */
+        button[kind="secondary"] p,
+        button[kind="secondary"] span,
+        button[kind="secondary"] div {
+            color: black !important;
+        }
+        
+        [data-testid] button p,
+        [data-testid] button span,
+        [data-testid] button div {
+            color: black !important;
+        }
+        </style>
+        """
+file_upload_css = """
+        <style>
+        .stFileUploader > div > div > div {
+            padding: 0.5rem !important;
+            min-height: 2rem !important;
+        }
+        
+        /* Move entire file uploader upwards */
+        .stFileUploader {
+            margin-top: -40px !important;
+        }
+        
+        /* File Uploader */
+        .stFileUploader > div > div {
+            background-color: #f5f5f5 !important;
+            color: black !important;
+            border: 2px solid #ececec !important;
+            border-radius: 8px !important;
+        }
+        
+        /* REDUCED HEIGHT FOR UPLOADED FILE DISPLAY */
+        /* Target the uploaded file container */
+        .stFileUploader div[data-testid="stFileUploaderFileName"] {
+            min-height: 40px !important;
+            height: 40px !important;
+            padding: 8px 12px !important;
+            margin: 4px 0 !important;
+            display: flex !important;
+            align-items: center !important;
+            color: black !important;
+            font-size: 12px !important;
+            line-height: 1.2 !important;
+            background-color: #f5f5f5 !important;
+        }
+        
+        /* Reduce height of the file uploader section after upload */
+        .stFileUploader section[data-testid="stFileUploaderDropzone"] {
+            min-height: 50px !important;
+            height: auto !important;
+            padding: 12px !important;
+            margin: 6px 0 !important;
+            background-color: #f5f5f5 !important;
+        }
+        
+        /* Target any uploaded file display elements */
+        .stFileUploader [data-testid="fileUploaderFileName"],
+        .stFileUploader [data-testid="stFileUploaderFileName"] > div,
+        .stFileUploader div[role="button"] {
+            min-height: 40px !important;
+            height: 40px !important;
+            padding: 8px 12px !important;
+            margin: 4px 0 !important;
+            line-height: 1.2 !important;
+            font-size: 12px !important;
+            background-color: #f5f5f5 !important;
+        }
+        
+        /* Compact the entire file uploader when files are uploaded */
+        .stFileUploader:has([data-testid="stFileUploaderFileName"]) {
+            min-height: 40px !important;
+        }
+        
+        .stFileUploader:has([data-testid="stFileUploaderFileName"]) > div {
+            min-height: 40px !important;
+            padding: 4px !important;
+        }
+        
+        /* File Uploader - Uploaded file display text (light grey) */
+        .stFileUploader div[data-testid="stFileUploaderFileName"],
+        .stFileUploader div[data-testid="fileUploaderDropzone"] span,
+        .stFileUploader div[data-testid="fileUploaderDropzone"] p,
+        .stFileUploader section span,
+        .stFileUploader section p,
+        .stFileUploader [data-testid="fileUploaderFileName"],
+        .stFileUploader small {
+            color: black !important; /* Light grey for uploaded file names and text */
+            font-size: 12px !important;
+            line-height: 1.2 !important;
+        }
+        
+        /* File uploader drag and drop area */
+        .stFileUploader section {
+            background-color: #f5f5f5 !important;
+            border: 2px dashed #ececec !important;
+            border-radius: 8px !important;
+        }
+        
+        /* File uploader text content - making it light grey */
+        .stFileUploader section div,
+        .stFileUploader section span,
+        .stFileUploader section small {
+            color: black !important; /* Light grey for all file uploader text */
+            font-size: 12px !important;
+            line-height: 1.2 !important;
+        }
+        
+        /* Fix for uploaded file dark background */
+        .stFileUploader div[data-testid="stFileUploaderFileName"],
+        .stFileUploader div[data-testid="stFileUploaderFileName"] > div,
+        .stFileUploader .uploadedFile,
+        .stFileUploader [data-baseweb="file-uploader"] div {
+            background-color: #f5f5f5 !important;
+            color: black !important;
+        }
+        
+        /* Override any dark backgrounds in file uploader */
+        .stFileUploader * {
+            background-color: #f5f5f5 !important;
+        }
+        
+        /* Make sure the file name text is visible */
+        .stFileUploader span, .stFileUploader small {
+            color: black!important;
+        }
+        </style>
+        """
+elements_css = """<style>
+                /* Change text area focus border color */
+textarea:focus {
     border-color: #42f5e9 !important;
     box-shadow: 0 0 0 2px rgba(66, 245, 233, 0.2) !important;
 }
@@ -641,18 +852,128 @@ textarea:focus {
     box-shadow: 0 0 0 2px rgba(66, 245, 233, 0.2) !important;
     outline: none !important;
 }
-
-    .stTextInput > div > div > input:focus,
-    .stTextArea > div > div > textarea:focus,
-    .stNumberInput > div > div > input:focus,
-    .stDateInput > div > div > input:focus,
-    .stTimeInput > div > div > input:focus {
-        border-color: #42f5e9 !important;
-        box-shadow: 0 0 0 2px rgba(66, 245, 233, 0.2) !important;
-        outline: none !important;
-        background-color: #f5f5f5 !important;
-        color: #2a2a2a !important;
+    .tooltip-label {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 15px;
     }
-</style>
-"""
+    
+    .tooltip-icon {
+        cursor: help;
+        color: #666;
+        font-size: 14px;
+        position: relative;
+    }
+    
+    .tooltip-icon:hover::after {
+        content: attr(data-tooltip);
+        position: absolute;
+        bottom: 125%;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #333;
+        color: white;
+        padding: 8px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        white-space: nowrap;
+        z-index: 1000;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    
+    .tooltip-icon:hover::before {
+        content: '';
+        position: absolute;
+        bottom: 115%;
+        left: 50%;
+        transform: translateX(-50%);
+        border: 5px solid transparent;
+        border-top-color: #333;
+        z-index: 1000;
+    }
+    
+    /* Force override all button styling */
+    button[kind="secondary"] {
+        height: 40px !important;
+        border: 2.2px solid #ececec !important;
+        border-radius: 4px !important;
+        margin-top: -5px !important;
+        transform: translateY(5px) !important;
+        background-color: #d3d3d3 !important;  
+        color: black !important;
+    }
+        
+    button[kind="secondary"]:hover {
+        border: 2.2px solid #ececec !important;
+        transform: translateY(5px) !important;
+        background-color: #d3d3d3 !important;
+        color: black !important;
+    }
+        
+    button[kind="secondary"]:focus {
+        border: 2.2px solid #ececec !important;
+        outline: 2px solid #ececec !important;
+        transform: translateY(5px) !important;
+        background-color: #d3d3d3 !important;
+        color: black !important;
+    }
+        
+    /* Try targeting by data attributes */
+    [data-testid] button {
+        border: 2.2px solid #ececec !important;
+        height: 40px !important;
+        margin-top: -5px !important;
+        transform: translateY(5px) !important;
+        background-color: #d3d3d3 !important;
+        color: black !important;
+    }
+    
+    /* Additional targeting for button text specifically */
+    button[kind="secondary"] p,
+    button[kind="secondary"] span,
+    button[kind="secondary"] div {
+        color: black !important;
+    }
+    
+    [data-testid] button p,
+    [data-testid] button span,
+    [data-testid] button div {
+        color: black !important;
+    }
+    </style>
+    """
 
+content_area_css = """
+            <style>
+            /* Primary targeting for block container - 70% width grey background */
+            [data-testid="block-container"] {
+                background-color: #fafafa !important;
+                width: 70% !important;
+                max-width: 70% !important;
+                margin-left: auto !important;
+                margin-right: auto !important;
+            }
+            
+            /* Alternative targeting for older Streamlit versions */
+            .block-container {
+                background-color: #fafafa !important;
+                width: 70% !important;
+                max-width: 70% !important;
+                margin-left: auto !important;
+                margin-right: auto !important;
+            }
+            
+            /* Target the element that contains your tab content */
+            .stApp .main .block-container {
+                background-color: #fafafa !important;
+                width: 70% !important;
+                max-width: 70% !important;
+                margin-left: auto !important;
+                margin-right: auto !important;
+            }
+            </style>
+            """
