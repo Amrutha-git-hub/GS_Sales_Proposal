@@ -673,7 +673,8 @@ elif st.session_state.active_tab == 2:
         show_validation_popup("Seller Information")
         st.rerun()
     else:
-        print(st.session_state.client_data_from_tab, st.session_state.seller_data_from_tab)
+        # print(st.session_state.client_data_from_tab, st.session_state.seller_data_from_tab)
+        st.rerun()
         st.session_state.project_specs_from_tab = proj_specification_tab(
             st.session_state.client_data_from_tab, 
             st.session_state.seller_data_from_tab,

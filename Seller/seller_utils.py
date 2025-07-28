@@ -6,7 +6,7 @@ import os
 from Search.WebsiteUrl_Agent.agent_runner import get_urls
 import asyncio 
 from Common_Utils.pain_points_extractor import *
-from WebScraper.webscraper_without_ai import get_url_details_without_ai
+# from WebScraper.webscraper_beautifulsoup import get_url_details_without_ai
 from Common_Utils.common_utils import *
 
 # Function to get URLs (placeholder function)

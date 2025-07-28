@@ -247,9 +247,35 @@ def proj_specification_tab(client_data, seller_data, is_locked):
                 margin-left: auto !important;
                 margin-right: auto !important;
             }
+            
+            /* Success message for completed loading */
+            .completion-banner {
+                background: linear-gradient(90deg, #00b894, #00cec9);
+                color: white;
+                padding: 1rem;
+                border-radius: 8px;
+                text-align: center;
+                margin-bottom: 2rem;
+                font-weight: 500;
+                animation: slideIn 0.5s ease-out;
+            }
+            
+            @keyframes slideIn {
+                from { opacity: 0; transform: translateY(-10px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
             </style>
             """
     st.markdown(content_area_css, unsafe_allow_html=True)
+    
+    # Show completion message
+    if st.session_state.analysis_complete:
+        st.markdown("""
+            <div class="completion-banner">
+                ✓ AI Analysis Complete - Your personalized recommendations are ready
+            </div>
+        """, unsafe_allow_html=True)
+    #set_global_message("AI Analysis Complete - Your personalized recommendations are ready","success")t add
     st.markdown(proj_spec_css, unsafe_allow_html=True)
     st.markdown("""
         <style>

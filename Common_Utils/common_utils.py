@@ -137,17 +137,17 @@ def get_roles_list() -> List[str]:
     ]
 
 
-from WebScraper.scrape_agent import get_data
+# from WebScraper.scrape_agent import get_data
 
-def get_url_details(url:str):
-    """Use this if you want to run async function synchronously"""
-    try:
-        # Run the async function synchronously
-        website_details = asyncio.run(get_data(url))
-        return website_details
-    except Exception as e:
-        print(f"Error: {e}")
-        return None
+# def get_url_details(url:str):
+#     """Use this if you want to run async function synchronously"""
+#     try:
+#         # Run the async function synchronously
+#         website_details = asyncio.run(get_data(url))
+#         return website_details
+#     except Exception as e:
+#         print(f"Error: {e}")
+#         return None
     
 
 def get_priority_suggestions() -> List[dict]:
@@ -479,3 +479,14 @@ def display_global_message():
         # Fallback for other message types
         st.info(message_text)
 
+
+
+from WebScraper.webscraper_beautifulsoup import get_url_details_with_bs4
+from WebScraper.scrape_agent import get_url_detail_using_googleai
+
+
+def get_scraped_data(url:str , scrape_technique= "manual"):
+    if scrape_technique=='manual':
+        return get_url_details_with_bs4(url)
+    elif scrape_technique=='ai':
+        return  asyncio.run(get_url_detail_using_googleai(url))

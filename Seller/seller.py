@@ -7,7 +7,6 @@ from Seller.seller_utils import *
 from Search.Linkedin.linkedin_serp import *
 from Recommendation.recommendation_utils import *
 from Common_Utils.ai_suggestion_utils import *
-from WebScraper.webscraper_without_ai import get_url_details_without_ai
 from Common_Utils.common_utils import *
 from Common_Utils.common_utils import set_global_message
 
@@ -493,7 +492,7 @@ def _handle_pending_scraping(seller_state: SellerTabState):
             
             with st.spinner(f"🔍 Fetching website details from {scrape_url}..."):
                 try:
-                    scrape_result = get_url_details_without_ai(scrape_url)
+                    scrape_result = get_scraped_data(scrape_url)
                     
                     website_name = scrape_result.name
                     logo_url = scrape_result.logo

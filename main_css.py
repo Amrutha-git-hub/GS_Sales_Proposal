@@ -846,7 +846,7 @@ sticky_header_css = """
 
 button_css = """
 <style>
-/* Primary buttons - 48px height */
+/* Primary buttons - 48px height with WHITE text */
 div.stButton > button[kind="primary"] {
     height: 48px !important;
     min-height: 48px !important;
@@ -855,8 +855,15 @@ div.stButton > button[kind="primary"] {
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    color : white !important;
-    
+    color: white !important;
+}
+
+/* Target the text content inside primary buttons specifically */
+div.stButton > button[kind="primary"] p,
+div.stButton > button[kind="primary"] span,
+div.stButton > button[kind="primary"] div,
+div.stButton > button[kind="primary"] * {
+    color: white !important;
 }
 
 /* Alternative selector in case the above doesn't work */
@@ -868,7 +875,15 @@ button[data-testid="baseButton-primary"] {
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    color : white !important;
+    color: white !important;
+}
+
+/* Target text inside alternative selector */
+button[data-testid="baseButton-primary"] p,
+button[data-testid="baseButton-primary"] span,
+button[data-testid="baseButton-primary"] div,
+button[data-testid="baseButton-primary"] * {
+    color: white !important;
 }
 
 /* For buttons with specific styling classes */
@@ -881,13 +896,45 @@ button[data-testid="baseButton-primary"] {
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    color : white !important;
+    color: white !important;
 }
 
-/* Ensure text is centered vertically */
+/* Target text inside these buttons */
+.stButton button[kind="primary"] p,
+.stButton button[kind="primary"] span,
+.stButton button[kind="primary"] div,
+.stButton button[kind="primary"] *,
+.stButton button[type="primary"] p,
+.stButton button[type="primary"] span,
+.stButton button[type="primary"] div,
+.stButton button[type="primary"] * {
+    color: white !important;
+}
+
+/* Ensure text is centered vertically with WHITE color */
 div.stButton > button[kind="primary"] p {
     margin: 0 !important;
     line-height: 1.2 !important;
+    color: white !important;
+}
+
+/* Override any conflicting styles from your button_css_2 that might affect primary buttons */
+button[kind="primary"] {
+    color: white !important;
+}
+
+button[kind="primary"] p,
+button[kind="primary"] span,
+button[kind="primary"] div {
+    color: white !important;
+}
+
+/* Additional targeting to override any global button text styles */
+[data-testid] button[kind="primary"],
+[data-testid] button[kind="primary"] p,
+[data-testid] button[kind="primary"] span,
+[data-testid] button[kind="primary"] div {
+    color: white !important;
 }
 </style>
 """
@@ -1011,65 +1058,25 @@ button[kind="secondary"] div {
 </style>
 """
 
-header_css = """
-<style>
-.sticky-tabs {
-    position: sticky;
-    top: 120px; /* Adjust based on your header height */
-    z-index: 999;
-    background-color: white;
-    padding: 10px 0;
-    border-bottom: 1px solid #e0e0e0;
-    margin-bottom: 20px;
-}
-
-/* Force override all button styling */
-button[kind="secondary"] {
-    height: 48px !important;
-    border: 2.2px solid #ececec !important;
-    border-radius: 4px !important;
-    margin-top: -5px !important;  /* Move button up */
-    transform: translateY(-3px) !important;  /* Additional upward adjustment */
-    background-color: #d3d3d3 !important;  
-    color: black !important;  /* black text */
-}
-    
-button[kind="secondary"]:hover {
-    border: 2.2px solid #ececec !important;
-    transform: translateY(-3px) !important;  /* Keep position on hover */
-    background-color: #d3d3d3 !important;  /* Slightly lighter on hover */
-    color: black !important;  /* Keep black text on hover */
-}
-    
-button[kind="secondary"]:focus {
-    border: 2.2px solid #ececec !important;
-    outline: 2px solid #ececec !important;
-    transform: translateY(-3px) !important;  /* Keep position on focus */
-    background-color: #d3d3d3 !important;  /* Keep dark background on focus */
-    color: black !important;  /* Keep black text on focus */
-}
-    
-/* Try targeting by data attributes */
-[data-testid] button {
-    border: 2.2px solid #ececec !important;
-    height: 48px !important;
-    margin-top: -5px !important;  /* Move button up */
-    transform: translateY(-2.5px) !important;  /* Additional upward adjustment */
-    background-color: #d3d3d3 !important;  /* Dark greyish background */
-    color: black !important;  /* black text */
-}
-
-/* Additional targeting for button text specifically */
-button[kind="secondary"] p,
-button[kind="secondary"] span,
-button[kind="secondary"] div {
-    color: black !important;
-}
-
-[data-testid] button p,
-[data-testid] button span,
-[data-testid] button div {
-    color: black !important;
-}
-</style>
+header_css = """ 
+<div class="sticky-header" style="width: 100%; display: flex; justify-content: center; padding: 0; margin: 0;">
+    <div style="width: 100%; display: flex; justify-content: center; padding: 0; margin: 0;">
+        <div style="width: 70%; background-color: black; padding: 5px 0;">
+            <div style="display: flex; align-items: center; margin: 0; width: 100%; padding: 0 40px;">
+                <!-- Logo and text container -->
+                <div style="display: flex; align-items: center;">
+                    <img src="https://static.wixstatic.com/media/cb6b3d_5c8f2b020ebe48b69bc8c163cc480156~mv2.png/v1/fill/w_60,h_60,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/GrowthSutra%20Logo.png" alt="Logo" style="height: 60px; margin-right: 20px;">
+                    <div style="display: flex; flex-direction: column;">
+                        <h1 style="color: white; font-size: 48px; font-weight: bold; margin: 0; padding: 0;">
+                            CoXprt
+                        </h1>
+                        <p style="color: white; font-size: 16px; margin: 5px 0 0 0; padding: 0;">
+                            AI automated sales proposal generator
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 """

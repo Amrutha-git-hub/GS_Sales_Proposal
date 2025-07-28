@@ -7,7 +7,7 @@ from datetime import datetime
 import time
 import streamlit as st
 
-from WebScraper.scrape_agent import get_data
+
 from Search.WebsiteUrl_Agent.agent_runner import get_urls
 import asyncio 
 from Common_Utils.pain_points_extractor import *
@@ -43,17 +43,17 @@ def get_roles_list() -> List[str]:
 
 
 
-def get_url_details(url:str):
-    """Use this if you want to run async function synchronously"""
-    try:
-        # Run the async function synchronously
+# def get_url_details(url:str):
+#     """Use this if you want to run async function synchronously"""
+#     try:
+#         # Run the async function synchronously
 
-        website_details,logo = asyncio.run(get_data(url))
-        print(logo,website_details)
-        return (website_details,logo)
-    except Exception as e:
-        print(f"Error: {e}")
-        return None
+#         website_details,logo = asyncio.run(get_data(url))
+#         print(logo,website_details)
+#         return (website_details,logo)
+#     except Exception as e:
+#         print(f"Error: {e}")
+#         return None
     
 
 def get_priority_suggestions() -> List[dict]:
