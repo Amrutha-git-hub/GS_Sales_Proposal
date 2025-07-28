@@ -338,7 +338,7 @@ def render_three_column_selector_unified(
                 if is_selected:
                     background_color = selected_color
                     border_color = selected_border_color
-                    icon = "✅"
+                    icon = "📋"
                     box_shadow = f"0 3px 8px rgba({int(selected_border_color[1:3], 16)}, {int(selected_border_color[3:5], 16)}, {int(selected_border_color[5:7], 16)}, 0.3)"
                 else:
                     background_color = unselected_color
@@ -456,7 +456,7 @@ def render_three_column_selector_unified(
                 if is_selected:
                     background_color = selected_color
                     border_color = selected_border_color
-                    icon = "✅"
+                    icon = "📋"
                     box_shadow = f"0 3px 8px rgba({int(selected_border_color[1:3], 16)}, {int(selected_border_color[3:5], 16)}, {int(selected_border_color[5:7], 16)}, 0.3)"
                 else:
                     background_color = unselected_color
@@ -776,7 +776,7 @@ def render_two_column_selector(
                 if is_selected:
                     background_color = selected_color
                     border_color = selected_border_color
-                    icon = "✅"
+                    icon = "📋"
                     box_shadow = f"0 3px 8px rgba({int(selected_border_color[1:3], 16)}, {int(selected_border_color[3:5], 16)}, {int(selected_border_color[5:7], 16)}, 0.3)"
                 else:
                     background_color = unselected_color

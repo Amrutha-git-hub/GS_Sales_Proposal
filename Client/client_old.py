@@ -14,7 +14,7 @@ from .client_css import client_css
 from .client_dataclass import ClientData, ClientDataManager
 from datetime import datetime 
 # Configure logging
-from WebScraper.webscraper_without_ai import get_url_details_without_ai
+from WebScraper.webscraper_beautifulsoup import get_url_details_without_ai
 from Common_Utils.common_utils import set_global_message
 
 def normalize_url(url: str) -> str:

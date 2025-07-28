@@ -89,6 +89,13 @@ OUTPUT_FILE_DIRECTORY = os.getenv("OUTPUT_PATH")
 #     return User(**data_dict)
 
 
+def find_file_path(filename: str, search_dir: str = ".") -> str:
+    for root, dirs, files in os.walk(search_dir):
+        if filename in files:
+            return os.path.abspath(os.path.join(root, filename))
+    return None 
+
+
 
 def get_presentation(client , seller , project_specs ):
     # buyer = parse_to_user(buyer)
@@ -100,10 +107,11 @@ def get_presentation(client , seller , project_specs ):
 
     client_logo = client.enterprise_logo
     seller_logo = seller.enterprise_logo
-    # target = os.path.join(OUTPUT_FILE_DIRECTORY,client.enterprise_name)
-    # file_path = os.path.join(target,"salesproposal.txt")
-    # print(f"_______________________________________________File path is {file_path}")
-    file_path = '/home/shreyank/GS/GS_Sales_Proposal/SalesProposalsGenerated/benori.txt'
+    project_root = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))  # Goes up 3 levels from src/
+    proposals_dir = os.path.join(project_root, "SalesProposalsGenerated")
+    os.makedirs(proposals_dir, exist_ok=True)  # ensure the directory exists
+
+    file_path = os.path.join(proposals_dir, "benori.txt")
     print("F--------------------Starting in main")
     html_content,html_file_name = generate_modern_presentation(filename  = file_path ,logo_url=client_logo,logo_url_2 = seller_logo )
     print("F--------------------Ending in main")

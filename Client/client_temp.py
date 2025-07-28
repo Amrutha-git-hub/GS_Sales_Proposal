@@ -14,7 +14,7 @@ from Recommendation.recommendation_utils import get_roles_list, get_ai_business_
 from .client_css import client_css
 from .client_dataclass import client_state_manager, ClientTabState
 from datetime import datetime
-from WebScraper.webscraper_without_ai import get_url_details_without_ai
+from WebScraper.webscraper_beautifulsoup import get_url_details_without_ai
 from Common_Utils.common_utils import set_global_message
 
 

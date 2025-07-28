@@ -239,7 +239,7 @@ class ClientTabState:
         if self.debug_mode:
             logger.debug(f"Validation results: {validation_results}")
         
-        return validation_results
+        return validation_results['enterprise_name'] and validation_results['client_requirements_content']
     
     def validate_optional_fields(self) -> Dict[str, bool]:
         """Validate optional fields and return validation results."""
