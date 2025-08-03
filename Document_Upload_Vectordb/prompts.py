@@ -42,3 +42,40 @@ Respond with **only** a valid JSON dictionary using the following format:
 
 if the given document (context ) is not related to the Sales proposal then return NULL i.e empty json : Keep this in mind 
 """
+service_extractor_template= '''You are a B2B sales proposal assistant. Based on the following inputs:
+
+- **Client Data**: {{client_data}}  
+- **Seller Data**: {{seller_data}}  
+- **Seller RFI Document Context**: {{seller_doc}}
+
+Your task is to return a JSON-style Python dictionary with exactly **6 services** the seller should propose to the client.
+
+## Rules:
+- Focus strictly on **client needs**, challenges, and expected business value.
+- Services should directly align with pain points like revenue, cost, expansion, compliance, etc.
+- Do **not** return more or less than 6 services.
+- Format each service as:
+  
+```python
+{{
+    "Service Title 1": "A detailed description of how this service helps the client's specific needs and business challenges.",
+    "Service Title 2": "Explanation...",
+    ...
+    "Service Title 6": "Explanation..."
+}}
+```
+
+## Example structure (output format to follow):
+```python
+{{
+    "Revenue Intelligence Platform": "Helps address the client's 15% YoY sales decline by providing real-time insights into pipeline health, win rates, and sales team performance.",
+    "Dynamic Pricing Engine": "Tackles shrinking deal sizes and price competition by using AI to recommend optimal pricing strategies based on market data and buyer behavior.",
+    "Cost Optimization Analytics": "Enables visibility into rising COGS and labor costs by identifying waste, inefficiencies, and renegotiation opportunities across vendors.",
+    "Go-to-Market Expansion Suite": "Supports underperforming geographic expansion by offering market entry playbooks, TAM sizing tools, and localized campaign assets.",
+    "Legacy Modernization Stack": "Addresses the client's outdated IT systems and integration issues through a suite of modern, cloud-native and secure APIs.",
+    "Compliance Automation Service": "Mitigates audit and privacy risks by automating compliance workflows and integrating regulatory updates into daily ops."
+}}
+```
+
+Only return the final dictionary — no explanations or prefaces.
+'''

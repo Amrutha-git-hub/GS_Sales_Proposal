@@ -3,8 +3,8 @@ from streamlit_extras.stylable_container import stylable_container
 import time
 from Client.client import client_tab,validate_client_mandatory_fields
 from Seller.seller import seller_tab
-from ProjectSpecification.project_spec import proj_specification_tab
-from Generate_proposal.proposal_generator import generate_tab
+from ProjectSpecification_tab.project_spec import proj_specification_tab
+from Proposal_writing_tab.proposal_generator import generate_tab
 from Client.client_dataclass import ClientTabState
 from Seller.seller import SellerTabState
 import os
@@ -250,37 +250,7 @@ def trigger_validation_popup(missing_tab_name, missing_fields=None):
         'missing_fields': missing_fields
     }
 
-# Updated navigation functions that use the new popup system
-def navigate_to_next_tab():
-    """Navigate to the next tab with validation and locking"""
-    current_tab = st.session_state.active_tab
-    
-    # Get validation function for current tab
-    validation_func = get_validation_function(current_tab)
-    
-    if not validation_func():
-        tab_names = ["Client Information", "Seller Information", "Project Specifications", "Generate Proposal"]
-        trigger_validation_popup(tab_names[current_tab])
-        return
-    
-    # If tab is already locked, just navigate
-    if current_tab in st.session_state.locked_tabs:
-        if current_tab < 3:
-            st.session_state.active_tab = current_tab + 1
-            st.session_state.highest_reached_tab = max(st.session_state.highest_reached_tab, st.session_state.active_tab)
-            st.rerun()
-        return
-    
-    # If this is the last tab, don't show confirmation
-    if current_tab >= 3:
-        return
-    
-    # Show confirmation dialog
-    confirmation_key = f"show_confirmation_{current_tab}"
-    st.session_state[confirmation_key] = True
-    st.rerun()
 
-# Add this to your main app logic, right after the confirmation dialog handling
 def handle_validation_popups():
     """Handle validation popups display"""
     tab_names = ["Client Information", "Seller Information", "Project Specifications", "Generate Proposal"]
@@ -348,24 +318,6 @@ def validate_project_mandatory_fields():
     # For now, returning True as placeholder
     return True
 
-def show_validation_popup(missing_tab_name, missing_fields=None):
-    """Show validation error popup"""
-    toast = st.toast(f"⚠️ Please complete all mandatory fields in {missing_tab_name} tab first!")
-
-    # Inject JavaScript to auto-dismiss the toast after 3 seconds (3000 ms)
-    # st.markdown("""
-    #     <script>
-    #     setTimeout(function() {
-    #         let toasts = window.parent.document.querySelectorAll('div[data-testid="stToast"]');
-    #         if (toasts.length > 0) {
-    #             toasts[0].style.display = 'none';
-    #         }
-    #     }, 10000);
-    #     </script>
-    # """, unsafe_allow_html=True)
-    if missing_fields:
-        st.error(f"Missing required fields: {missing_fields}")
-
 def get_validation_function(tab_index):
     """Get validation function for a specific tab"""
     if tab_index == 0:
@@ -378,10 +330,20 @@ def get_validation_function(tab_index):
         return lambda: True
 
 def is_tab_accessible(tab_index):
-    """Check if a tab is accessible based on validation"""
+    """Check if a tab is accessible - allow backward navigation to visited tabs"""
+    current_tab = st.session_state.active_tab
+    
+    # Always allow access to tab 0 (Client Information)
     if tab_index == 0:
         return True
-    elif tab_index == 1:
+    
+    # Allow backward navigation to any tab that's been reached before
+    highest_reached = st.session_state.get('highest_reached_tab', 0)
+    if tab_index <= highest_reached:
+        return True
+    
+    # For forward navigation, check validation requirements
+    if tab_index == 1:
         return validate_client_mandatory_fields()
     elif tab_index == 2:
         return validate_client_mandatory_fields() and validate_seller_mandatory_fields()
@@ -389,14 +351,89 @@ def is_tab_accessible(tab_index):
         return (validate_client_mandatory_fields() and 
                 validate_seller_mandatory_fields() and 
                 validate_project_mandatory_fields())
+    
     return False
+
+
+def should_show_lock_confirmation(target_tab_index):
+    """Determine if lock confirmation should be shown"""
+    current_tab = st.session_state.active_tab
+    
+    # Only show confirmation for forward navigation
+    if target_tab_index <= current_tab:
+        return False
+    
+    # Don't show confirmation if current tab is already locked
+    if current_tab in st.session_state.locked_tabs:
+        return False
+    
+    # Don't show confirmation for the last tab
+    if current_tab >= 3:
+        return False
+    
+    # Check if current tab has required data filled
+    validation_func = get_validation_function(current_tab)
+    if not validation_func():
+        return False
+    
+    return True
+
+def navigate_to_tab(target_tab_index):
+    """Navigate to a specific tab with proper validation"""
+    current_tab = st.session_state.active_tab
+    
+    # If clicking on the same tab, do nothing
+    if target_tab_index == current_tab:
+        return
+    
+    # Check if tab is accessible
+    if not is_tab_accessible(target_tab_index):
+        # Show validation error for the blocking requirement
+        tab_names = ["Client Information", "Seller Information", "Project Specifications", "Generate Proposal"]
+        if target_tab_index == 1 and not validate_client_mandatory_fields():
+            trigger_validation_popup("Client Information")
+        elif target_tab_index == 2:
+            if not validate_client_mandatory_fields():
+                trigger_validation_popup("Client Information")
+            elif not validate_seller_mandatory_fields():
+                trigger_validation_popup("Seller Information")
+        elif target_tab_index == 3:
+            if not validate_client_mandatory_fields():
+                trigger_validation_popup("Client Information")
+            elif not validate_seller_mandatory_fields():
+                trigger_validation_popup("Seller Information")
+            elif not validate_project_mandatory_fields():
+                trigger_validation_popup("Project Specifications")
+        return
+    
+    # For backward navigation, just navigate
+    if target_tab_index < current_tab:
+        st.session_state.active_tab = target_tab_index
+        st.rerun()
+        return
+    
+    # For forward navigation, check if we need lock confirmation
+    if should_show_lock_confirmation(target_tab_index):
+        confirmation_key = f"show_confirmation_{current_tab}"
+        st.session_state[confirmation_key] = True
+        st.session_state['target_tab_after_lock'] = target_tab_index
+        st.rerun()
+        return
+    
+    # Direct navigation (no confirmation needed)
+    st.session_state.active_tab = target_tab_index
+    st.session_state.highest_reached_tab = max(st.session_state.highest_reached_tab, target_tab_index)
+    st.rerun()
+
 @st.dialog("‼️ Confirm Tab Lock")
 def show_lock_confirmation_popup(tab_index):
     """Show confirmation dialog for locking a tab using st.dialog"""
     
+    tab_names = ["Client Information", "Seller Information", "Project Specifications", "Generate Proposal"]
+    
     # Warning message
     st.error(
-        f"Lock **{tab_names[tab_index]}** ?\n\n"
+        f"Lock **{tab_names[tab_index] if tab_index < len(tab_names) else f'Tab {tab_index + 1}'}** ?\n\n"
         f"You won't be able to modify this tab once locked."
     )
     
@@ -404,89 +441,62 @@ def show_lock_confirmation_popup(tab_index):
     col1, col2 = st.columns([1, 1])
     
     with col1:
-        if st.button("Back", key=f"cancel_lock_{tab_index}", type="secondary",use_container_width=True):
-            # Clear confirmation state
-            if f"show_confirmation_{tab_index}" in st.session_state:
-                del st.session_state[f"show_confirmation_{tab_index}"]
+        if st.button("Back", key=f"cancel_lock_{tab_index}", type="secondary", use_container_width=True):
+            # Clear all confirmation states
+            confirmation_key = f"show_confirmation_{tab_index}"
+            if confirmation_key in st.session_state:
+                del st.session_state[confirmation_key]
+            if 'target_tab_after_lock' in st.session_state:
+                del st.session_state['target_tab_after_lock']
             st.rerun()
     
     with col2:
-        if st.button("Lock & Continue", key=f"confirm_lock_{tab_index}", type="secondary",use_container_width=True):
-            # Clear confirmation state
-            if f"show_confirmation_{tab_index}" in st.session_state:
-                del st.session_state[f"show_confirmation_{tab_index}"]
+        if st.button("Lock & Continue", key=f"confirm_lock_{tab_index}", type="secondary", use_container_width=True):
+            # Initialize locked_tabs if it doesn't exist
+            if 'locked_tabs' not in st.session_state:
+                st.session_state.locked_tabs = set()
+            
             # Lock the current tab
             st.session_state.locked_tabs.add(tab_index)
-            # Move to next tab
-            st.session_state.active_tab = tab_index + 1
-            st.session_state.highest_reached_tab = max(st.session_state.highest_reached_tab, st.session_state.active_tab)
+            
+            # Get target tab
+            target_tab = st.session_state.get('target_tab_after_lock', tab_index + 1)
+            
+            # Clear all confirmation states FIRST
+            confirmation_key = f"show_confirmation_{tab_index}"
+            if confirmation_key in st.session_state:
+                del st.session_state[confirmation_key]
+            if 'target_tab_after_lock' in st.session_state:
+                del st.session_state['target_tab_after_lock']
+            
+            # Set navigation states
+            st.session_state.active_tab = target_tab
+            st.session_state.highest_reached_tab = max(st.session_state.highest_reached_tab, target_tab)
+            
+            # Force close dialog and navigate
             st.rerun()
-    
-    return True
 
+
+#
+
+# Updated navigation button functions
 def navigate_to_next_tab():
     """Navigate to the next tab with validation and locking"""
     current_tab = st.session_state.active_tab
     
-    # Get validation function for current tab
-    validation_func = get_validation_function(current_tab)
-    
-    if not validation_func():
-        tab_names = ["Client Information", "Seller Information", "Project Specifications", "Generate Proposal"]
-        show_validation_popup(tab_names[current_tab])
+    if current_tab >= 3:  # Already on last tab
         return
     
-    # If tab is already locked, just navigate
-    if current_tab in st.session_state.locked_tabs:
-        if current_tab < 3:
-            st.session_state.active_tab = current_tab + 1
-            st.session_state.highest_reached_tab = max(st.session_state.highest_reached_tab, st.session_state.active_tab)
-            st.rerun()
-        return
-    
-    # If this is the last tab, don't show confirmation
-    if current_tab >= 3:
-        return
-    
-    # Show confirmation dialog
-    confirmation_key = f"show_confirmation_{current_tab}"
-    st.session_state[confirmation_key] = True
-    st.rerun()
-
-def navigate_to_next_tab():
-    """Navigate to the next tab with validation and locking"""
-    current_tab = st.session_state.active_tab
-    
-    # Get validation function for current tab
-    validation_func = get_validation_function(current_tab)
-    
-    if not validation_func():
-        tab_names = ["Client Information", "Seller Information", "Project Specifications", "Generate Proposal"]
-        show_validation_popup(tab_names[current_tab])
-        return
-    
-    # If tab is already locked, just navigate
-    if current_tab in st.session_state.locked_tabs:
-        if current_tab < 3:
-            st.session_state.active_tab = current_tab + 1
-            st.session_state.highest_reached_tab = max(st.session_state.highest_reached_tab, st.session_state.active_tab)
-            st.rerun()
-        return
-    
-    # If this is the last tab, don't show confirmation
-    if current_tab >= 3:
-        return
-    
-    # Show confirmation dialog
-    confirmation_key = f"show_confirmation_{current_tab}"
-    st.session_state[confirmation_key] = True
-    st.rerun()
+    navigate_to_tab(current_tab + 1)
 
 def navigate_to_previous_tab():
-    """Navigate to the previous tab"""
-    if st.session_state.active_tab > 0:
-        st.session_state.active_tab -= 1
+    """Navigate to the previous tab - always allowed"""
+    current_tab = st.session_state.active_tab
+    
+    if current_tab > 0:
+        st.session_state.active_tab = current_tab - 1
         st.rerun()
+
 
 def get_button_text(direction, current_tab):
     """Get button text with tab names"""
@@ -522,25 +532,6 @@ logger = setup_logging()
         
 from main_css import *
 st.markdown(app_css, unsafe_allow_html=True)
-# st.markdown("""
-# <style>
-# /* Hide the default Streamlit scrollbar */
-# .main .block-container {
-#     max-height: none;
-#     overflow: visible;
-# }
-
-# /* Or alternatively, hide one of the scrollbars */
-# .stApp {
-#     overflow-x: hidden;
-# }
-
-# /* Hide horizontal scrollbar specifically */
-# ::-webkit-scrollbar-horizontal {
-#     display: none;
-# }
-# </style>
-# """, unsafe_allow_html=True)
 
 st.markdown(content_area_css,unsafe_allow_html=True)
 st.markdown(sticky_header_css, unsafe_allow_html=True)
@@ -560,6 +551,11 @@ if 'active_tab' not in st.session_state:
     st.session_state.active_tab = 0
 
 
+current_tab = st.session_state.active_tab
+confirmation_key = f"show_confirmation_{current_tab}"
+
+if confirmation_key in st.session_state and st.session_state[confirmation_key]:
+    show_lock_confirmation_popup(current_tab)
 
 tab_names = ["Client Information", "Seller Information", "Project Specifications", "Generate Proposal"]
 
@@ -570,7 +566,7 @@ for i, tab_name in enumerate(tab_names):
     with cols[i]:
         is_active = (i == st.session_state.active_tab)
         
-        # Determine if tab should be clickable based on validation
+        # Determine if tab should be clickable based on accessibility
         tab_enabled = is_tab_accessible(i)
         
         # Add lock indicator to tab name if locked
@@ -598,8 +594,7 @@ for i, tab_name in enumerate(tab_names):
                 """,
             ):
                 if st.button(display_name, key=f"tab_{i}", use_container_width=True, type="primary"):
-                    st.session_state.active_tab = i
-                    st.rerun()
+                    navigate_to_tab(i)
         elif tab_enabled:
             with stylable_container(
                 f"inactive_tab_{i}",
@@ -611,9 +606,8 @@ for i, tab_name in enumerate(tab_names):
                 }
                 """,
             ):
-                if st.button(display_name, key=f"tab_{i}", use_container_width=True,  type="primary"):
-                    st.session_state.active_tab = i
-                    st.rerun()
+                if st.button(display_name, key=f"tab_{i}", use_container_width=True, type="primary"):
+                    navigate_to_tab(i)
         else:
             # Disabled tabs with no hover effects
             with stylable_container(
@@ -631,13 +625,13 @@ for i, tab_name in enumerate(tab_names):
                 st.button(display_name, key=f"tab_{i}", use_container_width=True, disabled=True, type="primary")
 
 
-# Handle confirmation dialogs - POPUP STYLE
-current_tab = st.session_state.active_tab
-confirmation_key = f"show_confirmation_{current_tab}"
+# # Handle confirmation dialogs - POPUP STYLE
+# current_tab = st.session_state.active_tab
+# confirmation_key = f"show_confirmation_{current_tab}"
 
-if confirmation_key in st.session_state and st.session_state[confirmation_key]:
-    show_lock_confirmation_popup(current_tab)
-    st.stop()  # Stop execution to show only the popup
+# if confirmation_key in st.session_state and st.session_state[confirmation_key]:
+#     show_lock_confirmation_popup(current_tab)
+    
 
 
 # Set is_active flag for current tab
@@ -665,21 +659,25 @@ elif st.session_state.active_tab == 1:
 elif st.session_state.active_tab == 2:
     # Check both client and seller validations
     if not validate_client_mandatory_fields():
-        st.session_state.active_tab = 0  # Force back to client tab
-        show_validation_popup("Client Information")
+        st.session_state.active_tab = 0
+        trigger_validation_popup("Client Information")
         st.rerun()
     elif not validate_seller_mandatory_fields():
-        st.session_state.active_tab = 1  # Force back to seller tab
-        show_validation_popup("Seller Information")
+        st.session_state.active_tab = 1
+        trigger_validation_popup("Seller Information")
         st.rerun()
     else:
-        # print(st.session_state.client_data_from_tab, st.session_state.seller_data_from_tab)
-        st.rerun()
-        st.session_state.project_specs_from_tab = proj_specification_tab(
-            st.session_state.client_data_from_tab, 
-            st.session_state.seller_data_from_tab,
-            is_locked=is_tab_locked(2)
-        )
+        # Only call proj_specification_tab if no confirmation dialog is active
+        confirmation_active = any(key.startswith('show_confirmation_') and st.session_state.get(key, False) 
+                                for key in st.session_state.keys())
+        print("////////////////",confirmation_active)
+        if not confirmation_active:
+            st.session_state.project_specs_from_tab = proj_specification_tab(
+                st.session_state.client_data_from_tab, 
+                st.session_state.seller_data_from_tab,
+                is_locked=is_tab_locked(2)
+            )
+
 
 else:  # Generate Proposal Tab
     # Check all validations

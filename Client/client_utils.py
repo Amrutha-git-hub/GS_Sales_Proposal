@@ -13,12 +13,12 @@ import asyncio
 from Common_Utils.pain_points_extractor import *
 # Function to get URLs (placeholder function)
 
-def get_urls_list(company_name) -> List[str]:
-    """
-    Placeholder function that returns a list of URLs
-    Replace this with your actual function that fetches URLs
-    """
-    return asyncio.run(get_urls(company_name))
+# def get_urls_list(company_name) -> List[str]:
+#     """
+#     Placeholder function that returns a list of URLs
+#     Replace this with your actual function that fetches URLs
+#     """
+#     return asyncio.run(get_urls(company_name))
 
 # Function to get LinkedIn profiles (NEW)
 

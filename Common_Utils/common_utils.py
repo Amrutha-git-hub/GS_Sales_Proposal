@@ -485,8 +485,8 @@ from WebScraper.webscraper_beautifulsoup import get_url_details_with_bs4
 from WebScraper.scrape_agent import get_url_detail_using_googleai
 
 
-def get_scraped_data(url:str , scrape_technique= "manual"):
-    if scrape_technique=='manual':
+def get_scraped_data(url:str , scrape_technique= "bs4"):
+    if scrape_technique=='bs4':
         return get_url_details_with_bs4(url)
-    elif scrape_technique=='ai':
+    elif scrape_technique=='crawl4ai':
         return  asyncio.run(get_url_detail_using_googleai(url))
