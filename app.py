@@ -3,8 +3,8 @@ from streamlit_extras.stylable_container import stylable_container
 import time
 from Client.client import client_tab,validate_client_mandatory_fields
 from Seller.seller import seller_tab
-from ProjectSpecification.project_spec import proj_specification_tab
-from Generate_proposal.proposal_generator import generate_tab
+from ProjectSpecification_tab.project_spec import proj_specification_tab
+from Proposal_writing_tab.proposal_generator import generate_tab
 from Client.client_dataclass import ClientTabState
 from Seller.seller import SellerTabState
 import os
@@ -159,33 +159,7 @@ def show_validation_popup(missing_tab_name, missing_fields=None):
     # Create professional popup modal
     with stylable_container(
         f"validation_popup_{missing_tab_name.replace(' ', '_')}",
-        css_styles="""
-        div[data-testid="stBlock"] {
-            position: fixed !important;
-            top: 20% !important;
-            left: 50% !important;
-            transform: translateX(-50%) !important;
-            z-index: 9999 !important;
-            background: black !important;
-            border: 1px solid #ddd !important;
-            border-radius: 12px !important;
-            padding: 30px !important;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15) !important;
-            width: 450px !important;
-            max-width: 90vw !important;
-            border-top: 4px solid #f56565 !important;
-        }
-        div[data-testid="stBlock"]:before {
-            content: '' !important;
-            position: fixed !important;
-            top: 0 !important;
-            left: 0 !important;
-            width: 100vw !important;
-            height: 180vh !important;
-            background: rgba(0, 0, 0, 0.4) !important;
-            z-index: -1 !important;
-        }
-        """,
+        css_styles=css_styles,
     ):
         # Header with icon and title
         st.markdown(
@@ -276,37 +250,7 @@ def trigger_validation_popup(missing_tab_name, missing_fields=None):
         'missing_fields': missing_fields
     }
 
-# Updated navigation functions that use the new popup system
-def navigate_to_next_tab():
-    """Navigate to the next tab with validation and locking"""
-    current_tab = st.session_state.active_tab
-    
-    # Get validation function for current tab
-    validation_func = get_validation_function(current_tab)
-    
-    if not validation_func():
-        tab_names = ["Client Information", "Seller Information", "Project Specifications", "Generate Proposal"]
-        trigger_validation_popup(tab_names[current_tab])
-        return
-    
-    # If tab is already locked, just navigate
-    if current_tab in st.session_state.locked_tabs:
-        if current_tab < 3:
-            st.session_state.active_tab = current_tab + 1
-            st.session_state.highest_reached_tab = max(st.session_state.highest_reached_tab, st.session_state.active_tab)
-            st.rerun()
-        return
-    
-    # If this is the last tab, don't show confirmation
-    if current_tab >= 3:
-        return
-    
-    # Show confirmation dialog
-    confirmation_key = f"show_confirmation_{current_tab}"
-    st.session_state[confirmation_key] = True
-    st.rerun()
 
-# Add this to your main app logic, right after the confirmation dialog handling
 def handle_validation_popups():
     """Handle validation popups display"""
     tab_names = ["Client Information", "Seller Information", "Project Specifications", "Generate Proposal"]
@@ -365,7 +309,7 @@ def validate_seller_mandatory_fields():
     seller = st.session_state.seller_data_from_tab
 
     # Ensure both fields are non-empty after stripping blackspace
-    return seller is not None and bool(seller.seller_enterprise_name.strip()) and bool(seller.seller_enterprise_details_content.strip())
+    return seller is not None and bool(seller.seller_enterprise_name.strip()) and bool(seller.seller_requirements_content.strip())
 
 
 def validate_project_mandatory_fields():
@@ -373,24 +317,6 @@ def validate_project_mandatory_fields():
     # Add your project validation logic here
     # For now, returning True as placeholder
     return True
-
-def show_validation_popup(missing_tab_name, missing_fields=None):
-    """Show validation error popup"""
-    toast = st.toast(f"⚠️ Please complete all mandatory fields in {missing_tab_name} tab first!")
-
-    # Inject JavaScript to auto-dismiss the toast after 3 seconds (3000 ms)
-    # st.markdown("""
-    #     <script>
-    #     setTimeout(function() {
-    #         let toasts = window.parent.document.querySelectorAll('div[data-testid="stToast"]');
-    #         if (toasts.length > 0) {
-    #             toasts[0].style.display = 'none';
-    #         }
-    #     }, 10000);
-    #     </script>
-    # """, unsafe_allow_html=True)
-    if missing_fields:
-        st.error(f"Missing required fields: {missing_fields}")
 
 def get_validation_function(tab_index):
     """Get validation function for a specific tab"""
@@ -404,10 +330,20 @@ def get_validation_function(tab_index):
         return lambda: True
 
 def is_tab_accessible(tab_index):
-    """Check if a tab is accessible based on validation"""
+    """Check if a tab is accessible - allow backward navigation to visited tabs"""
+    current_tab = st.session_state.active_tab
+    
+    # Always allow access to tab 0 (Client Information)
     if tab_index == 0:
         return True
-    elif tab_index == 1:
+    
+    # Allow backward navigation to any tab that's been reached before
+    highest_reached = st.session_state.get('highest_reached_tab', 0)
+    if tab_index <= highest_reached:
+        return True
+    
+    # For forward navigation, check validation requirements
+    if tab_index == 1:
         return validate_client_mandatory_fields()
     elif tab_index == 2:
         return validate_client_mandatory_fields() and validate_seller_mandatory_fields()
@@ -415,14 +351,89 @@ def is_tab_accessible(tab_index):
         return (validate_client_mandatory_fields() and 
                 validate_seller_mandatory_fields() and 
                 validate_project_mandatory_fields())
+    
     return False
+
+
+def should_show_lock_confirmation(target_tab_index):
+    """Determine if lock confirmation should be shown"""
+    current_tab = st.session_state.active_tab
+    
+    # Only show confirmation for forward navigation
+    if target_tab_index <= current_tab:
+        return False
+    
+    # Don't show confirmation if current tab is already locked
+    if current_tab in st.session_state.locked_tabs:
+        return False
+    
+    # Don't show confirmation for the last tab
+    if current_tab >= 3:
+        return False
+    
+    # Check if current tab has required data filled
+    validation_func = get_validation_function(current_tab)
+    if not validation_func():
+        return False
+    
+    return True
+
+def navigate_to_tab(target_tab_index):
+    """Navigate to a specific tab with proper validation"""
+    current_tab = st.session_state.active_tab
+    
+    # If clicking on the same tab, do nothing
+    if target_tab_index == current_tab:
+        return
+    
+    # Check if tab is accessible
+    if not is_tab_accessible(target_tab_index):
+        # Show validation error for the blocking requirement
+        tab_names = ["Client Information", "Seller Information", "Project Specifications", "Generate Proposal"]
+        if target_tab_index == 1 and not validate_client_mandatory_fields():
+            trigger_validation_popup("Client Information")
+        elif target_tab_index == 2:
+            if not validate_client_mandatory_fields():
+                trigger_validation_popup("Client Information")
+            elif not validate_seller_mandatory_fields():
+                trigger_validation_popup("Seller Information")
+        elif target_tab_index == 3:
+            if not validate_client_mandatory_fields():
+                trigger_validation_popup("Client Information")
+            elif not validate_seller_mandatory_fields():
+                trigger_validation_popup("Seller Information")
+            elif not validate_project_mandatory_fields():
+                trigger_validation_popup("Project Specifications")
+        return
+    
+    # For backward navigation, just navigate
+    if target_tab_index < current_tab:
+        st.session_state.active_tab = target_tab_index
+        st.rerun()
+        return
+    
+    # For forward navigation, check if we need lock confirmation
+    if should_show_lock_confirmation(target_tab_index):
+        confirmation_key = f"show_confirmation_{current_tab}"
+        st.session_state[confirmation_key] = True
+        st.session_state['target_tab_after_lock'] = target_tab_index
+        st.rerun()
+        return
+    
+    # Direct navigation (no confirmation needed)
+    st.session_state.active_tab = target_tab_index
+    st.session_state.highest_reached_tab = max(st.session_state.highest_reached_tab, target_tab_index)
+    st.rerun()
+
 @st.dialog("‼️ Confirm Tab Lock")
 def show_lock_confirmation_popup(tab_index):
     """Show confirmation dialog for locking a tab using st.dialog"""
     
+    tab_names = ["Client Information", "Seller Information", "Project Specifications", "Generate Proposal"]
+    
     # Warning message
     st.error(
-        f"**Lock this tab?**\n\n"
+        f"Lock **{tab_names[tab_index] if tab_index < len(tab_names) else f'Tab {tab_index + 1}'}** ?\n\n"
         f"You won't be able to modify this tab once locked."
     )
     
@@ -430,89 +441,62 @@ def show_lock_confirmation_popup(tab_index):
     col1, col2 = st.columns([1, 1])
     
     with col1:
-        if st.button("Back", key=f"cancel_lock_{tab_index}", type="secondary"):
-            # Clear confirmation state
-            if f"show_confirmation_{tab_index}" in st.session_state:
-                del st.session_state[f"show_confirmation_{tab_index}"]
+        if st.button("Back", key=f"cancel_lock_{tab_index}", type="secondary", use_container_width=True):
+            # Clear all confirmation states
+            confirmation_key = f"show_confirmation_{tab_index}"
+            if confirmation_key in st.session_state:
+                del st.session_state[confirmation_key]
+            if 'target_tab_after_lock' in st.session_state:
+                del st.session_state['target_tab_after_lock']
             st.rerun()
     
     with col2:
-        if st.button("Lock & Continue", key=f"confirm_lock_{tab_index}", type="primary"):
-            # Clear confirmation state
-            if f"show_confirmation_{tab_index}" in st.session_state:
-                del st.session_state[f"show_confirmation_{tab_index}"]
+        if st.button("Lock & Continue", key=f"confirm_lock_{tab_index}", type="secondary", use_container_width=True):
+            # Initialize locked_tabs if it doesn't exist
+            if 'locked_tabs' not in st.session_state:
+                st.session_state.locked_tabs = set()
+            
             # Lock the current tab
             st.session_state.locked_tabs.add(tab_index)
-            # Move to next tab
-            st.session_state.active_tab = tab_index + 1
-            st.session_state.highest_reached_tab = max(st.session_state.highest_reached_tab, st.session_state.active_tab)
+            
+            # Get target tab
+            target_tab = st.session_state.get('target_tab_after_lock', tab_index + 1)
+            
+            # Clear all confirmation states FIRST
+            confirmation_key = f"show_confirmation_{tab_index}"
+            if confirmation_key in st.session_state:
+                del st.session_state[confirmation_key]
+            if 'target_tab_after_lock' in st.session_state:
+                del st.session_state['target_tab_after_lock']
+            
+            # Set navigation states
+            st.session_state.active_tab = target_tab
+            st.session_state.highest_reached_tab = max(st.session_state.highest_reached_tab, target_tab)
+            
+            # Force close dialog and navigate
             st.rerun()
-    
-    return True
 
+
+#
+
+# Updated navigation button functions
 def navigate_to_next_tab():
     """Navigate to the next tab with validation and locking"""
     current_tab = st.session_state.active_tab
     
-    # Get validation function for current tab
-    validation_func = get_validation_function(current_tab)
-    
-    if not validation_func():
-        tab_names = ["Client Information", "Seller Information", "Project Specifications", "Generate Proposal"]
-        show_validation_popup(tab_names[current_tab])
+    if current_tab >= 3:  # Already on last tab
         return
     
-    # If tab is already locked, just navigate
-    if current_tab in st.session_state.locked_tabs:
-        if current_tab < 3:
-            st.session_state.active_tab = current_tab + 1
-            st.session_state.highest_reached_tab = max(st.session_state.highest_reached_tab, st.session_state.active_tab)
-            st.rerun()
-        return
-    
-    # If this is the last tab, don't show confirmation
-    if current_tab >= 3:
-        return
-    
-    # Show confirmation dialog
-    confirmation_key = f"show_confirmation_{current_tab}"
-    st.session_state[confirmation_key] = True
-    st.rerun()
-
-def navigate_to_next_tab():
-    """Navigate to the next tab with validation and locking"""
-    current_tab = st.session_state.active_tab
-    
-    # Get validation function for current tab
-    validation_func = get_validation_function(current_tab)
-    
-    if not validation_func():
-        tab_names = ["Client Information", "Seller Information", "Project Specifications", "Generate Proposal"]
-        show_validation_popup(tab_names[current_tab])
-        return
-    
-    # If tab is already locked, just navigate
-    if current_tab in st.session_state.locked_tabs:
-        if current_tab < 3:
-            st.session_state.active_tab = current_tab + 1
-            st.session_state.highest_reached_tab = max(st.session_state.highest_reached_tab, st.session_state.active_tab)
-            st.rerun()
-        return
-    
-    # If this is the last tab, don't show confirmation
-    if current_tab >= 3:
-        return
-    
-    # Show confirmation dialog
-    confirmation_key = f"show_confirmation_{current_tab}"
-    st.session_state[confirmation_key] = True
-    st.rerun()
+    navigate_to_tab(current_tab + 1)
 
 def navigate_to_previous_tab():
-    """Navigate to the previous tab"""
-    if st.session_state.active_tab > 0:
-        st.session_state.active_tab -= 1
+    """Navigate to the previous tab - always allowed"""
+    current_tab = st.session_state.active_tab
+    
+    if current_tab > 0:
+        st.session_state.active_tab = current_tab - 1
         st.rerun()
+
 
 def get_button_text(direction, current_tab):
     """Get button text with tab names"""
@@ -548,152 +532,30 @@ logger = setup_logging()
         
 from main_css import *
 st.markdown(app_css, unsafe_allow_html=True)
-# st.markdown("""
-# <style>
-# /* Hide the default Streamlit scrollbar */
-# .main .block-container {
-#     max-height: none;
-#     overflow: visible;
-# }
 
-# /* Or alternatively, hide one of the scrollbars */
-# .stApp {
-#     overflow-x: hidden;
-# }
-
-# /* Hide horizontal scrollbar specifically */
-# ::-webkit-scrollbar-horizontal {
-#     display: none;
-# }
-# </style>
-# """, unsafe_allow_html=True)
-content_area_css = """
-<style>
-/* Primary targeting for block container - 75% width grey background */
-[data-testid="block-container"] {
-    background-color: #fafafa !important;
-    width: 75% !important;
-    max-width: 75% !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
-}
-
-/* Alternative targeting for older Streamlit versions */
-.block-container {
-    background-color: #fafafa !important;
-    width: 75% !important;
-    max-width: 75% !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
-}
-
-/* Target the element that contains your tab content */
-.stApp .main .block-container {
-    background-color: #fafafa !important;
-    width: 75% !important;
-    max-width: 75% !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
-}
-</style>
-"""
 st.markdown(content_area_css,unsafe_allow_html=True)
 st.markdown(sticky_header_css, unsafe_allow_html=True)
 
 # Add title - place this after your CSS but before the tab buttons
 # Replace your existing title section with this:
-st.markdown("""  
-<div class="sticky-header" style="width: 100%; display: flex; justify-content: center; padding: 0; margin: 0;">
-    <div style="width: 100%; display: flex; justify-content: center; padding: 0; margin: 0;">
-        <div style="width: 70%; background-color: black; padding: 5px 0;">
-            <div style="display: flex; align-items: center; margin: 0; width: 100%; padding: 0 40px;">
-                <!-- Text and logo container -->
-                <div style="display: flex; align-items: center;">
-                    <div style="display: flex; flex-direction: column; margin-right: 20px;">
-                        <h1 style="color: white; font-size: 48px; font-weight: bold; margin: 0; padding: 0;">
-                            CoXprt
-                        </h1>
-                        <p style="color: white; font-size: 16px; margin: 5px 0 0 0; padding: 0;">
-                            AI automated sales proposal generator
-                        </p>
-                    </div>
-                    <img src="https://static.wixstatic.com/media/cb6b3d_5c8f2b020ebe48b69bc8c163cc480156~mv2.png/v1/fill/w_60,h_60,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/GrowthSutra%20Logo.png" alt="Logo" style="height: 60px;">
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-""", unsafe_allow_html=True)
+st.markdown(header_css, unsafe_allow_html=True)
 
-st.markdown("""
-<style>
-.sticky-tabs {
-    position: sticky;
-    top: 120px; /* Adjust based on your header height */
-    z-index: 999;
-    background-color: white;
-    padding: 10px 0;
-    border-bottom: 1px solid #e0e0e0;
-    margin-bottom: 20px;
-}
 
-/* Force override all button styling */
-button[kind="secondary"] {
-    height: 48px !important;
-    border: 2.2px solid #ececec !important;
-    border-radius: 4px !important;
-    margin-top: -5px !important;  /* Move button up */
-    transform: translateY(-3px) !important;  /* Additional upward adjustment */
-    background-color: #d3d3d3 !important;  
-    color: black !important;  /* black text */
-}
-    
-button[kind="secondary"]:hover {
-    border: 2.2px solid #ececec !important;
-    transform: translateY(-3px) !important;  /* Keep position on hover */
-    background-color: #d3d3d3 !important;  /* Slightly lighter on hover */
-    color: black !important;  /* Keep black text on hover */
-}
-    
-button[kind="secondary"]:focus {
-    border: 2.2px solid #ececec !important;
-    outline: 2px solid #ececec !important;
-    transform: translateY(-3px) !important;  /* Keep position on focus */
-    background-color: #d3d3d3 !important;  /* Keep dark background on focus */
-    color: black !important;  /* Keep black text on focus */
-}
-    
-/* Try targeting by data attributes */
-[data-testid] button {
-    border: 2.2px solid #ececec !important;
-    height: 48px !important;
-    margin-top: -5px !important;  /* Move button up */
-    transform: translateY(-2.5px) !important;  /* Additional upward adjustment */
-    background-color: #d3d3d3 !important;  /* Dark greyish background */
-    color: black !important;  /* black text */
-}
+st.markdown(button_css_2, unsafe_allow_html=True)
 
-/* Additional targeting for button text specifically */
-button[kind="secondary"] p,
-button[kind="secondary"] span,
-button[kind="secondary"] div {
-    color: black !important;
-}
 
-[data-testid] button p,
-[data-testid] button span,
-[data-testid] button div {
-    color: black !important;
-}
-</style>
-""", unsafe_allow_html=True)
+st.markdown(button_css, unsafe_allow_html=True)
 
 # Initialize session state for active tab - ENSURE CLIENT TAB IS DEFAULT
 if 'active_tab' not in st.session_state:
     st.session_state.active_tab = 0
 
-# Tab buttons with sticky container
-st.markdown('<div class="sticky-tabs">', unsafe_allow_html=True)
+
+current_tab = st.session_state.active_tab
+confirmation_key = f"show_confirmation_{current_tab}"
+
+if confirmation_key in st.session_state and st.session_state[confirmation_key]:
+    show_lock_confirmation_popup(current_tab)
 
 tab_names = ["Client Information", "Seller Information", "Project Specifications", "Generate Proposal"]
 
@@ -704,7 +566,7 @@ for i, tab_name in enumerate(tab_names):
     with cols[i]:
         is_active = (i == st.session_state.active_tab)
         
-        # Determine if tab should be clickable based on validation
+        # Determine if tab should be clickable based on accessibility
         tab_enabled = is_tab_accessible(i)
         
         # Add lock indicator to tab name if locked
@@ -723,7 +585,6 @@ for i, tab_name in enumerate(tab_names):
                     border: 2px solid #ececec !important;
                     font-weight: bold !important;
                     box-shadow: 0 4px 8px rgba(89, 156, 212, 0.3) !important;
-                    pointer-events: none !important;
                 }
                 button:focus {
                     background-color: #599cd4 !important;
@@ -732,49 +593,45 @@ for i, tab_name in enumerate(tab_names):
                 }
                 """,
             ):
-                if st.button(display_name, key=f"tab_{i}", use_container_width=True, disabled=True, type="secondary"):
-                    st.session_state.active_tab = i
-                    st.rerun()
+                if st.button(display_name, key=f"tab_{i}", use_container_width=True, type="primary"):
+                    navigate_to_tab(i)
         elif tab_enabled:
             with stylable_container(
                 f"inactive_tab_{i}",
                 css_styles="""
                 button {
-                    background-color: #ececec !important;
+                    background-color: #6c757d !important;
                     color: white !important;
                     border: 1px solid #ececec !important;
-                    pointer-events: none !important;
                 }
                 """,
             ):
-                if st.button(display_name, key=f"tab_{i}", use_container_width=True, disabled=True, type='secondary'):
-                    st.session_state.active_tab = i
-                    st.rerun()
+                if st.button(display_name, key=f"tab_{i}", use_container_width=True, type="primary"):
+                    navigate_to_tab(i)
         else:
             # Disabled tabs with no hover effects
             with stylable_container(
                 f"disabled_tab_{i}",
                 css_styles="""
                 button {
-                    background-color: #ececec !important;
+                    background-color: #6c757d !important;
                     color: white !important;
                     border: 1px solid #ececec !important;
                     cursor: not-allowed !important;
                     opacity: 1 !important;
-                    pointer-events: none !important;
                 }
                 """,
             ):
-                st.button(display_name, key=f"tab_{i}", use_container_width=True, disabled=True, type='secondary')
+                st.button(display_name, key=f"tab_{i}", use_container_width=True, disabled=True, type="primary")
 
 
-# Handle confirmation dialogs - POPUP STYLE
-current_tab = st.session_state.active_tab
-confirmation_key = f"show_confirmation_{current_tab}"
+# # Handle confirmation dialogs - POPUP STYLE
+# current_tab = st.session_state.active_tab
+# confirmation_key = f"show_confirmation_{current_tab}"
 
-if confirmation_key in st.session_state and st.session_state[confirmation_key]:
-    show_lock_confirmation_popup(current_tab)
-    st.stop()  # Stop execution to show only the popup
+# if confirmation_key in st.session_state and st.session_state[confirmation_key]:
+#     show_lock_confirmation_popup(current_tab)
+    
 
 
 # Set is_active flag for current tab
@@ -783,60 +640,6 @@ st.session_state.is_active = True
 # Show lock status message for locked tabs
 if is_tab_locked(current_tab):
     st.info(f"🔒 This tab is locked. You cannot modify the data in this tab.")
-
-
-st.markdown("""
-                    <style>
-                    /* Force override all button styling */
-                    button[kind="secondary"] {
-                        height: 48px !important;
-                        border: 2.2px solid #ececec !important;
-                        border-radius: 4px !important;
-                        margin-top: -5px !important;  /* Move button up */
-                        transform: translateY(-3px) !important;  /* Additional upward adjustment */
-                        background-color: #edf2f1 !important;  /* Dark greyish background */
-                        color: black !important;  /* black text */
-                    }
-                     
-                    button[kind="secondary"]:hover {
-                        border: 2.2px solid #ececec !important;
-                        transform: translateY(-3px) !important;  /* Keep position on hover */
-                        background-color: #5a5a5a !important;  /* Slightly lighter on hover */
-                        color: black !important;  /* Keep black text on hover */
-                    }
-                     
-                    button[kind="secondary"]:focus {
-                        border: 2.2px solid #ececec !important;
-                        outline: 2px solid #ececec !important;
-                        transform: translateY(-3px) !important;  /* Keep position on focus */
-                        background-color: #edf2f1 !important;  /* Keep dark background on focus */
-                        color: black !important;  /* Keep black text on focus */
-                    }
-                     
-                    /* Try targeting by data attributes */
-                    [data-testid] button {
-                        border: 2.2px solid #ececec !important;
-                        height: 48px !important;
-                        margin-top: -5px !important;  /* Move button up */
-                        transform: translateY(-2.5px) !important;  /* Additional upward adjustment */
-                        background-color: #edf2f1 !important;  /* Dark greyish background */
-                        color: black !important;  /* black text */
-                    }
-                    
-                    /* Additional targeting for button text specifically */
-                    button[kind="secondary"] p,
-                    button[kind="secondary"] span,
-                    button[kind="secondary"] div {
-                        color: black !important;
-                    }
-                    
-                    [data-testid] button p,
-                    [data-testid] button span,
-                    [data-testid] button div {
-                        color: black !important;
-                    }
-                    </style>
-                    """, unsafe_allow_html=True)  
 
 
 # Content area with validation-aware tab switching
@@ -856,20 +659,25 @@ elif st.session_state.active_tab == 1:
 elif st.session_state.active_tab == 2:
     # Check both client and seller validations
     if not validate_client_mandatory_fields():
-        st.session_state.active_tab = 0  # Force back to client tab
-        show_validation_popup("Client Information")
+        st.session_state.active_tab = 0
+        trigger_validation_popup("Client Information")
         st.rerun()
     elif not validate_seller_mandatory_fields():
-        st.session_state.active_tab = 1  # Force back to seller tab
-        show_validation_popup("Seller Information")
+        st.session_state.active_tab = 1
+        trigger_validation_popup("Seller Information")
         st.rerun()
     else:
-        print(st.session_state.client_data_from_tab, st.session_state.seller_data_from_tab)
-        st.session_state.project_specs_from_tab = proj_specification_tab(
-            st.session_state.client_data_from_tab, 
-            st.session_state.seller_data_from_tab,
-            is_locked=is_tab_locked(2)
-        )
+        # Only call proj_specification_tab if no confirmation dialog is active
+        confirmation_active = any(key.startswith('show_confirmation_') and st.session_state.get(key, False) 
+                                for key in st.session_state.keys())
+        print("////////////////",confirmation_active)
+        if not confirmation_active:
+            st.session_state.project_specs_from_tab = proj_specification_tab(
+                st.session_state.client_data_from_tab, 
+                st.session_state.seller_data_from_tab,
+                is_locked=is_tab_locked(2)
+            )
+
 
 else:  # Generate Proposal Tab
     # Check all validations
@@ -893,7 +701,7 @@ else:  # Generate Proposal Tab
         )
 
 # Bottom navigation buttons with enhanced styling
-col1, col2, col3 = st.columns(3, gap="large")
+col1, col2, col3 = st.columns(3, gap="medium")
 
 # Previous Button
 with col1:
@@ -905,7 +713,7 @@ with col1:
             "prev_button_disabled",
             css_styles="""
             button {
-                background-color: #D4D4D !important;
+                background-color: #6c757d !important;
                 color: black !important;
                 border: 1px solid #dee2e6 !important;
                 cursor: not-allowed !important;
@@ -914,32 +722,32 @@ with col1:
             }
             """,
         ):
-            st.button(prev_button_text, key="prev_btn", use_container_width=True, disabled=True)
+            st.button(prev_button_text, key="prev_btn", use_container_width=True, disabled=True,type="primary")
     else:
         with stylable_container(
             "prev_button",
             css_styles="""
             button {
-                background-color: #ececec !important;
+                background-color:#6c757d !important;
                 color: black !important;
                 border: 1px solid #5a6268 !important;
                 font-weight: bold !important;
                 transition: all 0.3s ease !important;
             }
             button:hover {
-                background-color: #ececec !important;
+                background-color: #6c757d !important;
                 color: black !important;
                 transform: translateY(-1px) !important;
             }
             button:active {
-                background-color: #ececec !important;
+                background-color: #6c757dc !important;
                 border: 2px solid #ececec !important;
                 transform: translateY(0px) !important;
                 box-shadow: 0 2px 4px rgba(89, 156, 212, 0.4) !important;
             }
             """,
         ):
-            if st.button(prev_button_text, key="prev_btn", use_container_width=True):
+            if st.button(prev_button_text, key="prev_btn", use_container_width=True,type="primary"):
                 navigate_to_previous_tab()
 
 # Refresh Button
@@ -948,26 +756,26 @@ with col2:
         "refresh_button",
         css_styles="""
         button {
-            background-color: #ececec !important;
+            background-color: #6c757d !important;
             color: black !important;
             border: 1px solid #5a6268 !important;
             font-weight: bold !important;
             transition: all 0.3s ease !important;
         }
         button:hover {
-            background-color: #ececec !important;
+            background-color: #6c757d !important;
             color: black !important;
             transform: translateY(-1px) !important;
         }
         button:active {
-            background-color:#ececec !important;
+            background-color:#6c757d !important;
             border: 2px solid #ececec !important;
             transform: translateY(0px) !important;
             box-shadow: 0 2px 4px rgba(89, 156, 212, 0.4) !important;
         }
         """,
     ):
-        if st.button("🔄 Refresh All Data", key="refresh_btn", use_container_width=True):
+        if st.button("🔄 Refresh All Data", key="refresh_btn", use_container_width=True,type="primary"):
             refresh_all_data()
 
 # Next Button
@@ -980,7 +788,7 @@ with col3:
             "next_button_disabled",
             css_styles="""
             button {
-                background-color:#D4D4D !important;
+                background-color:#6c757d !important;
                 color: black !important;
                 border: 1px solid #dee2e6 !important;
                 cursor: not-allowed !important;
@@ -989,25 +797,25 @@ with col3:
             }
             """,
         ):
-            st.button(next_button_text, key="next_btn", use_container_width=True, disabled=True)
+            st.button(next_button_text, key="next_btn", use_container_width=True, disabled=True,type="primary")
     else:
         with stylable_container(
             "next_button",
             css_styles="""
             button {
-                background-color: #ececec!important;
+                background-color: #6c757d!important;
                 color: black !important;
                 border: 1px solid #5a6268 !important;
                 font-weight: bold !important;
                 transition: all 0.3s ease !important;
             }
             button:active {
-                background-color: #ececec !important;
+                background-color: #6c757d !important;
                 border: 2px solid #ececec !important;
                 transform: translateY(0px) !important;
                 box-shadow: 0 2px 4px rgba(89, 156, 212, 0.4) !important;
             }
             """,
         ):
-            if st.button(next_button_text, key="next_btn", use_container_width=True):
+            if st.button(next_button_text, key="next_btn", use_container_width=True,type="primary"):
                 navigate_to_next_tab()

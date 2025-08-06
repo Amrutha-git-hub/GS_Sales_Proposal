@@ -418,7 +418,7 @@ def vectorize_docs(filepath: str, company_name: str):
         })
         
         # Create persist directory
-        persist_directory = os.path.join("chroma_store", company_name, filename)
+        persist_directory = os.path.join(chroma_path, company_name, filename)
         os.makedirs(persist_directory, exist_ok=True)
         
         # Create collection name (sanitize)
