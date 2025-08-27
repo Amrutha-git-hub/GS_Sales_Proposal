@@ -12,6 +12,7 @@ from Search.Linkedin.linkedin_agent_runner import *
 from Recommendation.recommendation_utils import *
 from tab_css import *
 from .client_dataclass import *
+
 from datetime import datetime 
 # Configure logging
 from Common_Utils.common_utils import *
@@ -325,7 +326,7 @@ def render_client_website_section(logger, client_data, is_locked):
                     logger.info(f"Starting website scraping for: {client_website_url}")
                     
                     # Get website details from the URL
-                    scrape_result = get_scraped_data(client_website_url,)
+                    scrape_result = get_scraped_data(client_website_url)
                     
                     # Extract data from the User object
                     website_name = scrape_result.name

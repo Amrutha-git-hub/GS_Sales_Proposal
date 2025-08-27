@@ -11,6 +11,7 @@ from Common_Utils.common_utils import *
 from Common_Utils.common_utils import set_global_message
 from Common_Utils.service_extractor import get_services
 from dotenv import load_dotenv
+import os
 
 # Configure logger
 logger = logging.getLogger(__name__)
@@ -27,7 +28,7 @@ class SellerTabState:
     last_analyzed_seller_url: Optional[str] = None
     
     # Content fields
-    enterprise_logo :str = ""
+    enterprise_logo: str = ""
     seller_enterprise_details_content: str = ""
     seller_requirements_content: str = ""
     
@@ -105,6 +106,21 @@ class SellerTabState:
             logger.error(f"Error updating field {field_name}: {str(e)}")
             set_global_message(f"Failed to update field {field_name}. Please try again.", "error")
     
+    def update_multiple_fields(self, **kwargs) -> None:
+        """Update multiple fields at once and sync to session state."""
+        try:
+            for field_name, value in kwargs.items():
+                if hasattr(self, field_name):
+                    setattr(self, field_name, value)
+                    st.session_state[field_name] = value
+                    logger.debug(f"Updated seller state field: {field_name}")
+                else:
+                    logger.warning(f"Attempted to update non-existent field: {field_name}")
+                    set_global_message(f"Invalid field update attempted: {field_name}", "error")
+        except Exception as e:
+            logger.error(f"Error updating multiple fields: {str(e)}")
+            set_global_message("Failed to update fields. Please try again.", "error")
+    
     def clear_url_data(self) -> None:
         """Clear URL-related data when company name changes."""
         try:
@@ -175,7 +191,6 @@ def seller_tab(is_locked):
     """Main seller tab function with proper state synchronization."""
     try:
         # Add CSS
-        
         st.markdown(button_css, unsafe_allow_html=True)
         st.markdown(content_area_css, unsafe_allow_html=True)
         st.markdown(seller_css, unsafe_allow_html=True)
@@ -204,8 +219,9 @@ def seller_tab(is_locked):
 
 
 load_dotenv()
-DOCUMENTS_DIR = os.getenv("SELLER_DOCUMENTS_DIR")
+DOCUMENTS_DIR = os.getenv("SELLER_DOCUMENTS_DIR", "./seller_documents")
 os.makedirs(DOCUMENTS_DIR, exist_ok=True) 
+
 def save_uploaded_file_and_get_path(uploaded_file):
     try:
         filename = uploaded_file.name.replace(" ", "_")  # Optional: sanitize name
@@ -242,7 +258,6 @@ def _render_top_section(seller_state: SellerTabState, is_locked: bool, seller_na
         set_global_message("An error occurred while loading the seller information section. Please try again.", "error")
 
 
-
 @st.fragment
 def _render_seller_name_input(seller_state: SellerTabState, is_locked: bool):
     """Render seller name input with find URLs functionality."""
@@ -260,7 +275,6 @@ def _render_seller_name_input(seller_state: SellerTabState, is_locked: bool):
         name_col, button_col = st.columns([3, 1])
         
         with name_col:
-            # Remove the on_change callback that was causing reruns
             seller_enterprise_name = st.text_input(
                 label="Seller Enterprise Name", 
                 placeholder="Enter seller enterprise name...", 
@@ -268,13 +282,12 @@ def _render_seller_name_input(seller_state: SellerTabState, is_locked: bool):
                 key="seller_enterprise_name_input",
                 label_visibility="collapsed",
                 disabled=is_locked
-                # REMOVED: on_change callback that was causing reruns
             )
             
-            # Update state if changed (only if not locked) - NO RERUN
+            # Update state if changed (only if not locked)
             if not is_locked and seller_enterprise_name != seller_state.seller_enterprise_name:
                 seller_state.update_field('seller_enterprise_name', seller_enterprise_name)
-                st.rerun() #call that was causing screen flash
+                st.rerun()
         
         with button_col:
             _handle_find_urls_button(seller_state, seller_enterprise_name, is_locked)
@@ -296,8 +309,6 @@ def _render_seller_name_input(seller_state: SellerTabState, is_locked: bool):
         set_global_message("An error occurred while loading the seller name input. Please try again.", "error")
 
 
-
- 
 @st.fragment
 def _handle_find_urls_button(seller_state: SellerTabState, seller_enterprise_name: str, is_locked: bool):
     """Handle find URLs button functionality."""
@@ -305,7 +316,7 @@ def _handle_find_urls_button(seller_state: SellerTabState, seller_enterprise_nam
         find_urls_disabled = is_locked or not (seller_enterprise_name and len(seller_enterprise_name.strip()) > 2)
         
         if st.button("🔍 Find Website",
-                    disabled=find_urls_disabled or seller_state.url_search_in_progress,
+                    disabled= is_locked,
                     help="Find website URLs for this company",
                     key="find_seller_urls_button"):
             
@@ -314,7 +325,6 @@ def _handle_find_urls_button(seller_state: SellerTabState, seller_enterprise_nam
                 
                 seller_state.update_field('url_search_in_progress', True)
                 seller_state.update_field('url_search_company', seller_enterprise_name.strip())
-                # Keep this rerun as it's needed for the URL search functionality
                 st.rerun()
                     
     except Exception as e:
@@ -334,7 +344,6 @@ def _handle_company_name_changes(seller_state: SellerTabState, seller_enterprise
         set_global_message("Failed to handle company name changes. Please refresh the page.", "error")
 
 
-@st.fragment
 def _display_url_search_status(seller_state: SellerTabState, seller_enterprise_name: str):
     """Display URL search status."""
     try:
@@ -353,11 +362,9 @@ def _display_url_search_status(seller_state: SellerTabState, seller_enterprise_n
                     logger.info(f"Successfully found {len(urls_list)} URLs for {search_company}")
                     
                     if urls_list:
-                        set_global_message(f"✅ Found {len(urls_list)} website(s) for {search_company}","success")
+                        set_global_message(f"✅ Found {len(urls_list)} website(s) for {search_company}", "success")
                     else:
-                        set_global_message(f"⚠️ No websites found for {search_company}","error")
-                    
-
+                        set_global_message(f"⚠️ No websites found for {search_company}", "error")
                     
                 except Exception as e:
                     logger.error(f"Error finding URLs for {search_company}: {str(e)}", exc_info=True)
@@ -392,8 +399,69 @@ def _render_website_url_section(seller_state: SellerTabState, is_locked: bool, s
         
         with btn1_col:
             _render_refresh_urls_button(seller_state, is_locked, seller_name_provided)
+        
         with btn2_col:
-            _render_scrape_website_button(seller_state, seller_website_url, is_locked, seller_name_provided)
+            scrape_clicked = st.button("📑 Get Details", help="Get enterprise details",
+                                      key="scrape_seller_website_btn", use_container_width=True,
+                                      disabled=is_locked )
+            
+            if scrape_clicked and seller_website_url and not is_locked and seller_name_provided:
+                logger.info(f"Scrape button clicked for URL: {seller_website_url}")
+                
+                with st.spinner("Fetching website details..."):
+                    try:
+                        logger.info(f"Starting website scraping for: {seller_website_url}")
+                        
+                        # Get website details from the URL
+                        scrape_result = get_scraped_data(seller_website_url,"crawl4ai")
+                        
+                        # Extract data from the User object
+                        website_name = scrape_result.name
+                        logo_url = scrape_result.logo
+                        description = scrape_result.description
+                        services = scrape_result.services
+                        
+                        # Format the website details with description and services in bullet points
+                        website_details = f"Company: {website_name}\n\n"
+                        
+                        if description:
+                            website_details += f"Description:\n{description}\n\n"
+                        
+                        if services:
+                            website_details += "Services:\n"
+                            for service in services:
+                                website_details += f"• {service}\n"
+                        
+                        # Check if scraping returned empty or no data
+                        if not website_details or len(website_details.strip()) < 10:
+                            logger.warning(f"Website scraping returned empty data for: {seller_website_url}")
+                            set_global_message("Website scraping failed - No content could be extracted from the website. Please check if the URL is accessible and contains readable content.", "error")
+                            
+                        else:
+                            logger.info(f"Successfully scraped website details, length: {len(website_details)}")
+                            
+                            # Prepare update parameters
+                            update_params = {
+                                'seller_enterprise_details_content': website_details,
+                                'last_analyzed_seller_url': seller_website_url,
+                            }
+                            
+                            # Add logo to update parameters if available
+                            if logo_url:
+                                update_params['enterprise_logo'] = logo_url
+                            
+                            # Update multiple fields at once using the state manager
+                            seller_state.update_multiple_fields(**update_params)
+                            
+                            # Show success message
+                            set_global_message("Website details extracted successfully!", 'success')
+                            
+                            # Rerun to update the UI
+                            st.rerun()
+                            
+                    except Exception as scrape_error:
+                        logger.error(f"Error during website scraping for {seller_website_url}: {str(scrape_error)}", exc_info=True)
+                        set_global_message("Error scraping website", 'error')
         
         # Show redirect link when website is selected
         if seller_website_url:
@@ -403,9 +471,6 @@ def _render_website_url_section(seller_state: SellerTabState, is_locked: bool, s
                 f'</div>',
                 unsafe_allow_html=True
             )
-        
-        # Handle pending scraping operation
-        _handle_pending_scraping(seller_state)
         
         # Show validation warning if needed
         if seller_state.show_validation and check_field_validation("Seller Website URL", seller_website_url, False):
@@ -434,10 +499,10 @@ def _render_url_dropdown(seller_state: SellerTabState, is_locked: bool, seller_n
         seller_website_url = st.selectbox(
             label="Seller Website URL",
             options=url_options,
-            index=initial_index,
             label_visibility="collapsed",
-            disabled=is_locked or not seller_name_provided,
-            accept_new_options=not is_locked and seller_name_provided
+            disabled=is_locked or not seller_name_provided
+            ,accept_new_options=not is_locked,
+            
         )
         
         if seller_website_url == "Select seller website URL":
@@ -472,24 +537,6 @@ def _render_refresh_urls_button(seller_state: SellerTabState, is_locked: bool, s
 
 
 @st.fragment
-def _render_scrape_website_button(seller_state: SellerTabState, seller_website_url: str, is_locked: bool, seller_name_provided: bool):
-    """Render scrape website button."""
-    try:
-        scrape_clicked = st.button("📑 Get Details", help="Get enterprise details", 
-                                 key="scrape_seller_website_btn", use_container_width=True,
-                                 disabled=is_locked or not seller_name_provided)
-        
-        if scrape_clicked and seller_website_url and not is_locked and seller_name_provided:
-            logger.info(f"Initiating website scraping for: {seller_website_url}")
-            seller_state.update_field('seller_pending_scrape_url', seller_website_url)
-            seller_state.update_field('seller_scraping_in_progress', True)
-            st.rerun()
-            
-    except Exception as e:
-        logger.error(f"Error with scrape website button: {str(e)}", exc_info=True)
-        set_global_message("An error occurred with the website scraping functionality. Please try again.", "error")
-
-@st.fragment
 def _handle_refresh_urls(seller_state: SellerTabState):
     """Handle URL refresh functionality."""
     try:
@@ -499,7 +546,7 @@ def _handle_refresh_urls(seller_state: SellerTabState):
             try:
                 urls_list = get_urls_list(seller_state.seller_enterprise_name)
                 seller_state.update_field('seller_website_urls_list', urls_list)
-                set_global_message("Website URLs refreshed!","success")
+                set_global_message("Website URLs refreshed!", "success")
                 
                 logger.info(f"Successfully refreshed {len(urls_list)} URLs")
                 
@@ -510,60 +557,6 @@ def _handle_refresh_urls(seller_state: SellerTabState):
     except Exception as e:
         logger.error(f"Error in refresh URLs handler: {str(e)}", exc_info=True)
         set_global_message("Failed to refresh URLs. Please try again.", "error")
-
-
-@st.fragment
-def _handle_pending_scraping(seller_state: SellerTabState):
-    """Handle pending website scraping operation."""
-    try:
-        if seller_state.seller_scraping_in_progress and seller_state.seller_pending_scrape_url:
-            scrape_url = seller_state.seller_pending_scrape_url
-            logger.info(f"Processing pending scrape for: {scrape_url}")
-            
-            with st.spinner(f"🔍 Fetching website details from {scrape_url}..."):
-                try:
-                    scrape_result = get_scraped_data(scrape_url)
-                    print(scrape_result)
-                    website_name = scrape_result.name
-                    logo_url = scrape_result.logo
-                    description = scrape_result.description
-                    services = scrape_result.services
-                    
-                    # Format the website details with description and services in bullet points
-                    website_details = f"Company: {website_name}\n\n"
-                    
-                    if description:
-                        website_details += f"Description:\n{description}\n\n"
-                    
-                    if services:
-                        website_details += "Services:\n"
-                        for service in services:
-                            website_details += f"• {service}\n"
-                    
-                    
-                    seller_state.update_field('seller_enterprise_details_content', website_details)
-                    seller_state.update_field('last_analyzed_seller_url', scrape_url)
-                    
-                    if logo_url:
-                        seller_state.update_field('enterprise_logo', logo_url)
-                        logger.info(f"Logo found and saved: {logo_url}")
-                    
-                    seller_state.update_field('seller_scraping_in_progress', False)
-                    seller_state.update_field('seller_pending_scrape_url', None)
-                    
-                    logger.info(f"Successfully scraped website: {scrape_url}")
-                    
-                    
-                except Exception as e:
-                    logger.error(f"Error scraping website {scrape_url}: {str(e)}", exc_info=True)
-                    seller_state.update_field('seller_scraping_in_progress', False)
-                    seller_state.update_field('seller_pending_scrape_url', None)
-                    set_global_message("An error occurred while scraping website details. Please try again.", "error")
-                    
-    except Exception as e:
-        logger.error(f"Error handling pending scraping: {str(e)}", exc_info=True)
-        set_global_message("Failed to handle website scraping. Please try again.", "error")
-
 
 
 @st.fragment
@@ -586,7 +579,6 @@ def _render_document_upload_section(seller_state: SellerTabState, is_locked: boo
             </div>
             ''', unsafe_allow_html=True)
             
-            
             seller_documents_upload = st.file_uploader(
                 label="Upload Seller Documents", 
                 type=['pdf', 'docx', 'txt', 'csv', 'png', 'jpg', 'jpeg'], 
@@ -598,7 +590,6 @@ def _render_document_upload_section(seller_state: SellerTabState, is_locked: boo
             if seller_documents_upload and len(seller_documents_upload) > 0:
                 _handle_uploaded_documents(seller_state, seller_documents_upload, is_locked)
 
-        
         with data_col:
             st.markdown('''
             <div class="tooltip-label">
@@ -615,21 +606,8 @@ def _render_document_upload_section(seller_state: SellerTabState, is_locked: boo
                 placeholder="Enter or get the Details from the seller enterprise website",
                 key="scraped_data_display",
                 label_visibility="collapsed",
-                disabled=is_locked or not bool(seller_state.seller_enterprise_name and seller_state.seller_enterprise_name.strip())  # ADD is_locked condition
+                disabled=is_locked or not bool(seller_state.seller_enterprise_name and seller_state.seller_enterprise_name.strip())
             )
-            
-            # Show additional info if data is available
-            # if seller_state.seller_enterprise_details_content:
-            #     if seller_state.last_analyzed_seller_url:
-            #         #st.info(f"📊 Data scraped from: {seller_state.last_analyzed_seller_url}")
-            #         pass
-                
-            #     # Add a button to clear the scraped data - disable when locked
-            #     if not is_locked and st.button("🗑️ Clear Scraped Data", key="clear_scraped_data_btn", help="Clear the scraped website data"):
-            #         seller_state.update_field('seller_enterprise_details_content', '')
-            #         seller_state.update_field('last_analyzed_seller_url', None)
-            #         seller_state.update_field('enterprise_logo', '')
-            #         st.rerun()
                 
         logger.debug("Document upload section rendered successfully")
         
@@ -653,7 +631,7 @@ def _handle_uploaded_documents(seller_state: SellerTabState, seller_documents_up
     try:
         logger.debug(f"Handling {len(seller_documents_upload)} uploaded documents")
     
-        _render_process_all_button(seller_state, seller_documents_upload, is_locked)  # Pass is_locked
+        _render_process_all_button(seller_state, seller_documents_upload, is_locked)
         
         # Handle processing when button is clicked (only if not locked)
         if seller_state.processing_all_seller_documents and not is_locked:

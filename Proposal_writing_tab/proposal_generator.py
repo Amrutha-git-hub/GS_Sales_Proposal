@@ -19,7 +19,8 @@ def render_template_preview(template_name, template_key):
         "modern_professional": {
             "preview_html": """
                 <div style="width: 100%; height: 180px; background: #f8fafc; padding: 12px; border-radius: 8px; font-family: Arial, sans-serif;">
-                    <div style="background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%); padding: 12px; border-radius: 6px; margin-bottom: 12px; color: white; text-align: center;">
+                    <div style="background: linear-gradient(135deg, #3b82f6        
+        dp[0][0] = dp[0][1] = 0;0%, #1e40af 100%); padding: 12px; border-radius: 6px; margin-bottom: 12px; color: white; text-align: center;">
                         <div style="font-size: 14px; font-weight: bold;">PROJECT PROPOSAL</div>
                         <div style="font-size: 11px; opacity: 0.9;">Modern Professional Template</div>
                     </div>
@@ -173,47 +174,90 @@ def render_preview_tab(client_data, seller_data, project_specs):
             for i, (stage_text, progress) in enumerate(stages):
                 status_text.text(stage_text)
                 progress_bar.progress(progress)
-                
+
                 # Add realistic delay for user experience
                 time.sleep(0.6)
-                
-                # Generate the file only once at the end of the progress
-                if i == len(stages) - 1:  # Last stage
-                    output_file,file_path = get_presentation(
-                        client=client_data,
-                        seller=seller_data,
-                        project_specs=project_specs
-                    )
-                    output_file = inline_editable_html_component(output_file)
-                    html_content = output_file
-                    with open(file_path, "w", encoding="utf-8") as file:
-                        file.write(output_file)
-                    print(file_path)
-            pdf_path = generate_pdf_from_html(html_content,output_dir=OUTPUT_DIR,base_filename='salesproposal')
-            print("----------------------pdf",pdf_path)
-            # Complete the progress
+
+                # Only generate once at the last stage
+                if i == len(stages) - 1:
+                    # Get HTML + file paths (html_file, pdf_file)
+                    result = get_presentation(
+                    client=client_data,
+                    seller=seller_data,
+                    project_specs=project_specs
+                )
+
+                    if len(result) == 2:
+                        html_content, file_path = result
+                        pdf_path = None
+                    elif len(result) == 3:
+                        html_content, file_path, pdf_path = result
+                    else:
+                        raise ValueError("Unexpected return format from get_presentation")
+                    # Inline editing happens on the raw HTML string
+                    edited_html = inline_editable_html_component(html_content)
+
+                    # Overwrite the saved HTML with the edited content
+                    with open(file_path, "w", encoding="utf-8") as f:
+                        f.write(edited_html)
+
+                    # If edited content exists, regenerate the PDF from it
+                    if edited_html.strip():
+                        pdf_path = generate_pdf_from_html(
+                            edited_html,
+                            output_dir=OUTPUT_DIR,
+                            base_filename="salesproposal"
+                        )
+
+            # Complete the progress UI
             progress_bar.progress(1.0)
             status_text.text("✅ Proposal generation completed!")
             time.sleep(0.5)
-            
+
             # Clear progress indicators
             progress_bar.empty()
             status_text.empty()
-            
-            # Store the output file paths in session state for download
-            if output_file and os.path.exists(file_path) and os.path.exists(pdf_path):
+
+            # Store paths in session state for later download
+            if os.path.exists(file_path) and os.path.exists(pdf_path):
                 st.session_state.proposal_file_path = file_path
-                st.session_state.proposal_pdf_path = pdf_path  # Store PDF path separately
+                st.session_state.proposal_pdf_path = pdf_path
                 st.session_state.proposal_generation_success = True
             else:
-                st.error("❌ Error generating proposal file. Please try again.")
+                st.error("❌ Error generating proposal files. Please try again.")
                 return
-                
+
         except Exception as e:
             progress_bar.empty()
             status_text.empty()
             st.error(f"❌ Error during proposal generation: {str(e)}")
             return
+
+
+        # --- Display success/download section ---
+        if st.session_state.get("proposal_generation_success", False):
+            pdf_path = st.session_state.get("proposal_pdf_path")
+            if pdf_path and os.path.exists(pdf_path):
+                with open(pdf_path, "rb") as f:
+                    file_data = f.read()
+
+                pdf_filename = os.path.basename(pdf_path)
+
+                # Center the download button
+                col1, col2, col3 = st.columns([1, 1, 1])
+                with col2:
+                    st.download_button(
+                        label="📥 Download PDF",
+                        data=file_data,
+                        file_name=pdf_filename,
+                        mime="application/pdf",
+                        use_container_width=True,
+                        type="primary",
+                    
+                    )
+            else:
+                st.error("❌ PDF file not found. Please regenerate the proposal.")
+
 
     # Display success section if generation was successful
     if st.session_state.get('proposal_generation_success', False):

@@ -59,17 +59,17 @@ def render_three_column_selector_unified(
     # Default data if none provided
     if default_data is None:
         default_data = {
-            "Revenue Challenges": "**Revenue Challenges** \n • Sales declined by 15% year-over-year despite market growth\n• Missed quarterly revenue targets by $2.3M for three consecutive quarters\n• Average deal size decreased by 22% due to increased price competition\n\n",
+            "Revenue Challenges": "REVENUE CHALLENGES \n • Sales declined by 15% year-over-year despite market growth\n• Missed quarterly revenue targets by $2.3M for three consecutive quarters\n• Average deal size decreased by 22% due to increased price competition\n\n",
             
-            "Cost and Margin Pressure": "**Cost and Margin Pressure** \n • Cost of Goods Sold increased by 12% due to supply chain disruptions\n• Labor costs rose 18% while productivity remained flat\n• Raw material prices up 25% with limited ability to pass costs to customers\n\n",
+            "Cost and Margin Pressure": "COST AND MARGIN PRESSURE \n • Cost of Goods Sold increased by 12% due to supply chain disruptions\n• Labor costs rose 18% while productivity remained flat\n• Raw material prices up 25% with limited ability to pass costs to customers\n\n",
             
-            "Market Expansion": "**Market Expansion and Customer Acquisition**\n• Win rate on new business opportunities dropped from 42% to 28%\n• Customer acquisition cost increased 35% while customer lifetime value declined\n• Expansion into new geographic markets yielding only 40% of projected results\n\n",
+            "Market Expansion": "MARKET EXPANSION AND CUSTOMER ACQUISITION\n• Win rate on new business opportunities dropped from 42% to 28%\n• Customer acquisition cost increased 35% while customer lifetime value declined\n• Expansion into new geographic markets yielding only 40% of projected results\n\n",
             
-            "Technology Modernization": "**Technology Modernization**\n• Legacy systems causing 40% slower processing times\n• Integration challenges between disparate systems\n• Security vulnerabilities in outdated infrastructure\n\n",
+            "Technology Modernization": "TECHNOLOGY MODERNIZATION\n• Legacy systems causing 40% slower processing times\n• Integration challenges between disparate systems\n• Security vulnerabilities in outdated infrastructure\n\n",
             
-            "Workforce Development": "**Workforce Development**\n• Skills gap in emerging technologies affecting 60% of teams\n• Employee retention challenges with 25% annual turnover\n• Training programs yielding limited ROI\n\n",
+            "Workforce Development": "WORKFORCE DEVELOPMENT\n• Skills gap in emerging technologies affecting 60% of teams\n• Employee retention challenges with 25% annual turnover\n• Training programs yielding limited ROI\n\n",
             
-            "Compliance & Risk": "**Compliance & Risk Management**\n• Regulatory compliance gaps creating audit risks\n• Data privacy requirements increasing operational complexity\n• Risk assessment processes outdated and manual\n\n"
+            "Compliance & Risk": "COMPLIANCE & RISK MANAGEMENT\n• Regulatory compliance gaps creating audit risks\n• Data privacy requirements increasing operational complexity\n• Risk assessment processes outdated and manual\n\n"
         }
     
     # Split the data into two sets

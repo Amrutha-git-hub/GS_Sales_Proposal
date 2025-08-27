@@ -8,6 +8,7 @@ from google.genai import types
 import ast 
 import re
 from Search.Linkedin.linkedin_agent import *
+from Search.Linkedin.linkedin_serp import *
 
 
 # Setup session and runner
@@ -67,15 +68,18 @@ async def get_linkedin_p(user_name: str, runner=runner, user_id=USER_ID, session
 
 import asyncio
 
-def get_linkedin(user_name):
-    try:
-        # Run the async function synchronously
-        linkedin_profiles = asyncio.run(get_linkedin_p(user_name))
-        print(linkedin_profiles)
-        print(type(linkedin_profiles))
-        return linkedin_profiles
-    except Exception as e:
-        print(f"Error: {e}")
-        return None
+def get_linkedin(user_name,type = "google-adk"):
+    if type=="google-adk":
+        try:
+            # Run the async function synchronously
+            linkedin_profiles = asyncio.run(get_linkedin_p(user_name))
+            print(linkedin_profiles)
+            print(type(linkedin_profiles))
+            return linkedin_profiles
+        except Exception as e:
+            print(f"Error: {e}")
+            return None
+    else:
+        return search_linkedin_serpapi(user_name)
 
                  

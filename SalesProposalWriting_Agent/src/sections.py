@@ -16,4 +16,4 @@ chain = prompt | llm | StrOutputParser()
 def create_sections(state:State):
     result = chain.invoke({'services':state.seller})
     p = clean_to_list(result)
-    return {'sections':["Title of the sales proposal"]+p.split('\n')}
+    return {'sections':p.split('\n')}

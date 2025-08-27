@@ -7,11 +7,13 @@ from dotenv import load_dotenv
 load_dotenv()
 import os 
 import pdfkit
-from weasyprint import HTML, CSS
 from bs4 import BeautifulSoup, MarkupResemblesLocatorWarning
 import tempfile
 import logging
 import warnings
+from weasyprint import *
+from datetime import datetime
+import re
 
 # Suppress the BeautifulSoup warning
 warnings.filterwarnings("ignore", category=MarkupResemblesLocatorWarning)
@@ -38,38 +40,56 @@ def get_presentation(client, seller, project_specs, output_format='html'):
         tuple: (html_content, html_file_path, pdf_file_path) or (html_content, html_file_path) if PDF not requested
     """
     
-    # Initialize state and generate HTML content
-    state = State(client=client, seller=seller, project_specs=project_specs, sections=[], final_result='')
-    
-    client_logo = client.enterprise_logo
-    seller_logo = seller.enterprise_logo
-    
-    # Setup directories with proper path handling
+    # Setup directories and dynamic filenames
     project_root = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
     proposals_dir = os.path.join(project_root, "SalesProposalsGenerated_txt_and_html")
     
-    # Create directory if it doesn't exist
     try:
         os.makedirs(proposals_dir, exist_ok=True)
         print(f"Created/verified directory: {proposals_dir}")
     except Exception as e:
         print(f"Error creating directory {proposals_dir}: {e}")
-        # Fallback to current directory
         proposals_dir = os.getcwd()
         print(f"Using fallback directory: {proposals_dir}")
+
+    # --- DYNAMIC FILENAME GENERATION ---
+    client_name = getattr(client, 'name', 'client')
+    seller_name = getattr(seller, 'name', 'seller')
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     
-    # Generate base filename
-    base_filename = "benori"
+    # Sanitize names for filename
+    sanitized_client = re.sub(r'[\s\W]+', '_', client_name)
+    sanitized_seller = re.sub(r'[\s\W]+', '_', seller_name)
     
-    # Generate HTML content
+    base_filename = f"{sanitized_client}_{sanitized_seller}_{timestamp}"
     txt_file_path = os.path.join(proposals_dir, f"{base_filename}.txt")
-    print("Starting HTML generation...")
+    
+    # Initialize state with the dynamic output path
+    state = State(
+        client=client, 
+        seller=seller, 
+        project_specs=project_specs, 
+        sections=[], 
+        final_result='',
+        output_file_path=txt_file_path  
+    )
+    
+    client_logo = client.enterprise_logo
+    seller_logo = seller.enterprise_logo
+
+    #print("API caling---------------------------")
+    state = graph.invoke(state)
+    print(state)
+    
+    print(f"Starting HTML generation from: {txt_file_path}")
     
     try:
-        html_content, html_file_path = generate_modern_presentation(
+        html_content, html_file_path,pdf_file_path = generate_modern_presentation(
             filename=txt_file_path,
-            logo_url=client_logo,
-            logo_url_2=seller_logo
+            client_name=state['client'].enterprise_name,
+            client_logo_url=client_logo,
+            seller_logo_url=seller_logo,
+            output_format="both",
         )
         print("HTML generation completed")
     except Exception as e:
@@ -80,6 +100,7 @@ def get_presentation(client, seller, project_specs, output_format='html'):
     pdf_file_path = None
     if output_format in ['pdf', 'both']:
         try:
+            # Use the same dynamic base_filename for the PDF
             pdf_file_path = generate_pdf_from_html(html_content, proposals_dir, base_filename)
         except Exception as e:
             print(f"PDF generation failed: {e}")
@@ -358,4 +379,3 @@ def get_pdf_css():
         visibility: visible !important;
     }
     """
-

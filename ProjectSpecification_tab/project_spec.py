@@ -464,7 +464,7 @@ def proj_specification_tab(client_data, seller_data, is_locked):
     # Section 5: Pricing & Commercial
     pricing_data = get_section_data('pricing')
     pricing_content, pricing_provided = render_two_column_selector(
-        left_title="Commercial Proposal",
+        left_title="Commercial Pricing",
         left_tooltip="Outline pricing models, payment terms, and commercial arrangements.",
         textarea_session_key="pricing_content",
         textarea_widget_key="pricing_textarea",

@@ -1068,10 +1068,10 @@ header_css = """
                     <img src="https://static.wixstatic.com/media/cb6b3d_5c8f2b020ebe48b69bc8c163cc480156~mv2.png/v1/fill/w_60,h_60,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/GrowthSutra%20Logo.png" alt="Logo" style="height: 60px; margin-right: 20px;">
                     <div style="display: flex; flex-direction: column;">
                         <h1 style="color: white; font-size: 48px; font-weight: bold; margin: 0; padding: 0;">
-                            CoXprt
+                            CoXPRT
                         </h1>
                         <p style="color: white; font-size: 16px; margin: 5px 0 0 0; padding: 0;">
-                            AI automated sales proposal generator
+                            Automated Proposal Generator
                         </p>
                     </div>
                 </div>
