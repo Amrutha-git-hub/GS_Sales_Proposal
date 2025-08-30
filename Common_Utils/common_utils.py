@@ -137,17 +137,17 @@ def get_roles_list() -> List[str]:
     ]
 
 
-from WebScraper.scrape_agent import get_data
+# from WebScraper.scrape_agent import get_data
 
-def get_url_details(url:str):
-    """Use this if you want to run async function synchronously"""
-    try:
-        # Run the async function synchronously
-        website_details = asyncio.run(get_data(url))
-        return website_details
-    except Exception as e:
-        print(f"Error: {e}")
-        return None
+# def get_url_details(url:str):
+#     """Use this if you want to run async function synchronously"""
+#     try:
+#         # Run the async function synchronously
+#         website_details = asyncio.run(get_data(url))
+#         return website_details
+#     except Exception as e:
+#         print(f"Error: {e}")
+#         return None
     
 
 def get_priority_suggestions() -> List[dict]:
@@ -255,110 +255,166 @@ def is_message_expired():
     return elapsed_time > message_data['duration']
 
 @st.dialog("‼️ Error")
-def show_error_dialog(message_text, fun1=None, fun2=None, fun3=None, btn1_text="Close", btn2_text="OK", btn3_text="Cancel", show_third_button=False):
+def show_error_dialog(message_text, fun1=None, fun2=None, fun3=None, btn1_text="Close", btn2_text="OK", btn3_text="Cancel", show_third_button=False, single_button=False):
     """Error message dialog with icon and multiple action buttons"""
     st.error(message_text)
     
+    # Single button layout - centered with good width
+    if single_button:
+        col1, col2, col3 = st.columns([1, 2, 1])  # Side margins with wider center
+        with col2:
+            if st.button(btn1_text, key="error_btn1", type="primary", use_container_width=True):
+                if fun1:
+                    fun1()
+                    st.rerun()
+                else:
+                    clear_global_error()
+                    st.rerun()
     # Two or three buttons layout based on show_third_button parameter
-    if show_third_button:
+    elif show_third_button:
         col1, col2, col3 = st.columns([1, 1, 1])
-    else:
-        col1, col2 = st.columns([1, 1])
-    
-    with col1:
-        if st.button(btn1_text, key="error_btn1", type="primary"):
-            if fun1:
-                fun1()
-                st.rerun()
-            else:
-                clear_global_error()
-                st.rerun()
-    
-    with col2:
-        if st.button(btn2_text, key="error_btn2"):
-            if fun2:
-                fun2()
-                st.rerun()
-            # Don't rerun if no function - just close dialog naturally
-    
-    if show_third_button:
+        with col1:
+            if st.button(btn1_text, key="error_btn1", type="primary"):
+                if fun1:
+                    fun1()
+                    st.rerun()
+                else:
+                    clear_global_error()
+                    st.rerun()
+        with col2:
+            if st.button(btn2_text, key="error_btn2"):
+                if fun2:
+                    fun2()
+                    st.rerun()
         with col3:
             if st.button(btn3_text, key="error_btn3"):
                 if fun3:
                     fun3()
                     st.rerun()
-                # Don't rerun if no function - just close dialog naturally
+    else:
+        col1, col2 = st.columns([1, 1])
+        with col1:
+            if st.button(btn1_text, key="error_btn1", type="primary"):
+                if fun1:
+                    fun1()
+                    st.rerun()
+                else:
+                    clear_global_error()
+                    st.rerun()
+        with col2:
+            if st.button(btn2_text, key="error_btn2"):
+                if fun2:
+                    fun2()
+                    st.rerun()
+
 
 @st.dialog("⚠️ Warning")
-def show_warning_dialog(message_text, fun1=None, fun2=None, fun3=None, btn1_text="Close", btn2_text="OK", btn3_text="Cancel", show_third_button=False):
+def show_warning_dialog(message_text, fun1=None, fun2=None, fun3=None, btn1_text="Close", btn2_text="OK", btn3_text="Cancel", show_third_button=False, single_button=False):
     """Warning message dialog with icon and multiple action buttons"""
     st.warning(message_text)
     
+    # Single button layout - centered with good width
+    if single_button:
+        col1, col2, col3 = st.columns([1, 2, 1])  # Side margins with wider center
+        with col2:
+            if st.button(btn1_text, key="warning_btn1", type="primary", use_container_width=True):
+                if fun1:
+                    fun1()
+                    st.rerun()
+                else:
+                    clear_global_error()
+                    st.rerun()
     # Two or three buttons layout based on show_third_button parameter
-    if show_third_button:
+    elif show_third_button:
         col1, col2, col3 = st.columns([1, 1, 1])
-    else:
-        col1, col2 = st.columns([1, 1])
-    
-    with col1:
-        if st.button(btn1_text, key="warning_btn1", type="primary"):
-            if fun1:
-                fun1()
-                st.rerun()
-            else:
-                clear_global_error()
-                st.rerun()
-    
-    with col2:
-        if st.button(btn2_text, key="warning_btn2"):
-            if fun2:
-                fun2()
-                st.rerun()
-            # Don't rerun if no function - just close dialog naturally
-    
-    if show_third_button:
+        with col1:
+            if st.button(btn1_text, key="warning_btn1", type="primary"):
+                if fun1:
+                    fun1()
+                    st.rerun()
+                else:
+                    clear_global_error()
+                    st.rerun()
+        with col2:
+            if st.button(btn2_text, key="warning_btn2"):
+                if fun2:
+                    fun2()
+                    st.rerun()
         with col3:
             if st.button(btn3_text, key="warning_btn3"):
                 if fun3:
                     fun3()
                     st.rerun()
-                # Don't rerun if no function - just close dialog naturally
+    else:
+        col1, col2 = st.columns([1, 1])
+        with col1:
+            if st.button(btn1_text, key="warning_btn1", type="primary"):
+                if fun1:
+                    fun1()
+                    st.rerun()
+                else:
+                    clear_global_error()
+                    st.rerun()
+        with col2:
+            if st.button(btn2_text, key="warning_btn2"):
+                if fun2:
+                    fun2()
+                    st.rerun()
+
 
 @st.dialog("✅ Success")
-def show_success_dialog(message_text, fun1=None, fun2=None, fun3=None, btn1_text="Close", btn2_text="OK", btn3_text="Cancel", show_third_button=False):
+def show_success_dialog(message_text, fun1=None, fun2=None, fun3=None, btn1_text="Close", btn2_text="OK", btn3_text="Cancel", show_third_button=False, single_button=False):
     """Success message dialog with icon and multiple action buttons"""
     st.success(message_text)
     
+    # Single button layout - centered with good width
+    if single_button:
+        col1, col2, col3 = st.columns([1, 2, 1])  # Side margins with wider center
+        with col2:
+            if st.button(btn1_text, key="success_btn1", type="primary", use_container_width=True):
+                if fun1:
+                    fun1()
+                    st.rerun()
+                else:
+                    clear_global_error()
+                    st.rerun()
     # Two or three buttons layout based on show_third_button parameter
-    if show_third_button:
+    elif show_third_button:
         col1, col2, col3 = st.columns([1, 1, 1])
-    else:
-        col1, col2 = st.columns([1, 1])
-    
-    with col1:
-        if st.button(btn1_text, key="success_btn1", type="primary"):
-            if fun1:
-                fun1()
-                st.rerun()
-            else:
-                clear_global_error()
-                st.rerun()
-    
-    with col2:
-        if st.button(btn2_text, key="success_btn2"):
-            if fun2:
-                fun2()
-                st.rerun()
-            # Don't rerun if no function - just close dialog naturally
-    
-    if show_third_button:
+        with col1:
+            if st.button(btn1_text, key="success_btn1", type="primary"):
+                if fun1:
+                    fun1()
+                    st.rerun()
+                else:
+                    clear_global_error()
+                    st.rerun()
+        with col2:
+            if st.button(btn2_text, key="success_btn2"):
+                if fun2:
+                    fun2()
+                    st.rerun()
         with col3:
             if st.button(btn3_text, key="success_btn3"):
                 if fun3:
                     fun3()
                     st.rerun()
-                # Don't rerun if no function - just close dialog naturally
-
+    else:
+        col1, col2 = st.columns([1, 1])
+        with col1:
+            if st.button(btn1_text, key="success_btn1", type="primary"):
+                if fun1:
+                    fun1()
+                    st.rerun()
+                else:
+                    clear_global_error()
+                    st.rerun()
+        with col2:
+            if st.button(btn2_text, key="success_btn2"):
+                if fun2:
+                    fun2()
+                    st.rerun()
+                    
 def clear_global_error():
     """Clear the global message from session state"""
     if 'global_message' in st.session_state:
@@ -376,7 +432,7 @@ def is_message_expired():
     return elapsed_time > message_data['duration']
 
 def set_global_message(message_text, message_type='error', fun1=None, fun2=None, fun3=None, 
-                      btn1_text="Close", btn2_text="OK", btn3_text="Cancel", show_third_button=False):
+                      btn1_text="Close", btn2_text="OK", btn3_text="Cancel", show_third_button=False,single_button = True):
     """Helper function to set and immediately display global message"""
     # Check if we should show the dialog (only if not already showing)
     if 'showing_dialog' not in st.session_state or not st.session_state.showing_dialog:
@@ -384,11 +440,11 @@ def set_global_message(message_text, message_type='error', fun1=None, fun2=None,
         
         # Direct orchestration - show the appropriate dialog immediately
         if message_type == "error":
-            show_error_dialog(message_text, fun1, fun2, fun3, btn1_text, btn2_text, btn3_text, show_third_button)
+            show_error_dialog(message_text, fun1, fun2, fun3, btn1_text, btn2_text, btn3_text, show_third_button,single_button=True)
         elif message_type == "warning":
-            show_warning_dialog(message_text, fun1, fun2, fun3, btn1_text, btn2_text, btn3_text, show_third_button)
+            show_warning_dialog(message_text, fun1, fun2, fun3, btn1_text, btn2_text, btn3_text, show_third_button,single_button=True)
         elif message_type == "success":
-            show_success_dialog(message_text, fun1, fun2, fun3, btn1_text, btn2_text, btn3_text, show_third_button)
+            show_success_dialog(message_text, fun1, fun2, fun3, btn1_text, btn2_text, btn3_text, show_third_button,single_button=True)
         else:
             # Fallback for other message types
             st.info(message_text)
@@ -423,3 +479,14 @@ def display_global_message():
         # Fallback for other message types
         st.info(message_text)
 
+
+
+from WebScraper.webscraper_beautifulsoup import get_url_details_with_bs4
+from WebScraper.scrape_agent import get_url_detail_using_googleai
+
+
+def get_scraped_data(url:str , scrape_technique= "bs4"):
+    if scrape_technique=='bs4':
+        return get_url_details_with_bs4(url)
+    else:
+        return  asyncio.run(get_url_detail_using_googleai(url))

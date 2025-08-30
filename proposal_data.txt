@@ -1,0 +1,14 @@
+Title: Introduction
+Text: Welcome to our sales proposal. We are excited to collaborate.
+
+Title: Project Scope
+Text: The project will be broken down into phases.
+- Discovery
+- Development
+- Deployment
+
+Title: Investment
+Text: The total investment is **$45,000**.
+
+Title: Next Steps
+Text: Please sign the agreement to proceed.
