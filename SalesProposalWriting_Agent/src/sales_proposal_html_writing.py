@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+
 """
 Professional Sales Proposal Generator - With Repeating Page Headers (Fixed Flow)
 - Cover page has NO logos.
@@ -43,107 +44,142 @@ class ModernPresentationConfig:
 
     def get_modern_css(self) -> str:
         return f"""
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700&display=swap');
-        :root {{
-            --primary: {self.colors["primary"]};
-            --secondary: {self.colors["secondary"]};
-            --accent: {self.colors["accent"]};
-            --success: {self.colors["success"]};
-            --background: {self.colors["background"]};
-            --surface: {self.colors["surface"]};
-            --text: {self.colors["text"]};
-            --text-light: {self.colors["text_light"]};
-            --border: {self.colors["border"]};
-        }}
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700&display=swap');
 
-        body {{
-            font-family: 'Inter', sans-serif;
-            line-height: 1.6;
-            color: var(--text);
-            background: var(--background);
-            font-size: 16px;
-        }}
+:root {{
+    --primary: {self.colors["primary"]};
+    --secondary: {self.colors["secondary"]};
+    --accent: {self.colors["accent"]};
+    --success: {self.colors["success"]};
+    --background: {self.colors["background"]};
+    --surface: {self.colors["surface"]};
+    --text: {self.colors["text"]};
+    --text-light: {self.colors["text_light"]};
+    --border: {self.colors["border"]};
+}}
 
-        @page {{
-            size: A4;
-            margin: 20mm 15mm 20mm 15mm;
-            @bottom-right {{
-                content: "Page " counter(page);
-                font-family: 'Inter', sans-serif;
-                font-size: 12px;
-                color: var(--text-light);
-            }}
-        }}
+body {{
+    font-family: 'Inter', sans-serif;
+    line-height: 1.6;
+    color: var(--text);
+    background: var(--background);
+    font-size: 16px;
+}}
 
-        /* Cover Page */
-        .cover-page {{
-            height: 100vh;
-            background: linear-gradient(135deg, {self.colors["primary"]}f2 0%, {self.colors["secondary"]}f2 50%, {self.colors["accent"]}f2 100%);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            text-align: center;
-            page-break-after: always;
-        }}
-        .cover-main-title {{
-            font-family: 'Playfair Display', serif;
-            font-size: 4rem;
-            color: white;
-            margin: 0;
-        }}
-        .cover-for {{
-            font-size: 1.2rem;
-            color: rgba(255,255,255,0.8);
-            margin: 0.5rem 0;
-        }}
-        .cover-client-name {{
-            font-family: 'Playfair Display', serif;
-            font-size: 3rem;
-            color: white;
-        }}
+@page {{
+    size: A4;
+    margin: 20mm 15mm 20mm 15mm;
+    @bottom-right {{
+        content: "Page " counter(page);
+        font-family: 'Inter', sans-serif;
+        font-size: 12px;
+        color: var(--text-light);
+    }}
+}}
 
-        /* Content Pages */
-        .content-page {{
-            page-break-before: always;
-        }}
-        .header-container {{
-            margin-bottom: 1rem;
-        }}
-        .page-header {{
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 0.5rem;
-        }}
-        .header-logo {{
-            max-height: 45px;
-            max-width: 150px;
-            object-fit: contain;
-        }}
-        .header-line {{
-            width: 100%;
-            height: 3px;
-            background: linear-gradient(90deg, var(--primary), var(--accent), var(--primary));
-            border: none;
-            margin: 0;
-        }}
+/* Cover Page */
+.cover-page {{
+    height: 100vh;
+    min-height: 297mm; /* A4 height for PDF */
+    background: linear-gradient(135deg, {self.colors["primary"]}f2 0%, {self.colors["secondary"]}f2 50%, {self.colors["accent"]}f2 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    text-align: center;
+    page-break-after: always;
+    padding: 2rem;
+    box-sizing: border-box;
+}}
 
-        .section {{
-            margin: 2rem 0;
-            padding: 1rem;
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-        }}
-        .section-title {{
-            font-size: 1.5rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-            color: var(--primary);
-        }}
-        .section-content p {{ margin-bottom: 1rem; }}
-        """
+.cover-main-title {{
+    font-family: 'Playfair Display', serif;
+    font-size: 4.5rem;
+    font-weight: 700;
+    color: white;
+    margin: 2rem 0;
+    line-height: 1.1;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    max-width: 90%;
+}}
+
+.cover-for {{
+    font-size: 1.8rem;
+    font-weight: 300;
+    color: rgba(255,255,255,0.9);
+    margin: 1.5rem 0;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+}}
+
+.cover-client-name {{
+    font-family: 'Playfair Display', serif;
+    font-size: 3.8rem;
+    font-weight: 600;
+    color: white;
+    margin: 2rem 0;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    max-width: 90%;
+}}
+
+/* Content Pages */
+.content-page {{
+    page-break-before: always;
+}}
+
+.header-container {{
+    margin-bottom: 1.5rem;
+    background: linear-gradient(135deg, rgba(45, 55, 72, 0.95) 0%, rgba(74, 85, 104, 0.95) 100%);
+    padding: 1rem 1.5rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}}
+
+.page-header {{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.8rem;
+}}
+
+.header-logo {{
+    max-height: 50px;
+    max-width: 180px;
+    object-fit: contain;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 8px 12px;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}}
+
+.header-line {{
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, rgba(255,255,255,0.8), rgba(66, 153, 225, 0.9), rgba(255,255,255,0.8));
+    border: none;
+    margin: 0;
+    border-radius: 2px;
+}}
+
+.section {{
+    margin: 2rem 0;
+    padding: 1rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+}}
+
+.section-title {{
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--primary);
+}}
+
+.section-content p {{ margin-bottom: 1rem; }}
+"""
 
 
 def generate_modern_presentation(
@@ -158,26 +194,36 @@ def generate_modern_presentation(
     config = ModernPresentationConfig(theme)
 
     def parse_txt_file(file_path: str) -> Tuple[str, List[Dict[str, str]]]:
-        sections, main_title = [], "Sales Proposal"
+        sections = []
+        main_title = "Sales Proposal"  # Default fallback
+        
         with open(file_path, "r", encoding="utf-8") as f:
-            lines = f.read().splitlines()
+            content = f.read()
 
-        current_title, current_text = None, []
-        for line in lines:
-            if line.startswith("Title:"):
-                if current_title:
-                    sections.append({"title": current_title, "content": "\n".join(current_text)})
-                current_title = line[6:].strip()
-                current_text = []
-                if main_title == "Sales Proposal":
-                    main_title = current_title
-            elif line.startswith("Text:"):
-                current_text.append(line[5:].strip())
-            else:
-                current_text.append(line)
-        if current_title:
-            sections.append({"title": current_title, "content": "\n".join(current_text)})
-
+        # Split content into sections using regex
+        section_pattern = r'Title:\s*(.*?)\s*Text:\s*(.*?)(?=Title:|$)'
+        matches = re.findall(section_pattern, content, re.DOTALL)
+        
+        # Look for a title section specifically (case insensitive)
+        title_found = False
+        for i, (title, text) in enumerate(matches):
+            title = title.strip()
+            text = text.strip()
+            
+            # Check if this section is specifically the proposal title
+            # Look for patterns like "title of the proposal", "proposal title", etc.
+            if re.search(r'\b(title\s+of\s+the\s+.*proposal|proposal\s+title|title\s+of\s+proposal)\b', title, re.IGNORECASE):
+                main_title = text.split('\n')[0].strip() if text else title
+                title_found = True
+                # Don't add this section to content sections since it's just the title
+                continue
+            # If no specific title section found, use the first section title as main title
+            elif i == 0 and not title_found:
+                main_title = title
+            
+            # Add to sections for content pages
+            sections.append({"title": title, "content": text})
+        
         return main_title, sections
 
     def process_content(content: str) -> str:
@@ -200,7 +246,7 @@ def generate_modern_presentation(
 <style>{css}</style>
 </head><body>
 <div class="cover-page">
-    <h1 class="cover-main-title">Sales Proposal</h1>
+    <h1 class="cover-main-title">{doc_title}</h1>
     <h5 class="cover-for">for</h5>
     <h1 class="cover-client-name">{client_name}</h1>
 </div>
@@ -238,18 +284,7 @@ def generate_modern_presentation(
     if output_format in ["pdf", "both"] and WEASYPRINT_AVAILABLE:
         HTML(string=html_content).write_pdf(f"{base_name}_proposal.pdf")
         print("✅ PDF generated")
-    
-    return html_content,f"{base_name}_proposal.html",f"{base_name}_proposal.pdf"
 
-# Example Run
-# if __name__ == "__main__":
+    return html_content, f"{base_name}_proposal.html", f"{base_name}_proposal.pdf"
 
 
-#     generate_modern_presentation(
-#         filename="proposal_data.txt",
-#         client_name="Innovate Inc.",
-#         seller_logo_url="https://logo.clearbit.com/microsoft.com",
-#         client_logo_url="https://logo.clearbit.com/google.com",
-#         theme="premium",
-#         output_format="both"
-#     )

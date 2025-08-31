@@ -7,5 +7,3 @@ def load_env_variables():
     os.environ['FILE_SAVE_PATH'] = "SalesProposalsDocs/Files"
     os.environ['HROMA_PATH'] = "SalesPropsalsDocs/chroma"
     os.environ['OUTPUT_PATH'] = "SalesProposalsGenerated"
-
-                    

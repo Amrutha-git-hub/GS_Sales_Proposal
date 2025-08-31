@@ -93,29 +93,19 @@ def load_all_data(client_data, seller_data):
     st.session_state.data_loaded = True
 
 def show_simple_spinner():
-    """Display a simple spinner that only blocks the main content area"""
+    """Display a simple spinner"""
     st.markdown("""
         <style>
-        /* Only hide the main content container, not headers/tabs */
-        [data-testid="block-container"] > div:not(.stTabs) {
-            opacity: 0.3;
-            pointer-events: none;
-        }
-        
-        /* Create spinner overlay only for the main content area */
-        .spinner-overlay {
-            position: relative;
+        .spinner-container {
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
+            justify-content: center;
             min-height: 400px;
             width: 100%;
-            background-color: rgba(255, 255, 255, 0.9);
-            border-radius: 8px;
-            z-index: 100;
+            text-align: center;
         }
         
-        /* Spinner animation */
         .spinner {
             border: 4px solid #f3f3f3;
             border-top: 4px solid #3498db;
@@ -123,7 +113,7 @@ def show_simple_spinner():
             width: 50px;
             height: 50px;
             animation: spin 1s linear infinite;
-            margin: 0 auto 20px auto;
+            margin-bottom: 20px;
         }
         
         .spinner-text {
@@ -140,16 +130,15 @@ def show_simple_spinner():
         </style>
     """, unsafe_allow_html=True)
     
-    # Display the spinner in the main content area
-    with st.container():
-        st.markdown("""
-            <div class="spinner-overlay">
-                <div style="text-align: center;">
-                    <div class="spinner"></div>
-                    <p class="spinner-text">Analysing Client Requirements ...</p>
-                </div>
+    # Display the spinner
+    st.markdown("""
+        <div class="spinner-container">
+            <div style="text-align: center;">
+                <div class="spinner"></div>
+                <p class="spinner-text">Analysing Client Requirements ...</p>
             </div>
-        """, unsafe_allow_html=True)
+        </div>
+    """, unsafe_allow_html=True)
 
 def get_section_data(section_name):
     """Get data for a specific section"""
@@ -169,221 +158,82 @@ def proj_specification_tab(client_data, seller_data, is_locked):
         st.rerun()
         return None
 
-    # Main content - only shown after loading is complete
+    # Clean, stable CSS without aggressive height/width constraints
     content_area_css = """
-            <style>
-            /* More aggressive targeting for Streamlit's structure */
-            .stApp > div:first-child > div:first-child > div:first-child {
-                background-color: #f7f7f7 !important;
-            }
-
-            /* Target the main content area */
-            .main {
-                background-color: #f7f7f7 !important;
-            }
-
-            /* Primary targeting for block container with full height and width control */
-            [data-testid="block-container"] {
-                background-color: #f7f7f7 !important;
-                padding: 2rem !important;
-                border-radius: 8px !important;
-                margin-top: 1rem !important;
-                margin-left: auto !important;
-                margin-right: auto !important;
-                width: 80% !important;
-                max-width: 80% !important;
-                min-height: 250vh !important;
-                height: auto !important;
-                padding-bottom: 5rem !important; /* Extra padding at bottom */
-            }
-
-            /* Alternative targeting for older Streamlit versions */
-            .block-container {
-                background-color: #f7f7f7 !important;
-                padding: 2rem !important;
-                border-radius: 8px !important;
-                margin-top: 1rem !important;
-                margin-left: auto !important;
-                margin-right: auto !important;
-                width: 80% !important;
-                max-width: 80% !important;
-                min-height: 250vh !important;
-                height: auto !important;
-                padding-bottom: 5rem !important;
-            }
-
-            /* Target the element that contains your tab content */
-            .stApp .main .block-container {
-                background-color: #f7f7f7 !important;
-                padding: 2rem !important;
-                border-radius: 8px !important;
-                margin-top: 1rem !important;
-                margin-left: auto !important;
-                margin-right: auto !important;
-                width: 80% !important;
-                max-width: 80% !important;
-                min-height: 250vh !important;
-                height: auto !important;
-                padding-bottom: 5rem !important;
-            }
-
-            /* Ensure the main container expands to content */
-            .main > div {
-                min-height: 250vh !important;
-                height: auto !important;
-            }
-
-            /* Target specific Streamlit containers that might override height */
-            div[data-testid="stVerticalBlock"] {
-                min-height: inherit !important;
-                height: auto !important;
-            }
-
-            /* Ensure tabs container has proper height */
-            .stTabs [data-baseweb="tab-panel"] {
-                min-height: 80vh !important;
-                height: auto !important;
-                padding-bottom: 3rem !important;
-            }
-
-            /* Style form elements to stand out on the background */
-            .stSelectbox > div,
-            .stTextInput > div,
-            .stTextArea > div,
-            .stNumberInput > div,
-            .stDateInput > div,
-            .stTimeInput > div {
-                background-color: white !important;
-                border-radius: 4px !important;
-            }
-
-            /* Style expander containers */
-            .streamlit-expanderHeader,
-            .streamlit-expanderContent {
-                background-color: rgba(255, 255, 255, 0.9) !important;
-                border-radius: 4px !important;
-            }
-
-            /* Style metric containers */
-            [data-testid="metric-container"] {
-                background-color: rgba(255, 255, 255, 0.9) !important;
-                border-radius: 4px !important;
-                padding: 8px !important;
-            }
-
-            /* Additional fallback for main content area */
-            section[data-testid="stSidebar"] ~ div {
-                background-color: #f7f7f7 !important;
-                width: 80% !important;
-                margin-left: auto !important;
-                margin-right: auto !important;
-                min-height: 250vh !important;
-                height: auto !important;
-            }
-
-            /* Ensure columns maintain proper height */
-            div[data-testid="column"] {
-                min-height: inherit !important;
-                height: auto !important;
-            }
-
-            /* Additional height coverage for dynamic content */
-            .stApp {
-                min-height: 250vh !important;
-                height: auto !important;
-            }
-
-            /* Fallback for very long content */
-            @media screen and (min-height: 800px) {
-                [data-testid="block-container"] {
-                    min-height: 250vh !important;
-                }
-                
-                .block-container {
-                    min-height: 250vh !important;
-                }
-                
-                .stApp .main .block-container {
-                    min-height: 250vh !important;
-                }
-            }
-
-            /* For extra long content (like many form fields) */
-            @media screen and (min-height: 1200px) {
-                [data-testid="block-container"] {
-                    min-height: 150vh !important;
-                }
-                
-                .block-container {
-                    min-height: 150vh !important;
-                }
-                
-                .stApp .main .block-container {
-                    min-height: 150vh !important;
-                }
-            }
-            </style>
-            """
+        <style>
+        /* Clean background styling without aggressive constraints */
+        [data-testid="block-container"] {
+            background-color: #f7f7f7 !important;
+            padding: 2rem !important;
+            border-radius: 8px !important;
+            margin: 1rem auto !important;
+            max-width: 85% !important;
+        }
+        
+        /* Alternative targeting for consistency */
+        .block-container {
+            background-color: #f7f7f7 !important;
+            padding: 2rem !important;
+            border-radius: 8px !important;
+        }
+        
+        /* Style form elements to stand out */
+        .stSelectbox > div,
+        .stTextInput > div,
+        .stTextArea > div,
+        .stNumberInput > div {
+            background-color: white !important;
+            border-radius: 4px !important;
+        }
+        
+        /* Style expander containers */
+        .streamlit-expanderHeader,
+        .streamlit-expanderContent {
+            background-color: rgba(255, 255, 255, 0.9) !important;
+            border-radius: 4px !important;
+        }
+        
+        /* Style metric containers */
+        [data-testid="metric-container"] {
+            background-color: rgba(255, 255, 255, 0.9) !important;
+            border-radius: 4px !important;
+            padding: 8px !important;
+        }
+        </style>
+    """
 
     st.markdown(content_area_css, unsafe_allow_html=True)
     st.markdown(proj_spec_css, unsafe_allow_html=True)
+    
+    # Clean button styling
     st.markdown("""
         <style>
-        /* Force override all button styling */
         button[kind="secondary"] {
             height: 48px !important;
             border: 2.2px solid #ececec !important;
             border-radius: 4px !important;
             margin-top: 5px !important;
-            transform: translateY(0px) !important;
             background-color: #d3d3d3 !important;
             color: black !important;
         }
         
         button[kind="secondary"]:hover {
-            border: 2.2px solid #ececec !important;
-            transform: translateY(0px) !important;
             background-color: #5a5a5a !important;
             color: white !important;
         }
         
         button[kind="secondary"]:focus {
-            border: 2.2px solid #ececec !important;
-            outline: 2px solid #ececec !important;
-            transform: translateY(0px) !important;
             background-color: #d3d3d3 !important;
             color: black !important;
         }
         
         [data-testid] button {
-            border: 2.2px solid #ececec !important;
             height: 48px !important;
-            margin-top: 5px !important;
-            transform: translateY(0px) !important;
             background-color: #d3d3d3 !important;
             color: black !important;
         }
-        
-        button[kind="secondary"] p,
-        button[kind="secondary"] span,
-        button[kind="secondary"] div {
-            color: black !important;
-        }
-        
-        [data-testid] button p,
-        [data-testid] button span,
-        [data-testid] button div {
-            color: black !important;
-        }
-        
-        button[kind="secondary"]:hover p,
-        button[kind="secondary"]:hover span,
-        button[kind="secondary"]:hover div {
-            color: white !important;
-        }
         </style>
     """, unsafe_allow_html=True)
-    
     
     # Section 1: Scope of Work
     scope_data = get_section_data('scope')

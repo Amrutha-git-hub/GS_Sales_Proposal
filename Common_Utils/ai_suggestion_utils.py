@@ -108,7 +108,6 @@ def render_three_column_selector_unified(
         width: 100% !important;
         height: 50px !important;
         font-size: 24px !important;
-        font-weight: bold !important;
         margin: 2px 0 !important;
         border-radius: 12px !important;
         min-width: 60px !important;
@@ -161,7 +160,6 @@ def render_three_column_selector_unified(
     /* Normal section tooltip styling - same as left */
     .section-tooltip {{
         font-size: {title_font_size} !important;
-        font-weight: bold !important;
         margin-bottom: {title_margin_bottom} !important;
         display: flex;
         align-items: center;
@@ -173,7 +171,6 @@ def render_three_column_selector_unified(
     /* Unified title styling - normal size */
     .unified-title {{
         font-size: {title_font_size} !important;
-        font-weight: bold !important;
         color: {title_color} !important;
         margin-bottom: {title_margin_bottom} !important;
         text-align: center !important;
@@ -373,7 +370,7 @@ def render_three_column_selector_unified(
                     transform: translateY(-5px) !important;;
                 ">
                     <span style="font-size: 18px; margin-right: 10px; flex-shrink: 0;">{icon}</span>
-                    <span style="font-weight: bold; font-size: 16px; flex: 1;">{key}</span>
+                    <span style=" font-size: 16px; flex: 1;">{key}</span>
                 </div>
                 """, unsafe_allow_html=True)
     
@@ -492,7 +489,7 @@ def render_three_column_selector_unified(
                     transform: translateY(-5px) !important;
                 ">
                     <span style="font-size: 18px; margin-right: 10px; flex-shrink: 0;">{icon}</span>
-                    <span style="font-weight: bold; font-size: 16px; flex: 1;">{key}</span>
+                    <span style=" font-size: 16px; flex: 1;">{key}</span>
                 </div>
                 """, unsafe_allow_html=True)
     
@@ -589,7 +586,6 @@ def render_two_column_selector(
         width: 100% !important;
         height: 50px !important;
         font-size: 24px !important;
-        font-weight: bold !important;
         margin: 8px 0 !important;
         border-radius: 12px !important;
         min-width: 60px !important;
@@ -622,7 +618,6 @@ def render_two_column_selector(
     /* Section title with tooltip styling */
     .section-tooltip {{
         font-size: {title_font_size} !important;
-        font-weight: bold !important;
         margin-bottom: {title_margin_bottom} !important;
         display: flex;
         align-items: center;
@@ -812,7 +807,7 @@ def render_two_column_selector(
                     transform: translateY(-10px) !important;
                 ">
                     <span style="font-size: 18px; margin-right: 10px; flex-shrink: 0;">{icon}</span>
-                    <span style="font-weight: bold; font-size: 16px; flex: 1;">{key}</span>
+                    <span style=" font-size: 16px; flex: 1;">{key}</span>
                 </div>
                 """, unsafe_allow_html=True)
     

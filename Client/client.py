@@ -10,16 +10,12 @@ import time
 from Search.Linkedin.linkedin_serp import *
 from Search.Linkedin.linkedin_agent_runner import *
 from Recommendation.recommendation_utils import *
-from tab_css import *
+from .client_css import client_css
 from .client_dataclass import *
-
 from datetime import datetime 
 # Configure logging
 from Common_Utils.common_utils import *
-
 from Common_Utils.common_utils import set_global_message
-
-
 
 def normalize_url(url: str) -> str:
     url = url.strip()
@@ -490,7 +486,6 @@ def enterprise_content(logger, client_data, is_locked):
     
     return client_name_provided
 
-
 @st.fragment
 def doc_upload_section(logger, client_data, is_locked):
     """Render the document upload section"""
@@ -689,42 +684,68 @@ def doc_upload_section(logger, client_data, is_locked):
                             set_global_message("Client name required - Please enter your client's enterprise name to continue", 'error')
                         else:
                             logger.info("Starting RFI analysis process")
-                            set_global_message("Analyzing RFI document... 🔄", "info")
                             
-                            # Perform the actual processing
-                            try:
-                                logger.info("Starting RFI document processing")
-                                file_path = save_uploaded_file_and_get_path(rfi_document_upload, logger, client_enterprise_name)
-                                
-                                if file_path and client_enterprise_name:
-                                    logger.info(f"Processing RFI file: {file_path}")
-                                    pain_points_data = get_pain_points(file_path, client_enterprise_name)
+                            # Create a placeholder for the spinner
+                            spinner_placeholder = st.empty()
+                            
+                            # Show spinner while processing
+                            with spinner_placeholder:
+                                with st.spinner("🔍 Analyzing document and extracting pain points..."):
                                     
-                                    logger.info(f"Successfully extracted pain points, count: {len(pain_points_data) if pain_points_data else 0}")
-                                    
-                                    client_state_manager.update_client_data(
-                                        uploaded_file_path=file_path,
-                                        rfi_pain_points_items=pain_points_data,
-                                        document_analyzed=True,
-                                        processing_rfi=False
-                                    )
-                                    if pain_points_data and len(pain_points_data)>10 :
-                                        set_global_message("✅ RFI document analyzed successfully!", "success")
-                                    else:
-                                        set_global_message("Couldnt process the document maybe a wrong file so try a different file or try again","error")
-                                else:
-                                    logger.error("Error saving the uploaded file or missing client name")
-                                    set_global_message("Upload failed - We couldn't process your file. Please try again or contact support if the issue persists", 'error')
-                                    
-                            except Exception as e:
-                                logger.error(f"Error analyzing RFI document: {str(e)}")
-                                set_global_message("Analysis unavailable - We're having trouble analyzing your document right now. Please try uploading again", 'error')
-                                client_state_manager.update_client_data(
-                                    rfi_pain_points_items={},
-                                    document_analyzed=False,
-                                    processing_rfi=False
-                                )
-                                
+                                    # Perform the actual processing
+                                    try:
+                                        logger.info("Starting RFI document processing")
+                                        file_path = save_uploaded_file_and_get_path(rfi_document_upload, logger, client_enterprise_name)
+                                        
+                                        if file_path and client_enterprise_name:
+                                            logger.info(f"Processing RFI file: {file_path}")
+                                            pain_points_data = get_pain_points(file_path, client_enterprise_name)
+                                            
+                                            # Clear the spinner
+                                            spinner_placeholder.empty()
+                                            
+                                            # Check if we got pain points data
+                                            if pain_points_data and len(pain_points_data) > 0:
+                                                logger.info(f"Successfully extracted pain points, count: {len(pain_points_data)}")
+                                                
+                                                client_state_manager.update_client_data(
+                                                    uploaded_file_path=file_path,
+                                                    rfi_pain_points_items=pain_points_data,
+                                                    document_analyzed=True,
+                                                    processing_rfi=False
+                                                )
+                                                
+                                                # Success message with count
+                                                pain_points_count = len(pain_points_data)
+                                                set_global_message(f" AI has successfully suggested {pain_points_count} pain point categories from your document!", "success")
+                            
+
+                                            else:
+                                                logger.warning("No pain points extracted from document")
+                                                client_state_manager.update_client_data(
+                                                    uploaded_file_path=file_path,
+                                                    rfi_pain_points_items={},
+                                                    document_analyzed=False,
+                                                    processing_rfi=False
+                                                )
+                                                set_global_message("⚠️ No pain points could be extracted from this document. Please try a different file or use the default suggestions.", 'warning')
+                                        else:
+                                            # Clear the spinner
+                                            spinner_placeholder.empty()
+                                            logger.error("Error saving the uploaded file or missing client name")
+                                            set_global_message("Uploaded  document does not have pain points.  Please upload the correct document OR select from the default pain points displayed", 'error')
+                                            
+                                    except Exception as e:
+                                        # Clear the spinner
+                                        spinner_placeholder.empty()
+                                        logger.error(f"Error analyzing RFI document: {str(e)}")
+                                        set_global_message(" There was an issue analyzing your document. Please try uploading again or use the default suggestions.", 'error')
+                                        client_state_manager.update_client_data(
+                                            rfi_pain_points_items={},
+                                            document_analyzed=False,
+                                            processing_rfi=False
+                                        )
+                                        
                     except Exception as e:
                         logger.error(f"Error handling analyze button click: {str(e)}")
                         set_global_message("Analysis initialization failed - Please try again", 'error')
@@ -824,11 +845,11 @@ def render_client_pain_points_section(logger, client_data, is_locked):
             else:
                 # Dummy data when no client name or no file uploaded
                 rfi_pain_points_items = {
-                    "Revenue Challenges": "REVENUE CHALLENGES\n • Sales declined by XX year-over-year despite market growth\n• Missed quarterly revenue targets by XX for three consecutive quarters\n• Average deal size decreased by XX due to increased price competition\n• Customer churn rate increased to XX, up from XX previous year\n• Revenue per customer dropped XX as clients downgraded service tiers\n• New product launches generated only XX of projected revenue\n• Seasonal revenue fluctuations creating XX variance between peak and low periods\n• Pipeline conversion rates fell from XX to XX over past XX months\n\n",
+                    "Revenue Challenges": "**Revenue Challenges** • Sales declined by XX year-over-year despite market growth\n• Missed quarterly revenue targets by XX for three consecutive quarters\n• Average deal size decreased by XX due to increased price competition\n• Customer churn rate increased to XX, up from XX previous year\n• Revenue per customer dropped XX as clients downgraded service tiers\n• New product launches generated only XX of projected revenue\n• Seasonal revenue fluctuations creating XX variance between peak and low periods\n• Pipeline conversion rates fell from XX to XX over past XX months\n\n",
 
-                    "Cost and Margin Pressure": "COST AND MARGIN PRESSURE\n • Cost of Goods Sold increased by XX due to supply chain disruptions\n• Labor costs rose XX while productivity remained flat\n• Raw material prices up XX with limited ability to pass costs to customers\n• Operational efficiency decreased by XX due to outdated processes\n• Procurement costs increased XX from supplier consolidation issues\n• Technology infrastructure costs grew XX without proportional business benefits\n• Regulatory compliance expenses added XX in unexpected annual costs\n• Facility and overhead costs up XX while revenue remained stagnant\n\n",
+                    "Cost and Margin Pressure": "**Cost and Margin Pressure** • Cost of Goods Sold increased by XX due to supply chain disruptions\n• Labor costs rose XX while productivity remained flat\n• Raw material prices up XX with limited ability to pass costs to customers\n• Operational efficiency decreased by XX due to outdated processes\n• Procurement costs increased XX from supplier consolidation issues\n• Technology infrastructure costs grew XX without proportional business benefits\n• Regulatory compliance expenses added XX in unexpected annual costs\n• Facility and overhead costs up XX while revenue remained stagnant\n\n",
 
-                    "Market Expansion and Customer Acquisition": "MARKET EXPANSION AND CUSTOMER ACQUISITION \n\n • Win rate on new business opportunities dropped from XX to XX\n• Customer acquisition cost increased XX while customer lifetime value declined\n• Expansion into new geographic markets yielding only XX of projected results\n• Lack of local market knowledge resulting in XX longer sales cycles\n• Digital marketing campaigns generating XX fewer qualified leads\n• Competition from new market entrants capturing XX of target customer segment\n• Limited brand recognition in new markets requiring XX marketing investment\n• Difficulty penetrating enterprise accounts with average sales cycle extending to XX months\n\n"
+                    "Market Expansion and Customer Acquisition": "**Market Expansion and Customer Acquisition**\n\n • Win rate on new business opportunities dropped from XX to XX\n• Customer acquisition cost increased XX while customer lifetime value declined\n• Expansion into new geographic markets yielding only XX of projected results\n• Lack of local market knowledge resulting in XX longer sales cycles\n• Digital marketing campaigns generating XX fewer qualified leads\n• Competition from new market entrants capturing XX of target customer segment\n• Limited brand recognition in new markets requiring XX marketing investment\n• Difficulty penetrating enterprise accounts with average sales cycle extending to XX months\n\n"
                 }
                 logger.info("Using dummy pain points data as fallback")
 
@@ -928,75 +949,79 @@ def render_client_pain_points_section(logger, client_data, is_locked):
                                     
                                     try:
                                         if is_selected:
-                                            # ❌ REMOVE FUNCTIONALITY - Clear and Simple
-                                            logger.info(f"REMOVING pain point '{key}' from requirements")
+                                            # REMOVE FUNCTIONALITY
+                                            logger.info(f"Removing pain point '{key}' from requirements")
                                             
                                             try:
-                                                # Step 1: Remove from selected set
-                                                client_data.selected_pain_points.discard(key)
+                                                # Get current content from the client data
+                                                current_content = client_data.client_requirements_content
+                                                logger.debug(f"Current content length: {len(current_content) if current_content else 0}")
                                                 
-                                                # Step 2: Remove from content map
+                                                # Get the original content that was added for this key
+                                                original_content = client_data.pain_point_content_map.get(key, value)
+                                                logger.debug(f"Original content to remove length: {len(original_content)}")
+                                                
+                                                # Remove this specific pain point section from content
+                                                patterns_to_remove = [
+                                                    f"\n\n{original_content}",
+                                                    f"{original_content}\n\n",
+                                                    original_content
+                                                ]
+                                                
+                                                updated_content = current_content
+                                                for pattern in patterns_to_remove:
+                                                    if pattern in updated_content:
+                                                        updated_content = updated_content.replace(pattern, "")
+                                                        logger.debug(f"Removed pattern from content")
+                                                        break
+                                                
+                                                # Clean up any excessive newlines
+                                                updated_content = '\n\n'.join([section.strip() for section in updated_content.split('\n\n') if section.strip()])
+                                                
+                                                # Update client data
+                                                client_data.selected_pain_points.discard(key)
                                                 if key in client_data.pain_point_content_map:
                                                     del client_data.pain_point_content_map[key]
                                                 
-                                                # Step 3: Rebuild content from scratch using only remaining selected items
-                                                remaining_content_parts = []
-                                                for selected_key in client_data.selected_pain_points:
-                                                    if selected_key in rfi_pain_points_items:
-                                                        remaining_content_parts.append(rfi_pain_points_items[selected_key].strip())
-                                                
-                                                # Step 4: Join remaining content with double newlines
-                                                updated_content = "\n\n".join(remaining_content_parts)
-                                                
-                                                logger.info(f"Rebuilt content with {len(remaining_content_parts)} remaining items")
-                                                logger.debug(f"Updated content length: {len(updated_content)}")
-                                                
-                                                # Step 5: Update client data
                                                 client_state_manager.update_client_data(
                                                     client_requirements_content=updated_content,
                                                     selected_pain_points=client_data.selected_pain_points,
                                                     pain_point_content_map=client_data.pain_point_content_map
                                                 )
                                                 
-                                                logger.info(f"Successfully REMOVED pain point '{key}'")
+                                                logger.info(f"Successfully removed pain point '{key}'")
                                                 
                                             except Exception as e:
-                                                logger.error(f"Error in REMOVE functionality for '{key}': {str(e)}")
+                                                logger.error(f"Error in remove functionality for '{key}': {str(e)}")
                                                 set_global_message("Item removal failed - Couldn't remove the selected item. Please try again")
                                             
                                         else:
-                                            # ➕ ADD FUNCTIONALITY - Clear and Simple
-                                            logger.info(f"ADDING pain point '{key}' to requirements")
+                                            # ADD FUNCTIONALITY
+                                            logger.info(f"Adding pain point '{key}' to requirements")
                                             
                                             try:
-                                                # Step 1: Add to selected set
+                                                # Get current content from client data
+                                                current_content = client_data.client_requirements_content
+                                                logger.debug(f"Current content length before add: {len(current_content) if current_content else 0}")
+                                                
+                                                # Append the value to the content
+                                                new_content = current_content + f"\n\n{value}" if current_content else value
+                                                logger.debug(f"New content length after add: {len(new_content)}")
+                                                
+                                                # Update client data
                                                 client_data.selected_pain_points.add(key)
+                                                client_data.pain_point_content_map[key] = value
                                                 
-                                                # Step 2: Add to content map
-                                                client_data.pain_point_content_map[key] = value.strip()
-                                                
-                                                # Step 3: Get current content
-                                                current_content = client_data.client_requirements_content or ""
-                                                
-                                                # Step 4: Append new content
-                                                if current_content.strip():
-                                                    new_content = current_content.strip() + "\n\n" + value.strip()
-                                                else:
-                                                    new_content = value.strip()
-                                                
-                                                logger.info(f"Added content, new length: {len(new_content)}")
-                                                
-                                                # Step 5: Update client data
                                                 client_state_manager.update_client_data(
                                                     client_requirements_content=new_content,
                                                     selected_pain_points=client_data.selected_pain_points,
                                                     pain_point_content_map=client_data.pain_point_content_map
                                                 )
                                                 
-                                                logger.info(f"Successfully ADDED pain point '{key}'")
+                                                logger.info(f"Successfully added pain point '{key}'")
                                                 
                                             except Exception as e:
-                                                logger.error(f"Error in ADD functionality for '{key}': {str(e)}")
+                                                logger.error(f"Error in add functionality for '{key}': {str(e)}")
                                                 set_global_message("Item addition failed - Couldn't add the selected item. Please try again")
                                         
                                         st.rerun()
@@ -1105,7 +1130,7 @@ def render_spoc_name_section(logger, client_data, is_locked):
                                        not client_name_provided or is_locked)
             
             linkedin_button_clicked = st.button(
-                "Get LinkedIn",
+                "Get LinkedIn Profile",
                 key="get_linkedin_button",
                 disabled=linkedin_button_disabled,
                 help="Search for LinkedIn profiles of the SPOC"
@@ -1124,37 +1149,35 @@ def render_spoc_name_section(logger, client_data, is_locked):
                         # Search for LinkedIn profiles
                         linkedin_profiles_raw = get_linkedin(spoc_name.strip())
                         
-                        # Process LinkedIn profiles - handle both list and dict formats
+                        # Process LinkedIn profiles - handle the list format correctly
                         processed_profiles = {}
                         if linkedin_profiles_raw:
+                            logger.debug(f"Raw LinkedIn response: {linkedin_profiles_raw}")
+                            
                             if isinstance(linkedin_profiles_raw, list):
-                                # This part is correct and works well for a list of dicts.
-                                logger.info("Processing raw profiles in list format...")
+                                # Handle list format - merge all dictionaries
                                 for profile_dict in linkedin_profiles_raw:
                                     if isinstance(profile_dict, dict):
                                         processed_profiles.update(profile_dict)
-
+                                        logger.debug(f"Added profile dict: {profile_dict}")
                             elif isinstance(linkedin_profiles_raw, dict):
-                                # CORRECTED PART: If it's already a dictionary, just use it directly.
-                                logger.info("Raw profiles are already in the correct dictionary format.")
+                                # Handle direct dictionary format
                                 processed_profiles = linkedin_profiles_raw
                             
-                            # Optional: Handle other unexpected types
-                            else:
-                                logger.warning(f"Unexpected type for linkedin_profiles_raw: {type(linkedin_profiles_raw)}")
-
-
+                            logger.info(f"Processed {len(processed_profiles)} LinkedIn profiles")
+                            
+                            # Debug log the processed profiles
+                            for url, profile_data in processed_profiles.items():
+                                logger.debug(f"Profile URL: {url}, Data: {profile_data}")
+                            
                             if processed_profiles:
-                                logger.info(f"Found {len(processed_profiles)} LinkedIn profiles")
-                                # The success message should be tied to whether profiles were actually processed
                                 set_global_message(f"Successfully found {len(processed_profiles)} LinkedIn profiles for {spoc_name.strip()}", "success")
                             else:
-                                set_global_message("No valid LinkedIn profiles found after processing", "info")
-                                logger.info("No valid LinkedIn profiles found for SPOC after processing")
-
+                                set_global_message(f"No valid LinkedIn profiles found for {spoc_name.strip()}", "warning")
                         else:
-                            set_global_message("No LinkedIn profiles found", "info")
-                            logger.info("No LinkedIn profiles found for SPOC")
+                            set_global_message(f"Unable to fetch LinkedIn profiles for {spoc_name.strip()}, please try again later.", "warning")
+                            logger.info("No LinkedIn profiles returned from search")
+                        
                         try:
                             # Clear previous profile selection when new search is performed
                             client_state_manager.update_client_data(
@@ -1167,8 +1190,6 @@ def render_spoc_name_section(logger, client_data, is_locked):
                         except Exception as e:
                             logger.error(f"Error updating LinkedIn profiles: {str(e)}")
                             set_global_message("Failed to save LinkedIn profiles - Please try searching again", "error")
-                        
-                     
                         
                     except Exception as e:
                         logger.error(f"Error searching LinkedIn profiles: {str(e)}")
@@ -1209,22 +1230,37 @@ def render_linkedin_profile_section(logger, client_data, is_locked, spoc_name):
         # Prepare LinkedIn profile options
         if spoc_name_provided and client_data.linkedin_profiles:
             try:
+                logger.debug(f"Processing LinkedIn profiles: {client_data.linkedin_profiles}")
+                
                 # Create options with profile titles for better selection
                 linkedin_options = ["Select a LinkedIn profile..."]
                 linkedin_url_mapping = {}  # To map display text to actual URL
                 
                 for url, profile_data in client_data.linkedin_profiles.items():
-                    # Handle both old and new profile data formats
+                    logger.debug(f"Processing profile - URL: {url}, Data: {profile_data}")
+                    
+                    # Handle profile data format
                     if isinstance(profile_data, dict):
                         name = profile_data.get('name', 'Unknown')
                         role = profile_data.get('role', 'Unknown Role')
-                        display_text = f"{name} - {role}"
+                        
+                        # Create a more readable display text
+                        if name != 'Unknown' and role != 'Unknown Role':
+                            display_text = f"{name} - {role}"
+                        elif name != 'Unknown':
+                            display_text = f"{name} - No role specified"
+                        else:
+                            display_text = f"Profile - {role}"
                     else:
                         # Fallback for unexpected format
-                        display_text = f"Profile: {str(profile_data)}"
+                        display_text = f"LinkedIn Profile: {str(profile_data)[:50]}..."
                     
                     linkedin_options.append(display_text)
                     linkedin_url_mapping[display_text] = url
+                    logger.debug(f"Added option: {display_text} -> {url}")
+                
+                logger.debug(f"LinkedIn options: {linkedin_options}")
+                logger.debug(f"URL mapping: {linkedin_url_mapping}")
                 
                 # Pre-select the current profile if it exists
                 current_index = 0
@@ -1232,24 +1268,27 @@ def render_linkedin_profile_section(logger, client_data, is_locked, spoc_name):
                     for i, (display_text, url) in enumerate(linkedin_url_mapping.items(), 1):
                         if url == client_data.current_selected_profile_url:
                             current_index = i
+                            logger.debug(f"Pre-selected profile at index {current_index}: {display_text}")
                             break
                 
                 selected_linkedin_display = st.selectbox(
                     label="SPOC LinkedIn Profile",
                     options=linkedin_options,
                     index=current_index,
+                    key="spoc_linkedin_profile_selector",
                     label_visibility="collapsed",
                     disabled=not client_name_provided or is_locked,
                 )
 
+                logger.debug(f"Selected display text: {selected_linkedin_display}")
+
                 # Extract the actual URL from the selected option
                 if selected_linkedin_display != "Select a LinkedIn profile...":
                     spoc_linkedin_profile = linkedin_url_mapping.get(selected_linkedin_display)
+                    logger.debug(f"Selected LinkedIn URL: {spoc_linkedin_profile}")
+                    
                     if spoc_linkedin_profile:
                         try:
-                            # Check if this is a different profile than currently selected
-                            profile_changed = client_data.current_selected_profile_url != spoc_linkedin_profile
-                            
                             # Update both spoc_linkedin_profile and current_selected_profile_url
                             client_state_manager.update_client_data(
                                 spoc_linkedin_profile=spoc_linkedin_profile,
@@ -1257,20 +1296,22 @@ def render_linkedin_profile_section(logger, client_data, is_locked, spoc_name):
                             )
                             logger.debug(f"Updated SPOC LinkedIn profile: {spoc_linkedin_profile}")
                             
-                            # Immediately display the "Visit LinkedIn profile" link when profile is selected
+                            # Display the "Visit LinkedIn profile" link when profile is selected
                             selected_profile_data = client_data.linkedin_profiles.get(spoc_linkedin_profile)
                             if selected_profile_data and isinstance(selected_profile_data, dict):
                                 st.markdown(
-                                    f'<div style="text-align: right; margin-top: 10px;">'
+                                    f'<div style="text-align: left; margin-top: 10px;">'
                                     f'<a href="{spoc_linkedin_profile}" target="_blank" '
                                     f'style="color: #0066cc; text-decoration: none; font-size: 14px;">'
                                     f'🔗 Visit LinkedIn Profile</a></div>', 
                                     unsafe_allow_html=True
                                 )
-                            
-                            # Trigger rerun if profile changed to update role dropdown
-                            if profile_changed:
-                                st.rerun()
+                                
+                                # Display profile summary
+                                name = selected_profile_data.get('name', 'Unknown')
+                                role = selected_profile_data.get('role', 'Unknown Role')
+                                priorities = selected_profile_data.get('top_3_priorities', [])
+                                
                                 
                         except Exception as e:
                             logger.error(f"Error updating SPOC LinkedIn profile: {str(e)}")
@@ -1284,38 +1325,48 @@ def render_linkedin_profile_section(logger, client_data, is_locked, spoc_name):
                                 current_selected_profile_url=None
                             )
                             logger.debug("Cleared SPOC LinkedIn profile selection")
-                            # Trigger rerun when profile is cleared to update role dropdown
-                            st.rerun()
                         except Exception as e:
                             logger.error(f"Error clearing SPOC LinkedIn profile: {str(e)}")
                     spoc_linkedin_profile = None
                     
             except Exception as e:
                 logger.error(f"Error processing LinkedIn profile options: {str(e)}")
-                set_global_message("LinkedIn profile options unavailable - Please refresh the page", "error")
+                st.error("Error processing LinkedIn profiles. Please try searching again.")
+                
+                # Fallback selectbox
+                st.selectbox(
+                    label="SPOC LinkedIn Profile",
+                    options=["Error loading profiles - Please search again"],
+                    key="spoc_linkedin_profile_selector_error",
+                    label_visibility="collapsed",
+                    disabled=True,
+                )
                 
         elif spoc_name_provided and not client_data.linkedin_profiles:
             # Show message when no profiles found
             st.selectbox(
                 label="SPOC LinkedIn Profile",
-                options=["No LinkedIn profiles found. Try a different name."],
+                options=["No LinkedIn profiles found. Click 'Get LinkedIn Profile' to search."],
+                key="spoc_linkedin_profile_selector",
                 label_visibility="collapsed",
-                disabled=is_locked,
+                disabled=True,
             )
             spoc_linkedin_profile = None
         else:
             # Default disabled state
             st.selectbox(
                 label="SPOC LinkedIn Profile",
-                options=["Enter SPOC name to get LinkedIn profiles"],
+                options=["Enter SPOC name and click 'Get LinkedIn Profile' to search"],
+                key="spoc_linkedin_profile_selector",
                 label_visibility="collapsed",
-                disabled=is_locked or not spoc_name_provided,
+                disabled=True,
             )
             spoc_linkedin_profile = None
             
     except Exception as e:
         logger.error(f"Error in LinkedIn profile section: {str(e)}")
-        set_global_message("LinkedIn profile section unavailable - Please refresh the page", "error")
+        st.error("LinkedIn profile section is currently unavailable. Please refresh the page.")
+        spoc_linkedin_profile = None
     
     return spoc_linkedin_profile
 
@@ -1328,7 +1379,7 @@ def render_selected_profile_info(logger, client_data, spoc_name_provided, spoc_l
         if spoc_name_provided and client_data.linkedin_profiles and client_data.current_selected_profile_url:
             profile_url = client_data.current_selected_profile_url
             selected_profile_data = client_data.linkedin_profiles.get(profile_url)
-            
+            print(selected_profile_data)
             if selected_profile_data and isinstance(selected_profile_data, dict):
                 try:
                     name = selected_profile_data.get('name', 'Unknown')
@@ -1383,9 +1434,9 @@ def render_selected_profile_info(logger, client_data, spoc_name_provided, spoc_l
                     
                     # Update client data with correct field names (plural)
                     client_state_manager.update_client_data(
-                        selected_target_roles=current_roles,  # Make sure this is plural
-                        selected_business_priorities=current_priorities,  # Make sure this is plural
-                        last_processed_profile=spoc_linkedin_profile  # Track last processed profile
+                        selected_target_roles=current_roles,
+                        selected_business_priorities=current_priorities,
+                        last_processed_profile=spoc_linkedin_profile
                     )
                     
                     logger.info("Updated target roles and business priorities based on LinkedIn profile")
@@ -1399,142 +1450,7 @@ def render_selected_profile_info(logger, client_data, spoc_name_provided, spoc_l
         set_global_message("Profile information section unavailable - Please refresh the page", "error")
 
 
-@st.fragment
-def render_spoc_role_section(spoc_name_provided, spoc_linkedin_profile, client_data, logger, is_locked):
-    """Render the SPOC Role selection section"""
-    client_name_provided = bool(client_data.enterprise_name and client_data.enterprise_name.strip())
-    st.markdown('''
-    <div class="tooltip-label">
-        SPOC Role 
-        <div class="tooltip-icon" data-tooltip="Select specific roles or positions within the client organization that your proposal should target. These are key stakeholders who will be involved in the decision-making process.">ⓘ</div>
-    </div>
-    ''', unsafe_allow_html=True)
 
-    # *** MODIFIED LOGIC STARTS HERE ***
-
-    # Prepare role options for dropdown
-    role_options = ["Select a role..."]
-    default_roles = get_roles_list() or []
-    selected_linkedin_role = None
-
-    # Check if a SPECIFIC LinkedIn profile is selected and get its role
-    if spoc_linkedin_profile and client_data.linkedin_profiles:
-        selected_profile_data = client_data.linkedin_profiles.get(spoc_linkedin_profile)
-        if selected_profile_data and isinstance(selected_profile_data, dict):
-            linkedin_role = selected_profile_data.get('role')
-            if linkedin_role:
-                # Add the specific role from the selected profile
-                role_options.append(linkedin_role)
-                selected_linkedin_role = linkedin_role
-                
-
-    # Add the default roles, ensuring no duplicates
-    for role in default_roles:
-        if role not in role_options:
-            role_options.append(role)
-
-    # Determine the default/current value for the selectbox
-    current_selection = "Select a role..."
-    if selected_linkedin_role:
-        # Auto-select the LinkedIn role if it was found
-        current_selection = selected_linkedin_role
-    elif "target_role_selector_dropdown" in st.session_state:
-        # Keep the user's current selection if it still exists in the options
-        current_value = st.session_state["target_role_selector_dropdown"]
-        if current_value in role_options:
-            current_selection = current_value
-    
-    # *** MODIFIED LOGIC ENDS HERE ***
-
-    # ROLES DROPDOWN with Get Priorities button
-    col_dropdown, col_get_btn = st.columns([3, 1], gap="medium")
-    
-    with col_dropdown:
-        selected_target_role = st.selectbox(
-            label="Target Role Selector", 
-            options=role_options,
-            index=role_options.index(current_selection) if current_selection in role_options else 0,
-            label_visibility="collapsed",
-            disabled=not (client_name_provided and spoc_name_provided) or is_locked,
-            key="target_role_selector_dropdown" # Added key to help with state retention
-        )
-    
-    with col_get_btn:
-        # Get Priorities button - always show
-        button_disabled = is_locked or not (client_name_provided and spoc_name_provided)
-        button_help = "Get AI-suggested business priorities"
-        
-        if not selected_target_role or selected_target_role == "Select a role...":
-            button_help = "Please select a role first to get AI-suggested priorities"
-            button_disabled = True
-        else:
-            button_help = f"Get AI-suggested business priorities for {selected_target_role}"
-        
-        if st.button("Get Priorities", 
-                    key="get_priorities_btn",
-                    help=button_help,
-                    type="secondary",
-                    disabled=button_disabled):
-            
-            if not selected_target_role or selected_target_role == "Select a role...":
-                set_global_message("⚠️ Please select a role first to get AI-suggested priorities", "warning")
-            else:
-                # Set flag to show spinner outside columns
-                st.session_state['show_priorities_spinner'] = True
-    
-    # Add spinner container outside the columns to span full width
-    if st.session_state.get('show_priorities_spinner', False):
-        spinner_placeholder = st.empty()
-        with spinner_placeholder:
-            with st.spinner("Loading AI priorities..."):
-                try:
-                    # Call AI to get business priorities
-                    role_priorities = get_ai_business_priorities(selected_target_role)
-                    
-                    if role_priorities and len(role_priorities) > 0:
-                        st.session_state["current_business_priorities_list"] = role_priorities
-                        client_state_manager.update_client_data(current_role_priorities=role_priorities)
-                        client_state_manager.update_client_data(selected_business_priorities=[])
-                        
-                        keys_to_remove = [key for key in st.session_state.keys() if key.startswith("business_priority_checkbox_")]
-                        for key in keys_to_remove:
-                            del st.session_state[key]
-                        
-                        set_global_message(f"✅ Successfully loaded {len(role_priorities)} AI-suggested priorities for {selected_target_role}", "success")
-                        logger.info(f"Successfully fetched {len(role_priorities)} AI priorities for role: {selected_target_role}")
-                        
-                    else:
-                        default_priorities = [
-                            {'title': 'Revenue Growth and Market Share Expansion', 'icon': '📈'}, 
-                            {'title': 'Profitability and Cost Optimization', 'icon': '💰'}, 
-                            {'title': 'Digital Transformation and Innovation', 'icon': '🤖'}
-                        ]
-                        st.session_state["current_business_priorities_list"] = default_priorities
-                        client_state_manager.update_client_data(current_role_priorities=default_priorities)
-                        set_global_message("⚠️ AI suggestions not available, showing default priorities", "warning")
-                        logger.warning(f"No AI priorities returned for role: {selected_target_role}, using defaults")
-                
-                except Exception as e:
-                    default_priorities = [
-                        {'title': 'Revenue Growth and Market Share Expansion', 'icon': '📈'}, 
-                        {'title': 'Profitability and Cost Optimization', 'icon': '💰'}, 
-                        {'title': 'Digital Transformation and Innovation', 'icon': '🤖'}
-                    ]
-                    st.session_state["current_business_priorities_list"] = default_priorities
-                    client_state_manager.update_client_data(current_role_priorities=default_priorities)
-                    set_global_message(f"❌ Error getting AI priorities: {str(e)[:50]}... Using default priorities", "error")
-                    logger.error(f"Error fetching AI priorities for role {selected_target_role}: {str(e)}")
-        
-        # Clear spinner flag and placeholder after completion
-        st.session_state['show_priorities_spinner'] = False
-        spinner_placeholder.empty()
-        st.rerun()
-
-    # Update client_data with the single selected role
-    if selected_target_role and selected_target_role != "Select a role...":
-        client_state_manager.update_client_data(selected_target_role=selected_target_role)
-    else:
-        client_state_manager.update_client_data(selected_target_role=None)
 @st.fragment
 def render_fourth_section(logger, is_locked, client_data):
     """Main function to render both SPOC name and LinkedIn profile sections"""
@@ -1558,7 +1474,175 @@ def render_fourth_section(logger, is_locked, client_data):
         set_global_message("Service interruption - We're experiencing technical difficulties. Please refresh the page or contact support", "error")
         return False, None
     
+@st.fragment
+def render_spoc_role_section(spoc_name_provided, spoc_linkedin_profile, client_data, logger, is_locked):
+    """Render the SPOC Role selection section"""
+    client_name_provided = bool(client_data.enterprise_name and client_data.enterprise_name.strip())
+    st.markdown("""
+    <style>
+    .push-down {
+        transform: translateY(10px);
+    }
+    </style>
+""", unsafe_allow_html=True)
+    st.markdown('''
+    <div class="tooltip-label">
+        SPOC Role 
+        <div class="tooltip-icon" data-tooltip="Select specific roles or positions within the client organization that your proposal should target. These are key stakeholders who will be involved in the decision-making process.">ⓘ</div>
+    </div>
+    ''', unsafe_allow_html=True)
 
+    st.markdown("""
+    <style>
+    .push-down {
+        transform: translateY(0.3px);
+    }
+    </style>
+""", unsafe_allow_html=True)
+    # Prepare role options for dropdown based on LinkedIn profile selection
+    role_options = ["Select a role..."]
+    
+    # Get default roles from function (assuming this function exists)
+    target_roles_list = get_roles_list() or []
+    
+    # Check if a LinkedIn profile is selected
+    selected_linkedin_role = None
+    if (spoc_name_provided and 
+        client_data.linkedin_profiles and 
+        'spoc_linkedin_profile' in locals() and 
+        spoc_linkedin_profile):
+        
+        # Get the selected LinkedIn profile data
+        selected_profile_data = client_data.linkedin_profiles.get(spoc_linkedin_profile)
+        if selected_profile_data and isinstance(selected_profile_data, dict):
+            selected_linkedin_role = selected_profile_data.get('role')
+            if selected_linkedin_role:
+                # Show LinkedIn profile role + default roles from get_roles_list()
+                role_options = ["Select a role...", selected_linkedin_role]
+                # Add default roles, avoiding duplicates
+                for role in target_roles_list:
+                    if role not in role_options:
+                        role_options.append(role)
+    
+    # If no LinkedIn profile selected, show all available roles
+    if not selected_linkedin_role:
+        # Add standard roles from get_roles_list()
+        
+        
+        # Add LinkedIn roles if available (but no specific profile selected)
+        if spoc_name_provided and client_data.linkedin_profiles:
+            for url, profile_data in client_data.linkedin_profiles.items():
+                if isinstance(profile_data, dict):
+                    linkedin_role = profile_data.get('role')
+                    if linkedin_role and linkedin_role not in role_options:
+                        role_options.append(linkedin_role)
+        role_options.extend(target_roles_list)
+
+    # Determine the default/current value for the selectbox
+    current_selection = "Select a role..."
+    if selected_linkedin_role and selected_linkedin_role in role_options:
+        # Auto-select the LinkedIn role
+        current_selection = selected_linkedin_role
+    elif "target_role_selector_dropdown" in st.session_state:
+        # Keep the current selection if it exists in options
+        current_value = st.session_state["target_role_selector_dropdown"]
+        if current_value in role_options:
+            current_selection = current_value
+
+    # Create columns for dropdown and button
+    col_dropdown, col_button = st.columns([3, 1])
+    
+    with col_dropdown:
+        # ROLES DROPDOWN - Only one role can be selected
+        selected_target_role = st.selectbox(
+            label="Target Role Selector", 
+            options=role_options,
+            index=role_options.index(current_selection) if current_selection in role_options else 0,
+            key="target_role_selector_dropdown",
+            label_visibility="collapsed",
+            disabled=not (client_name_provided and spoc_name_provided) or is_locked,
+            accept_new_options=True
+        )
+    
+    with col_button:
+
+        
+        if st.button("Get AI Priorities", 
+                    key="get_ai_priorities_btn",
+                    help=f"Get AI-suggested business priorities for {selected_target_role}" if selected_target_role and selected_target_role != "Select a role..." else "Select a role first",
+                    type="primary",
+                    disabled=not client_name_provided or is_locked):
+            
+            # Initialize session state for priorities loading
+            priorities_loading_key = "priorities_loading"
+            priorities_session_key = "current_business_priorities_list"
+            session_key = "last_role_for_priorities"
+            
+            # Set loading state
+            st.session_state[priorities_loading_key] = True
+            
+            try:
+                # Show spinner while loading
+                with st.spinner("Fetching AI business priorities..."):
+                    # Get AI business priorities
+                    role_priorities = get_ai_business_priorities(selected_target_role)
+                    
+                    # Default priorities if AI fails
+                    default_priorities = [
+                        {'title': 'Revenue Growth and Market Share Expansion', 'icon': '📈'}, 
+                        {'title': 'Profitability and Cost Optimization', 'icon': '💰'}, 
+                        {'title': 'Digital Transformation and Innovation', 'icon': '🤖'}
+                    ]
+                    
+                    if role_priorities:
+                        business_priorities_list = role_priorities
+                        success_message = f"AI priorities loaded successfully for {selected_target_role}!"
+                    else:
+                        business_priorities_list = default_priorities
+                        success_message = f"Default priorities loaded for {selected_target_role}"
+                    
+                    # Store in session state
+                    st.session_state[priorities_session_key] = business_priorities_list
+                    st.session_state[session_key] = selected_target_role
+                    
+                    # Clear previous selections when new priorities are loaded
+                    client_state_manager.update_client_data(selected_business_priorities=[])
+                    
+                    # Clear checkbox initialization flags
+                    keys_to_remove = [key for key in st.session_state.keys() if key.startswith("business_priority_checkbox_")]
+                    for key in keys_to_remove:
+                        del st.session_state[key]
+                    
+                    # Clear loading state and show success message
+                    st.session_state[priorities_loading_key] = False
+                    set_global_message(success_message, "success")
+                    
+            except Exception as e:
+                # Handle error case
+                default_priorities = [
+                    {'title': 'Revenue Growth and Market Share Expansion', 'icon': '📈'}, 
+                    {'title': 'Profitability and Cost Optimization', 'icon': '💰'}, 
+                    {'title': 'Digital Transformation and Innovation', 'icon': '🤖'}
+                ]
+                
+                st.session_state[priorities_session_key] = default_priorities
+                st.session_state[session_key] = selected_target_role
+                st.session_state[priorities_loading_key] = False
+                
+                set_global_message("Failed to load AI priorities. Using default priorities.", "error")
+                logger.error(f"Error loading AI role priorities: {str(e)}")
+
+    # Update client_data with the single selected role
+    if selected_target_role and selected_target_role != "Select a role...":
+        # Store as a single role, not a list
+        client_data.selected_target_role = selected_target_role
+        client_state_manager.update_client_data(selected_target_role=selected_target_role)
+    else:
+        client_data.selected_target_role = None
+        client_state_manager.update_client_data(selected_target_role=None)
+
+
+@st.fragment
 def render_spoc_business_priorities_section(spoc_name_provided, client_data, logger, is_locked):
     """Render the SPOC Business priorities section"""
     client_name_provided = bool(client_data.enterprise_name and client_data.enterprise_name.strip())
@@ -1566,6 +1650,33 @@ def render_spoc_business_priorities_section(spoc_name_provided, client_data, log
     # Enhanced CSS for styling
     st.markdown("""
     <style>
+                /* Change text area focus border color */
+textarea:focus {
+    border-color: #42f5e9 !important;
+    box-shadow: 0 0 0 2px rgba(66, 245, 233, 0.2) !important;
+}
+
+/* Target Streamlit's specific text area component */
+.stTextArea textarea:focus {
+    border-color: #42f5e9 !important;
+    box-shadow: 0 0 0 2px rgba(66, 245, 233, 0.2) !important;
+    outline: none !important;
+}
+
+/* Also target text input fields if needed */
+.stTextInput input:focus {
+    border-color: #42f5e9 !important;
+    box-shadow: 0 0 0 2px rgba(66, 245, 233, 0.2) !important;
+    outline: none !important;
+}
+
+/* Target all input elements in Streamlit */
+[data-testid="stTextArea"] textarea:focus,
+[data-testid="stTextInput"] input:focus {
+    border-color: #42f5e9 !important;
+    box-shadow: 0 0 0 2px rgba(66, 245, 233, 0.2) !important;
+    outline: none !important;
+}
     .tooltip-label {
         position: relative;
         display: inline-flex;
@@ -1610,28 +1721,58 @@ def render_spoc_business_priorities_section(spoc_name_provided, client_data, log
         z-index: 1000;
     }
     
-    .get-priorities-btn {
-        background: linear-gradient(135deg, #4CAF50, #45a049) !important;
-        color: white !important;
-        border: none !important;
-        border-radius: 8px !important;
-        padding: 8px 16px !important;
-        font-weight: 600 !important;
-        cursor: pointer !important;
-        transition: all 0.3s ease !important;
-        box-shadow: 0 2px 4px rgba(76, 175, 80, 0.3) !important;
-        margin-bottom: 15px !important;
+    /* Force override all button styling */
+    button[kind="secondary"] {
+        height: 48px !important;
+        border: 2.2px solid #ececec !important;
+        border-radius: 4px !important;
+        margin-top: -5px !important;
+        transform: translateY(-5px) !important;
+        background-color: #d3d3d3 !important;  
+        color: black !important;
+    }
+        
+    button[kind="secondary"]:hover {
+        border: 2.2px solid #ececec !important;
+        transform: translateY(-5px) !important;
+        background-color: #d3d3d3 !important;
+        color: black !important;
+    }
+        
+    button[kind="secondary"]:focus {
+        border: 2.2px solid #ececec !important;
+        outline: 2px solid #ececec !important;
+        transform: translateY(-5px) !important;
+        background-color: #d3d3d3 !important;
+        color: black !important;
+    }
+        
+    /* Try targeting by data attributes */
+    [data-testid] button {
+        border: 2.2px solid #ececec !important;
+        height: 48px !important;
+        margin-top: -5px !important;
+        transform: translateY(-5px) !important;
+        background-color: #d3d3d3 !important;
+        color: black !important;
     }
     
-    .get-priorities-btn:hover {
-        background: linear-gradient(135deg, #45a049, #3d8b40) !important;
-        transform: translateY(-1px) !important;
-        box-shadow: 0 4px 8px rgba(76, 175, 80, 0.4) !important;
+    /* Additional targeting for button text specifically */
+    button[kind="secondary"] p,
+    button[kind="secondary"] span,
+    button[kind="secondary"] div {
+        color: black !important;
+    }
+    
+    [data-testid] button p,
+    [data-testid] button span,
+    [data-testid] button div {
+        color: black !important;
     }
     </style>
     """, unsafe_allow_html=True)
     
-    # Label with tooltip (no button here anymore)
+    # Label with tooltip
     st.markdown('''
     <div class="tooltip-label">
         SPOC Business priorities
@@ -1639,226 +1780,133 @@ def render_spoc_business_priorities_section(spoc_name_provided, client_data, log
     </div>
     ''', unsafe_allow_html=True)
 
-    try:
-        logger.info("Starting SPOC business priorities section rendering")
-        
-        # Default priorities (used as fallback)
-        default_priorities = [
-            {'title': 'Revenue Growth and Market Share Expansion', 'icon': '📈'}, 
-            {'title': 'Profitability and Cost Optimization', 'icon': '💰'}, 
-            {'title': 'Digital Transformation and Innovation', 'icon': '🤖'}
-        ]
+    # Default priorities (used if role is not selected or error occurs)
+    default_priorities = [
+        {'title': 'Revenue Growth and Market Share Expansion', 'icon': '📈'}, 
+        {'title': 'Profitability and Cost Optimization', 'icon': '💰'}, 
+        {'title': 'Digital Transformation and Innovation', 'icon': '🤖'}
+    ]
 
-        # Initialize selected_business_priorities if missing
-        if not hasattr(client_data, 'selected_business_priorities'):
-            client_data.selected_business_priorities = []
-            logger.info("Initialized empty selected_business_priorities list")
+    # Initialize selected_business_priorities if missing
+    if not hasattr(client_data, 'selected_business_priorities'):
+        client_data.selected_business_priorities = []
 
-        # Session state keys
-        current_role = getattr(client_data, 'selected_target_role', None)
-        session_key = "last_role_for_priorities"
-        priorities_session_key = "current_business_priorities_list"
+    # Track the current role to detect role changes
+    current_role = getattr(client_data, 'selected_target_role', None)
+    session_key = "last_role_for_priorities"
+    priorities_session_key = "current_business_priorities_list"
+    priorities_loading_key = "priorities_loading"
 
-        # Initialize session state
-        if session_key not in st.session_state:
-            st.session_state[session_key] = None
-        if priorities_session_key not in st.session_state:
-            st.session_state[priorities_session_key] = default_priorities
+    # Initialize session state tracking for last role
+    if session_key not in st.session_state:
+        st.session_state[session_key] = None
+    if priorities_session_key not in st.session_state:
+        st.session_state[priorities_session_key] = default_priorities
+    if priorities_loading_key not in st.session_state:
+        st.session_state[priorities_loading_key] = False
 
-        # Get priorities from session state (either AI-fetched or default)
-        business_priorities_list = st.session_state.get(priorities_session_key, default_priorities)
-        logger.info(f"Using {len(business_priorities_list)} business priorities")
-        
-        # Show priorities with add/remove buttons
+    # Use cached priorities from session state
+    business_priorities_list = st.session_state.get(priorities_session_key, default_priorities)
+    
+    # Only show priorities if not currently loading
+    if not st.session_state.get(priorities_loading_key, False):
+        # Show priorities with add/remove buttons (similar to pain points)
         for i, priority in enumerate(business_priorities_list):
-            try:
-                priority_title = priority.get('title') if isinstance(priority, dict) else str(priority)
-                priority_icon = priority.get('icon', '📋') if isinstance(priority, dict) else '📋'
+            priority_title = priority.get('title') if isinstance(priority, dict) else str(priority)
+            priority_icon = priority.get('icon', '📋') if isinstance(priority, dict) else '📋'
+            
+            # Check if this priority is selected - REFRESH client_data before checking
+            # Get fresh data to ensure we have the latest state
+            fresh_client_data = getattr(client_state_manager, 'get_client_data', lambda: client_data)()
+            is_selected = priority_title in getattr(fresh_client_data, 'selected_business_priorities', [])
+            
+            # Create a box container with +/- button and content on same horizontal level
+            col_add, col_content = st.columns([0.5, 9], gap="medium")
+            
+            with col_add:
+                button_text = "❌" if is_selected else "➕"
+                button_help = f"Remove '{priority_title}' from SPOC priorities" if is_selected else f"Add '{priority_title}' to SPOC priorities"
+                button_type = "secondary"
                 
-                logger.debug(f"Processing priority {i}: {priority_title}")
+                # Create a unique key that includes timestamp to avoid caching issues
+                import time
+                button_key = f"toggle_business_priority_{i}_{hash(priority_title)}_{hash(current_role or 'none')}"
                 
-                # Check if this priority is selected
-                try:
-                    is_selected = priority_title in client_data.selected_business_priorities
-                    logger.debug(f"Priority '{priority_title}' selection status: {is_selected}")
-                except Exception as e:
-                    logger.error(f"Error checking selection status for priority '{priority_title}': {str(e)}")
-                    is_selected = False
-                
-                # Create a box container with +/- button and content on same horizontal level
-                col_add, col_content = st.columns([0.5, 9], gap="medium")
-                
-                with col_add:
-                    try:
-                        # Style the button to align vertically with the content box
-                        st.markdown("""
-                    <style>
-                    /* Force override all button styling */
-                    button[kind="secondary"] {
-                        height: 48px !important;
-                        border: 2.2px solid #ececec !important;
-                        border-radius: 4px !important;
-                        margin-top: -5px !important;  /* Move button up */
-                        transform: translateY(-5px) !important;  /* Additional upward adjustment */
-                        background-color: #d3d3d3 !important;  
-                        color: black !important;  /* black text */
-                    }
-                        
-                    button[kind="secondary"]:hover {
-                        border: 2.2px solid #ececec !important;
-                        transform: translateY(-5px) !important;  /* Keep position on hover */
-                        background-color: #d3d3d3 !important;  /* Slightly lighter on hover */
-                        color: black !important;  /* Keep black text on hover */
-                    }
-                        
-                    button[kind="secondary"]:focus {
-                        border: 2.2px solid #ececec !important;
-                        outline: 2px solid #ececec !important;
-                        transform: translateY(-5px) !important;  /* Keep position on focus */
-                        background-color: #d3d3d3 !important;  /* Keep dark background on focus */
-                        color: black !important;  /* Keep black text on focus */
-                    }
-                        
-                    /* Try targeting by data attributes */
-                    [data-testid] button {
-                        border: 2.2px solid #ececec !important;
-                        height: 48px !important;
-                        margin-top: -5px !important;  /* Move button up */
-                        transform: translateY(-5px) !important;  /* Additional upward adjustment */
-                        background-color: #d3d3d3 !important;  /* Dark greyish background */
-                        color: black !important;  /* black text */
-                    }
+                spoc_name_provided = bool(client_data.spoc_name.strip())
+                if st.button(button_text, 
+                            key=button_key, 
+                            help=button_help,
+                            type=button_type,
+                            disabled=is_locked or not client_name_provided):
                     
-                    /* Additional targeting for button text specifically */
-                    button[kind="secondary"] p,
-                    button[kind="secondary"] span,
-                    button[kind="secondary"] div {
-                        color: black !important;
-                    }
-                    
-                    [data-testid] button p,
-                    [data-testid] button span,
-                    [data-testid] button div {
-                        color: black !important;
-                    }
-                    </style>
-                    """, unsafe_allow_html=True) 
-                        
-                        button_text = "❌" if is_selected else "➕"
-                        button_help = f"Remove '{priority_title}' from SPOC priorities" if is_selected else f"Add '{priority_title}' to SPOC priorities"
-                        button_type = "secondary"
-                        
-                        if st.button(button_text, 
-                                    key=f"toggle_business_priority_{i}_{hash(current_role or 'none')}", 
-                                    help=button_help,
-                                    type=button_type,
-                                    disabled=is_locked or not client_name_provided):
-                            
-                            logger.info(f"Business priority button clicked for '{priority_title}', current selection: {is_selected}")
-                            
-                            try:
-                                if is_selected:
-                                    # ❌ REMOVE FUNCTIONALITY - Clear and Simple
-                                    logger.info(f"REMOVING priority '{priority_title}' from SPOC priorities")
-                                    
-                                    try:
-                                        # Remove from selected priorities list
-                                        updated_priorities = [p for p in client_data.selected_business_priorities if p != priority_title]
-                                        
-                                        logger.info(f"Updated priorities list: {len(updated_priorities)} items (removed '{priority_title}')")
-                                        
-                                        # Update client data
-                                        client_state_manager.update_client_data(selected_business_priorities=updated_priorities)
-                                        
-                                        logger.info(f"Successfully REMOVED priority '{priority_title}'")
-                                        
-                                    except Exception as e:
-                                        logger.error(f"Error in REMOVE functionality for priority '{priority_title}': {str(e)}")
-                                        set_global_message("Priority removal failed - Couldn't remove the selected priority. Please try again")
-                                    
-                                else:
-                                    # ➕ ADD FUNCTIONALITY - Clear and Simple
-                                    logger.info(f"ADDING priority '{priority_title}' to SPOC priorities")
-                                    
-                                    try:
-                                        # Add to selected priorities list (avoid duplicates)
-                                        current_priorities = list(client_data.selected_business_priorities)
-                                        if priority_title not in current_priorities:
-                                            updated_priorities = current_priorities + [priority_title]
-                                        else:
-                                            updated_priorities = current_priorities
-                                            logger.warning(f"Priority '{priority_title}' already exists, skipping duplicate")
-                                        
-                                        logger.info(f"Updated priorities list: {len(updated_priorities)} items (added '{priority_title}')")
-                                        
-                                        # Update client data
-                                        client_state_manager.update_client_data(selected_business_priorities=updated_priorities)
-                                        
-                                        logger.info(f"Successfully ADDED priority '{priority_title}'")
-                                        
-                                    except Exception as e:
-                                        logger.error(f"Error in ADD functionality for priority '{priority_title}': {str(e)}")
-                                        set_global_message("Priority addition failed - Couldn't add the selected priority. Please try again")
-                                
-                                # CRITICAL: Trigger UI refresh to show updated selection state
-                                st.rerun()
-                                
-                            except Exception as e:
-                                logger.error(f"Error handling priority button click for '{priority_title}': {str(e)}")
-                                set_global_message("Priority update failed - Please try your selection again")
-                                
-                    except Exception as e:
-                        logger.error(f"Error rendering button for priority '{priority_title}': {str(e)}")
-                        set_global_message("Button display issue - Please refresh the page to restore full functionality")
-
-                with col_content:
                     try:
-                        # Style the content box based on selection state
                         if is_selected:
-                            background_color = "#DCEBD6"
-                            border_color = "#ececec"
-                            text_color = "#000000"
-                            display_icon = "✅"
-                            box_shadow = "0 2px 8px rgba(76, 175, 80, 0.3)"
+                            # REMOVE FUNCTIONALITY
+                            logger.info(f"Removing priority '{priority_title}' from SPOC priorities")
+                            
+                            # Remove from selected priorities
+                            current_priorities = list(getattr(fresh_client_data, 'selected_business_priorities', []))
+                            updated_priorities = [p for p in current_priorities if p != priority_title]
+                            
+                            client_state_manager.update_client_data(selected_business_priorities=updated_priorities)
+                            logger.info(f"Successfully removed priority '{priority_title}'")
+                            
                         else:
-                            background_color = "#f5f5f5"
-                            border_color = "#ececec"
-                            text_color = "#000000"
-                            display_icon = priority_icon
-                            box_shadow = "0 2px 4px rgba(0,0,0,0.1)"
+                            # ADD FUNCTIONALITY
+                            logger.info(f"Adding priority '{priority_title}' to SPOC priorities")
+                            
+                            # Add to selected priorities
+                            current_priorities = list(getattr(fresh_client_data, 'selected_business_priorities', []))
+                            if priority_title not in current_priorities:  # Avoid duplicates
+                                updated_priorities = current_priorities + [priority_title]
+                                client_state_manager.update_client_data(selected_business_priorities=updated_priorities)
+                                logger.info(f"Successfully added priority '{priority_title}'")
                         
-                        st.markdown(f"""
-                        <div style="
-                            padding: 12px;
-                            border-radius: 6px;
-                            margin: 5px 0;
-                            background-color: {background_color};
-                            border: 2px solid {border_color};
-                            color: {text_color};
-                            font-weight: 500;
-                            box-shadow: {box_shadow};
-                            min-height: 24px;
-                            display: flex;
-                            align-items: center;
-                            transition: all 0.3s ease;
-                        ">
-                            {display_icon} {priority_title}
-                        </div>
-                        """, unsafe_allow_html=True)
-                        
-                        logger.debug(f"Successfully rendered content box for priority '{priority_title}'")
+                        # Force a rerun to reflect changes immediately
+                        st.rerun()
                         
                     except Exception as e:
-                        logger.error(f"Error rendering content box for priority '{priority_title}': {str(e)}")
-                        set_global_message("Content display issue - Please refresh the page to restore full functionality")
-                        
-            except Exception as e:
-                logger.error(f"Error processing priority item {i}: {str(e)}")
-                set_global_message("Processing error - We couldn't process your selection. Please try again")
+                        logger.error(f"Error handling priority button click for '{priority_title}': {str(e)}")
+                        set_global_message("Priority update failed - Please try your selection again", "error")
+
+            with col_content:
+                # Style the content box based on selection state
+                if is_selected:
+                    background_color = "#DCEBD6"
+                    border_color = "#ececec"
+                    text_color = "#000000"
+                    display_icon = "✅"
+                    box_shadow = "0 2px 8px rgba(76, 175, 80, 0.3)"
+                else:
+                    background_color = "#f5f5f5"
+                    border_color = "#ececec"
+                    text_color = "#000000"
+                    display_icon = priority_icon
+                    box_shadow = "0 2px 4px rgba(0,0,0,0.1)"
                 
-    except Exception as e:
-        logger.error(f"Critical error in SPOC business priorities section: {str(e)}")
-        set_global_message("Service interruption - We're experiencing technical difficulties. Please refresh the page or contact support")
+                st.markdown(f"""
+<div style="
+    padding: 12px;
+    border-radius: 6px;
+    margin: -5px 0 5px 0;
+    background-color: {background_color};
+    border: 2px solid {border_color};
+    color: {text_color};
+    font-weight: 500;
+    box-shadow: {box_shadow};
+    min-height: 24px;
+    display: flex;
+    align-items: center;
+    transition: all 0.3s ease;
+    transform: translateY(-8px);
+">
+    {display_icon} {priority_title}
+</div>
+""", unsafe_allow_html=True)
+    else:
+        # Show loading message when priorities are being fetched
+        st.info("🤖 Loading AI business priorities...")
+
 
 @st.fragment
 def render_fifth_section(spoc_name_provided, spoc_linkedin_profile, client_data, logger, is_locked):
@@ -1870,6 +1918,7 @@ def render_fifth_section(spoc_name_provided, spoc_linkedin_profile, client_data,
 
     with col8:
         render_spoc_business_priorities_section(spoc_name_provided, client_data, logger, is_locked)
+        
 @st.fragment
 def render_sixth_section(logger, is_locked, client_data):
     # Get current client state
@@ -1922,202 +1971,143 @@ def render_sixth_section(logger, is_locked, client_data):
         ''', unsafe_allow_html=True)
         logger.info("Rendered additional specifications tooltip")
         
-        try:
-            # Get additional specs items from client data or use dummy data
-            if client_name_provided and client_data.additional_specs_items:
-                additional_specs_items = client_data.additional_specs_items
-                logger.info(f"Using {len(additional_specs_items)} client-specific additional specs")
-            else:
-                # Dummy data when no client name or no specific data
-                additional_specs_items = {
-                    "Technical Infrastructure Requirements": "TECHNICAL INFRASTRUCTURE REQUIREMENTS\n• Cloud hosting with 99.9% uptime SLA and auto-scaling capabilities\n• Multi-region deployment for disaster recovery and performance optimization\n• Integration with existing ERP, CRM, and financial management systems\n• API-first architecture with RESTful services and webhook support\n• Database performance optimization with sub-second query response times\n• Security compliance with SOC2, ISO 27001, and industry-specific regulations\n• Load balancing and CDN implementation for global content delivery\n• Automated backup and recovery systems with point-in-time restoration\n\n",
-                    
-                    "Compliance and Security Standards": "COMPLIANCE AND SECURITY STANDARDS\n• GDPR, CCPA, and regional data privacy regulation compliance\n• End-to-end encryption for data in transit and at rest\n• Multi-factor authentication and role-based access controls\n• Regular security audits and penetration testing protocols\n• Data retention and deletion policies per regulatory requirements\n• Audit trail logging for all system interactions and data changes\n• Incident response plan with 4-hour notification requirements\n• Employee background checks and security clearance verification\n\n",
-                    
-                    "Performance and Scalability Metrics": "PERFORMANCE AND SCALABILITY METRICS\n• System response time under 2 seconds for 95% of user interactions\n• Concurrent user capacity of 10,000+ with linear scaling capability\n• Database query optimization with indexing and caching strategies\n• Mobile application performance with offline synchronization\n• Bandwidth optimization for low-connectivity environments\n• Real-time analytics and reporting with sub-minute data refresh\n• Automated performance monitoring with threshold-based alerting\n• Capacity planning with predictive scaling based on usage patterns\n\n"
-                }
-                logger.info("Using default additional specs items")
-
-            # Use a single container for all additional specs items
-            with st.container():
-                logger.debug(f"Rendering {len(additional_specs_items)} additional spec items")
+        # Get additional specs items from client data or use dummy data
+        if client_name_provided and client_data.additional_specs_items:
+            additional_specs_items = client_data.additional_specs_items
+            logger.info(f"Using {len(additional_specs_items)} client-specific additional specs")
+        else:
+            # Dummy data when no client name or no specific data
+            additional_specs_items = {
+                "Technical Infrastructure Requirements": "**Technical Infrastructure Requirements**\n• Cloud hosting with 99.9% uptime SLA and auto-scaling capabilities\n• Multi-region deployment for disaster recovery and performance optimization\n• Integration with existing ERP, CRM, and financial management systems\n• API-first architecture with RESTful services and webhook support\n• Database performance optimization with sub-second query response times\n• Security compliance with SOC2, ISO 27001, and industry-specific regulations\n• Load balancing and CDN implementation for global content delivery\n• Automated backup and recovery systems with point-in-time restoration\n\n",
                 
-                # Display additional specs items with add/remove buttons
-                for i, (key, value) in enumerate(additional_specs_items.items()):
-                    try:
-                        logger.debug(f"Processing additional spec item {i}: {key}")
-                        
-                        # Check if this item is selected
-                        try:
-                            is_selected = key in client_data.selected_additional_specs
-                            logger.debug(f"Additional spec '{key}' selection status: {is_selected}")
-                        except Exception as e:
-                            logger.error(f"Error checking selection status for '{key}': {str(e)}")
-                            is_selected = False
-                        
-                        # Create a box container with +/- button and content on same horizontal level
-                        col_add, col_content = st.columns([0.5, 9], gap="medium")
-                        
-                        with col_add:
-                            try:
-                                # Style the button to align vertically with the content box
-                                st.markdown("""
-                                <style>
-                                div[data-testid="column"] > div > div > button {
-                                    height: 48px !important;
-                                    margin-top: 5px !important;
-                                }
-                                </style>
-                                """, unsafe_allow_html=True)
-                                
-                                # Change button appearance based on selection state
-                                button_text = "❌" if is_selected else "➕"
-                                button_help = f"Remove '{key}' from additional requirements" if is_selected else f"Add '{key}' to additional requirements section"
-                                button_type = "secondary" 
-                                
-                                if st.button(button_text, 
-                                        key=f"toggle_additional_spec_item_{i}", 
-                                        help=button_help,
-                                        type=button_type,
-                                        disabled=not client_name_provided or is_locked):
-                                    
-                                    logger.info(f"Additional spec button clicked for '{key}', current selection: {is_selected}")
-                                    
-                                    try:
-                                        if is_selected:
-                                            # ❌ REMOVE FUNCTIONALITY - Clear and Simple
-                                            logger.info(f"REMOVING additional spec '{key}' from requirements")
-                                            
-                                            try:
-                                                # Step 1: Remove from selected set
-                                                new_selected_specs = client_data.selected_additional_specs.copy()
-                                                new_selected_specs.discard(key)
-                                                
-                                                # Step 2: Remove from content map
-                                                new_content_map = client_data.additional_specs_content_map.copy()
-                                                if key in new_content_map:
-                                                    del new_content_map[key]
-                                                
-                                                # Step 3: Rebuild content from scratch using only remaining selected items
-                                                remaining_content_parts = []
-                                                for selected_key in new_selected_specs:
-                                                    if selected_key in additional_specs_items:
-                                                        remaining_content_parts.append(additional_specs_items[selected_key].strip())
-                                                
-                                                # Step 4: Join remaining content with double newlines
-                                                updated_content = "\n\n".join(remaining_content_parts)
-                                                
-                                                logger.info(f"Rebuilt additional specs content with {len(remaining_content_parts)} remaining items")
-                                                logger.debug(f"Updated content length: {len(updated_content)}")
-                                                
-                                                # Step 5: Update client data
-                                                client_state_manager.update_multiple_fields(
-                                                    client_additional_requirements_content=updated_content,
-                                                    selected_additional_specs=new_selected_specs,
-                                                    additional_specs_content_map=new_content_map
-                                                )
-                                                
-                                                logger.info(f"Successfully REMOVED additional spec '{key}'")
-                                                
-                                            except Exception as e:
-                                                logger.error(f"Error in REMOVE functionality for '{key}': {str(e)}")
-                                                set_global_message("Item removal failed - Couldn't remove the selected item. Please try again")
-                                            
-                                        else:
-                                            # ➕ ADD FUNCTIONALITY - Clear and Simple
-                                            logger.info(f"ADDING additional spec '{key}' to requirements")
-                                            
-                                            try:
-                                                # Step 1: Add to selected set
-                                                new_selected_specs = client_data.selected_additional_specs.copy()
-                                                new_selected_specs.add(key)
-                                                
-                                                # Step 2: Add to content map
-                                                new_content_map = client_data.additional_specs_content_map.copy()
-                                                new_content_map[key] = value.strip()
-                                                
-                                                # Step 3: Get current content
-                                                current_content = client_data.client_additional_requirements_content or ""
-                                                
-                                                # Step 4: Append new content
-                                                if current_content.strip():
-                                                    new_content = current_content.strip() + "\n\n" + value.strip()
-                                                else:
-                                                    new_content = value.strip()
-                                                
-                                                logger.info(f"Added additional spec content, new length: {len(new_content)}")
-                                                
-                                                # Step 5: Update client data
-                                                client_state_manager.update_multiple_fields(
-                                                    client_additional_requirements_content=new_content,
-                                                    selected_additional_specs=new_selected_specs,
-                                                    additional_specs_content_map=new_content_map
-                                                )
-                                                
-                                                logger.info(f"Successfully ADDED additional spec '{key}'")
-                                                
-                                            except Exception as e:
-                                                logger.error(f"Error in ADD functionality for '{key}': {str(e)}")
-                                                set_global_message("Item addition failed - Couldn't add the selected item. Please try again")
-                                        
-                                        st.rerun()
-                                        
-                                    except Exception as e:
-                                        logger.error(f"Error handling button click for '{key}': {str(e)}")
-                                        set_global_message("Selection update failed - Please try your selection again")
-                                        
-                            except Exception as e:
-                                logger.error(f"Error rendering button for additional spec '{key}': {str(e)}")
-                                set_global_message("Button display issue - Please refresh the page to restore full functionality")
+                "Compliance and Security Standards": "**Compliance and Security Standards**\n• GDPR, CCPA, and regional data privacy regulation compliance\n• End-to-end encryption for data in transit and at rest\n• Multi-factor authentication and role-based access controls\n• Regular security audits and penetration testing protocols\n• Data retention and deletion policies per regulatory requirements\n• Audit trail logging for all system interactions and data changes\n• Incident response plan with 4-hour notification requirements\n• Employee background checks and security clearance verification\n\n",
+                
+                "Performance and Scalability Metrics": "**Performance and Scalability Metrics**\n• System response time under 2 seconds for 95% of user interactions\n• Concurrent user capacity of 10,000+ with linear scaling capability\n• Database query optimization with indexing and caching strategies\n• Mobile application performance with offline synchronization\n• Bandwidth optimization for low-connectivity environments\n• Real-time analytics and reporting with sub-minute data refresh\n• Automated performance monitoring with threshold-based alerting\n• Capacity planning with predictive scaling based on usage patterns\n\n"
+            }
+            logger.info("Using default additional specs items")
 
-                        with col_content:
-                            try:
-                                # Style the content box based on selection state
-                                if is_selected:
-                                    background_color = "#DCEBD6"
-                                    border_color = "#ececec"
-                                    text_color = "#000000"
-                                    icon = "✅"
-                                    box_shadow = "0 2px 8px rgba(76, 175, 80, 0.3)"
-                                else:
-                                    background_color = "#f5f5f5"
-                                    border_color = "#ececec"
-                                    text_color = "#000000"
-                                    icon = "📋"
-                                    box_shadow = "0 2px 4px rgba(0,0,0,0.1)"
-                                
-                                st.markdown(f"""
-                                <div style="
-                                    padding: 12px;
-                                    border-radius: 6px;
-                                    margin: 5px 0;
-                                    background-color: {background_color};
-                                    border: 2px solid {border_color};
-                                    color: {text_color};
-                                    font-weight: 500;
-                                    box-shadow: {box_shadow};
-                                    min-height: 24px;
-                                    display: flex;
-                                    align-items: center;
-                                    transition: all 0.3s ease;
-                                ">
-                                    {icon} {key}
-                                </div>
-                                """, unsafe_allow_html=True)
-                                
-                                logger.debug(f"Successfully rendered content box for additional spec '{key}'")
-                                
-                            except Exception as e:
-                                logger.error(f"Error rendering content box for additional spec '{key}': {str(e)}")
-                                set_global_message("Content display issue - Please refresh the page to restore full functionality")
-                                
-                    except Exception as e:
-                        logger.error(f"Error processing additional spec item {i} ('{key}'): {str(e)}")
-                        set_global_message("Processing error - We couldn't process your selection. Please try again")
+        # Use a single container for all additional specs items
+        with st.container():
+            # Display additional specs items with add/remove buttons
+            for i, (key, value) in enumerate(additional_specs_items.items()):
+                # Check if this item is selected
+                is_selected = key in client_data.selected_additional_specs
+                
+                # Create a box container with +/- button and content on same horizontal level
+                col_add, col_content = st.columns([0.5, 9], gap="medium")
+                
+                with col_add:
+                    # Style the button to align vertically with the content box
+                    st.markdown("""
+                    <style>
+                    div[data-testid="column"] > div > div > button {
+                        height: 48px !important;
+                        margin-top: 5px !important;
+                    }
+                    </style>
+                    """, unsafe_allow_html=True)
+                    
+                    # Change button appearance based on selection state
+                    button_text = "❌" if is_selected else "➕"
+                    button_help = f"Remove '{key}' from additional requirements" if is_selected else f"Add '{key}' to additional requirements section"
+                    button_type = "secondary" 
+                    
+                    if st.button(button_text, 
+                            key=f"toggle_additional_spec_item_{i}", 
+                            help=button_help,
+                            type=button_type,
+                            disabled=not client_name_provided or is_locked):
                         
-        except Exception as e:
-            logger.error(f"Error rendering additional specs container: {str(e)}")
-            set_global_message("Additional specs section unavailable - Please refresh the page to restore functionality")
+                        if is_selected:
+                            # REMOVE FUNCTIONALITY
+                            # Get current content from the state
+                            current_content = client_data.client_additional_requirements_content
+                            
+                            # Get the original content that was added for this key
+                            original_content = client_data.additional_specs_content_map.get(key, value)
+                            
+                            # Remove this specific additional spec section from content
+                            # Try multiple removal patterns to be more robust
+                            patterns_to_remove = [
+                                f"\n\n{original_content}",
+                                f"{original_content}\n\n",
+                                original_content
+                            ]
+                            
+                            updated_content = current_content
+                            for pattern in patterns_to_remove:
+                                updated_content = updated_content.replace(pattern, "")
+                            
+                            # Clean up any excessive newlines
+                            updated_content = '\n\n'.join([section.strip() for section in updated_content.split('\n\n') if section.strip()])
+                            
+                            # Update the state using the new manager methods
+                            client_state_manager.update_multiple_fields(
+                                client_additional_requirements_content=updated_content,
+                                selected_additional_specs=client_data.selected_additional_specs - {key},
+                                additional_specs_content_map={k: v for k, v in client_data.additional_specs_content_map.items() if k != key}
+                            )
+                            
+                            logger.info(f"Removed additional spec: {key}")
+                            
+                        else:
+                            # ADD FUNCTIONALITY
+                            # Get current content from the state
+                            current_content = client_data.client_additional_requirements_content
+                            
+                            # Append the value to the content
+                            new_content = current_content + f"\n\n{value}" if current_content else value
+                            
+                            # Update the state using the new manager methods
+                            new_selected_specs = client_data.selected_additional_specs.copy()
+                            new_selected_specs.add(key)
+                            
+                            new_content_map = client_data.additional_specs_content_map.copy()
+                            new_content_map[key] = value
+                            
+                            client_state_manager.update_multiple_fields(
+                                client_additional_requirements_content=new_content,
+                                selected_additional_specs=new_selected_specs,
+                                additional_specs_content_map=new_content_map
+                            )
+                            
+                            logger.info(f"Added additional spec: {key}")
+                        
+                        st.rerun()
+
+                with col_content:
+                    # Style the content box based on selection state
+                    if is_selected:
+                        background_color = "#DCEBD6"
+                        border_color = "#ececec"
+                        text_color = "#000000"
+                        icon = "✅"
+                        box_shadow = "0 2px 8px rgba(76, 175, 80, 0.3)"
+                    else:
+                        background_color = "#f5f5f5"
+                        border_color = "#ececec"
+                        text_color = "#000000"
+                        icon = "📋"
+                        box_shadow = "0 2px 4px rgba(0,0,0,0.1)"
+                    
+                    st.markdown(f"""
+                    <div style="
+                        padding: 12px;
+                        border-radius: 6px;
+                        margin: 5px 0;
+                        background-color: {background_color};
+                        border: 2px solid {border_color};
+                        color: {text_color};
+                        font-weight: 500;
+                        box-shadow: {box_shadow};
+                        min-height: 24px;
+                        display: flex;
+                        align-items: center;
+                        transition: all 0.3s ease;
+                    ">
+                        {icon} {key}
+                    </div>
+                    """, unsafe_allow_html=True)
                     
 
 def client_tab(st, logger, is_locked):

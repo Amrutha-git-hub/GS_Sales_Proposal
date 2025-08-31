@@ -1,7 +1,7 @@
 import streamlit as st
 from streamlit_extras.stylable_container import stylable_container
 import time
-from Client.client import client_tab,validate_client_mandatory_fields
+from Client.client import client_tab, validate_client_mandatory_fields
 from Seller.seller import seller_tab
 from ProjectSpecification_tab.project_spec import proj_specification_tab
 from Proposal_writing_tab.proposal_generator import generate_tab
@@ -14,32 +14,18 @@ import uuid
 import random
 from main_css import *
 
-
 from dotenv import load_dotenv
 load_dotenv()
 from config import load_env_variables
 load_env_variables()
 
-
 import time
 from datetime import datetime, timedelta
 from Common_Utils.common_utils import set_global_message
 
-
 def generate_session_id():
     """Generate a unique session ID for the user"""
     return str(uuid.uuid4())
-
-import os
-import logging
-from datetime import datetime
-import streamlit as st
-
-def generate_session_id():
-    """Placeholder session ID generator."""
-    print("---------")
-    return datetime.now().strftime('%Y%m%d%H%M%S%f')  # Replace with your actual logic
-
 
 def get_or_set_session_cookie():
     """Persist session_id using browser cookie across refreshes."""
@@ -58,13 +44,12 @@ def get_or_set_session_cookie():
     st.session_state.session_id = session_id
     return session_id
 
-
 def setup_logging():
     """Setup logging configuration for client module with session-based logging."""
     try:
         # Initialize session ID if not exists
         if 'session_id' not in st.session_state:
-            st.session_state.session_id =get_or_set_session_cookie()
+            st.session_state.session_id = get_or_set_session_cookie()
 
         # Check if logger is already initialized
         if 'logger_initialized' in st.session_state and st.session_state.logger_initialized:
@@ -153,95 +138,21 @@ Additional Notes:
 - UAT phase: 4 weeks
 - Go-live date: Q3 2024"""
 
+# @st.dialog("⚠️ Validation Error")
 def show_validation_popup(missing_tab_name, missing_fields=None):
-    """Show validation error popup with professional styling"""
+    """Show validation error popup using st.dialog"""
+    set_global_message("Please fill all the necessary field first")
     
-    # Create professional popup modal
-    with stylable_container(
-        f"validation_popup_{missing_tab_name.replace(' ', '_')}",
-        css_styles=css_styles,
-    ):
-        # Header with icon and title
-        st.markdown(
-            f"""
-            <div style="text-align: center; margin-bottom: 20px;">
-                <div style="background: #fed7d7; border-radius: 50%; width: 60px; height: 60px; 
-                           display: flex; align-items: center; justify-content: center; 
-                           margin: 0 auto 15px auto; border: 2px solid #fc8181;">
-                    <span style="font-size: 24px; color: #f56565;">⚠️</span>
-                </div>
-                <h3 style="color: #2d3748; margin: 0; font-size: 20px; font-weight: 600;">
-                    Validation Error
-                </h3>
-            </div>
-            """, 
-            unsafe_allow_html=True
-        )
-        
-        # Error message
-        st.markdown(
-            f"""
-            <div style="text-align: center; margin-bottom: 25px;">
-                <p style="font-size: 15px; color: #e53e3e; line-height: 1.6; margin-bottom: 10px; font-weight: 500;">
-                    Please complete all mandatory fields in the <strong>"{missing_tab_name}"</strong> tab first!
-                </p>
-            </div>
-            """, 
-            unsafe_allow_html=True
-        )
-        
-        # Show missing fields if provided
-        if missing_fields:
-            st.markdown(
-                f"""
-                <div style="background: #fef5e7; border: 1px solid #f6ad55; border-radius: 8px; 
-                           padding: 15px; margin-bottom: 20px;">
-                    <p style="font-size: 14px; color: #c05621; margin: 0; font-weight: 500;">
-                        <strong>Missing Required Fields:</strong>
-                    </p>
-                    <p style="font-size: 14px; color: #9c4221; margin: 5px 0 0 0; line-height: 1.4;">
-                        {missing_fields}
-                    </p>
-                </div>
-                """, 
-                unsafe_allow_html=True
-            )
-        
-        # Action button
-        col1, col2, col3 = st.columns([1, 2, 1])
-        with col2:
-            with stylable_container(
-                f"validation_ok_btn_{missing_tab_name.replace(' ', '_')}",
-                css_styles="""
-                button {
-                    background-color: #f56565 !important;
-                    color: black !important;
-                    border: 1px solid #f56565 !important;
-                    border-radius: 6px !important;
-                    padding: 10px 20px !important;
-                    font-weight: 600 !important;
-                    width: 100% !important;
-                    transition: all 0.2s ease !important;
-                    font-size: 15px !important;
-                }
-                button:hover {
-                    background-color: #e53e3e !important;
-                    border-color: #e53e3e !important;
-                    transform: translateY(-1px) !important;
-                    box-shadow: 0 4px 8px rgba(245, 101, 101, 0.3) !important;
-                }
-                """,
-            ):
-                if st.button("Got it!", key=f"validation_ok_{missing_tab_name.replace(' ', '_')}"):
-                    # Clear validation popup state
-                    validation_key = f"show_validation_popup_{missing_tab_name.replace(' ', '_')}"
-                    if validation_key in st.session_state:
-                        del st.session_state[validation_key]
-                    st.rerun()
+    # st.error(f"Please complete all mandatory fields in the **{missing_tab_name}** tab first!")
     
-    return True
+    # if missing_fields:
+    #     st.warning(f"**Missing Required Fields:** {missing_fields}")
+    
+    # # Single OK button
+    # if st.button("Got it!", key=f"validation_ok_{missing_tab_name.replace(' ', '_')}", use_container_width=True, type="primary"):
+    #     # Clear validation popup state and rerun
+    #     st.rerun()
 
-# Updated function to trigger validation popup
 def trigger_validation_popup(missing_tab_name, missing_fields=None):
     """Trigger validation popup by setting session state"""
     validation_key = f"show_validation_popup_{missing_tab_name.replace(' ', '_')}"
@@ -249,18 +160,21 @@ def trigger_validation_popup(missing_tab_name, missing_fields=None):
         'tab_name': missing_tab_name,
         'missing_fields': missing_fields
     }
-
+    st.rerun()
 
 def handle_validation_popups():
-    """Handle validation popups display"""
+    """Handle validation popups display - call this at the top of your main app"""
     tab_names = ["Client Information", "Seller Information", "Project Specifications", "Generate Proposal"]
     
     for tab_name in tab_names:
         validation_key = f"show_validation_popup_{tab_name.replace(' ', '_')}"
         if validation_key in st.session_state and st.session_state[validation_key]:
             popup_data = st.session_state[validation_key]
+            # Clear the validation state before showing popup
+            del st.session_state[validation_key]
+            # Show the popup
             show_validation_popup(popup_data['tab_name'], popup_data.get('missing_fields'))
-            st.stop()  # Stop execution to show only the popup
+            break  # Only show one popup at a time
 
 def refresh_all_data():
     """Clear all session state and form data"""
@@ -269,8 +183,6 @@ def refresh_all_data():
     logger_initialized = st.session_state.get('logger_initialized', False)
     
     # Clear all session state variables
-
-    
     for key in list(st.session_state.keys()):
         if key in st.session_state:
             del st.session_state[key]
@@ -308,9 +220,8 @@ def validate_seller_mandatory_fields():
     """Validate seller mandatory fields"""
     seller = st.session_state.seller_data_from_tab
 
-    # Ensure both fields are non-empty after stripping blackspace
+    # Ensure both fields are non-empty after stripping whitespace
     return seller is not None and bool(seller.seller_enterprise_name.strip()) and bool(seller.seller_requirements_content.strip())
-
 
 def validate_project_mandatory_fields():
     """Validate project specification mandatory fields"""
@@ -354,7 +265,6 @@ def is_tab_accessible(tab_index):
     
     return False
 
-
 def should_show_lock_confirmation(target_tab_index):
     """Determine if lock confirmation should be shown"""
     current_tab = st.session_state.active_tab
@@ -389,22 +299,26 @@ def navigate_to_tab(target_tab_index):
     # Check if tab is accessible
     if not is_tab_accessible(target_tab_index):
         # Show validation error for the blocking requirement
-        tab_names = ["Client Information", "Seller Information", "Project Specifications", "Generate Proposal"]
         if target_tab_index == 1 and not validate_client_mandatory_fields():
-            trigger_validation_popup("Client Information")
+            trigger_validation_popup("Client Information", "Please fill all required client fields")
+            return
         elif target_tab_index == 2:
             if not validate_client_mandatory_fields():
-                trigger_validation_popup("Client Information")
+                trigger_validation_popup("Client Information", "Please fill all required client fields")
+                return
             elif not validate_seller_mandatory_fields():
-                trigger_validation_popup("Seller Information")
+                trigger_validation_popup("Seller Information", "Please fill all required seller fields")
+                return
         elif target_tab_index == 3:
             if not validate_client_mandatory_fields():
-                trigger_validation_popup("Client Information")
+                trigger_validation_popup("Client Information", "Please fill all required client fields")
+                return
             elif not validate_seller_mandatory_fields():
-                trigger_validation_popup("Seller Information")
+                trigger_validation_popup("Seller Information", "Please fill all required seller fields")
+                return
             elif not validate_project_mandatory_fields():
-                trigger_validation_popup("Project Specifications")
-        return
+                trigger_validation_popup("Project Specifications", "Please fill all required project fields")
+                return
     
     # For backward navigation, just navigate
     if target_tab_index < current_tab:
@@ -476,9 +390,6 @@ def show_lock_confirmation_popup(tab_index):
             # Force close dialog and navigate
             st.rerun()
 
-
-#
-
 # Updated navigation button functions
 def navigate_to_next_tab():
     """Navigate to the next tab with validation and locking"""
@@ -496,7 +407,6 @@ def navigate_to_previous_tab():
     if current_tab > 0:
         st.session_state.active_tab = current_tab - 1
         st.rerun()
-
 
 def get_button_text(direction, current_tab):
     """Get button text with tab names"""
@@ -532,24 +442,20 @@ logger = setup_logging()
         
 from main_css import *
 st.markdown(app_css, unsafe_allow_html=True)
-
-st.markdown(content_area_css,unsafe_allow_html=True)
+st.markdown(content_area_css, unsafe_allow_html=True)
 st.markdown(sticky_header_css, unsafe_allow_html=True)
 
 # Add title - place this after your CSS but before the tab buttons
-# Replace your existing title section with this:
 st.markdown(header_css, unsafe_allow_html=True)
-
-
 st.markdown(button_css_2, unsafe_allow_html=True)
-
-
 st.markdown(button_css, unsafe_allow_html=True)
 
 # Initialize session state for active tab - ENSURE CLIENT TAB IS DEFAULT
 if 'active_tab' not in st.session_state:
     st.session_state.active_tab = 0
 
+# Handle validation popups FIRST - before any other UI elements
+handle_validation_popups()
 
 current_tab = st.session_state.active_tab
 confirmation_key = f"show_confirmation_{current_tab}"
@@ -624,23 +530,12 @@ for i, tab_name in enumerate(tab_names):
             ):
                 st.button(display_name, key=f"tab_{i}", use_container_width=True, disabled=True, type="primary")
 
-
-# # Handle confirmation dialogs - POPUP STYLE
-# current_tab = st.session_state.active_tab
-# confirmation_key = f"show_confirmation_{current_tab}"
-
-# if confirmation_key in st.session_state and st.session_state[confirmation_key]:
-#     show_lock_confirmation_popup(current_tab)
-    
-
-
 # Set is_active flag for current tab
 st.session_state.is_active = True
 
 # Show lock status message for locked tabs
 if is_tab_locked(current_tab):
     st.info(f"🔒 This tab is locked. You cannot modify the data in this tab.")
-
 
 # Content area with validation-aware tab switching
 if st.session_state.active_tab == 0:
@@ -653,24 +548,23 @@ elif st.session_state.active_tab == 1:
         st.session_state.seller_data_from_tab = seller_tab(is_locked=is_tab_locked(1))
     else:
         st.session_state.active_tab = 0  # Force back to client tab
-        show_validation_popup("Client Information")
+        trigger_validation_popup("Client Information", "Please complete all required client fields")
         st.rerun()
 
 elif st.session_state.active_tab == 2:
     # Check both client and seller validations
     if not validate_client_mandatory_fields():
         st.session_state.active_tab = 0
-        trigger_validation_popup("Client Information")
+        trigger_validation_popup("Client Information", "Please complete all required client fields")
         st.rerun()
     elif not validate_seller_mandatory_fields():
         st.session_state.active_tab = 1
-        trigger_validation_popup("Seller Information")
+        trigger_validation_popup("Seller Information", "Please complete all required seller fields")
         st.rerun()
     else:
         # Only call proj_specification_tab if no confirmation dialog is active
         confirmation_active = any(key.startswith('show_confirmation_') and st.session_state.get(key, False) 
                                 for key in st.session_state.keys())
-        print("////////////////",confirmation_active)
         if not confirmation_active:
             st.session_state.project_specs_from_tab = proj_specification_tab(
                 st.session_state.client_data_from_tab, 
@@ -678,20 +572,19 @@ elif st.session_state.active_tab == 2:
                 is_locked=is_tab_locked(2)
             )
 
-
 else:  # Generate Proposal Tab
     # Check all validations
     if not validate_client_mandatory_fields():
         st.session_state.active_tab = 0
-        show_validation_popup("Client Information")
+        trigger_validation_popup("Client Information", "Please complete all required client fields")
         st.rerun()
     elif not validate_seller_mandatory_fields():
         st.session_state.active_tab = 1
-        show_validation_popup("Seller Information")
+        trigger_validation_popup("Seller Information", "Please complete all required seller fields")
         st.rerun()
     elif not validate_project_mandatory_fields():
         st.session_state.active_tab = 2
-        show_validation_popup("Project Specifications")
+        trigger_validation_popup("Project Specifications", "Please complete all required project fields")
         st.rerun()
     else:
         generate_tab(
@@ -722,7 +615,7 @@ with col1:
             }
             """,
         ):
-            st.button(prev_button_text, key="prev_btn", use_container_width=True, disabled=True,type="primary")
+            st.button(prev_button_text, key="prev_btn", use_container_width=True, disabled=True, type="primary")
     else:
         with stylable_container(
             "prev_button",
@@ -747,7 +640,7 @@ with col1:
             }
             """,
         ):
-            if st.button(prev_button_text, key="prev_btn", use_container_width=True,type="primary"):
+            if st.button(prev_button_text, key="prev_btn", use_container_width=True, type="primary"):
                 navigate_to_previous_tab()
 
 # Refresh Button
@@ -775,7 +668,7 @@ with col2:
         }
         """,
     ):
-        if st.button("🔄 Refresh All Data", key="refresh_btn", use_container_width=True,type="primary"):
+        if st.button("🔄 Refresh All Data", key="refresh_btn", use_container_width=True, type="primary"):
             refresh_all_data()
 
 # Next Button
@@ -797,7 +690,7 @@ with col3:
             }
             """,
         ):
-            st.button(next_button_text, key="next_btn", use_container_width=True, disabled=True,type="primary")
+            st.button(next_button_text, key="next_btn", use_container_width=True, disabled=True, type="primary")
     else:
         with stylable_container(
             "next_button",
@@ -817,5 +710,5 @@ with col3:
             }
             """,
         ):
-            if st.button(next_button_text, key="next_btn", use_container_width=True,type="primary"):
+            if st.button(next_button_text, key="next_btn", use_container_width=True, type="primary"):
                 navigate_to_next_tab()

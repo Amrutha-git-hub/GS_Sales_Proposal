@@ -11,6 +11,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 OUTPUT_DIR = os.getenv("OUTPUT_PATH")
+
 def render_template_preview(template_name, template_key):
     """
     Renders a template preview card with actual HTML rendering
@@ -150,73 +151,83 @@ def render_preview_tab(client_data, seller_data, project_specs):
                                                 [data-testid] button div {
                                                     color: white !important;
                                                 }
+                                                
+                                                /* Spinner styles */
+                                                .spinner-container {
+                                                    display: flex;
+                                                    flex-direction: column;
+                                                    align-items: center;
+                                                    justify-content: center;
+                                                    height: 400px;
+                                                    text-align: center;
+                                                }
+                                                
+                                                .spinner {
+                                                    border: 4px solid #f3f3f3;
+                                                    border-top: 4px solid #618f8f;
+                                                    border-radius: 50%;
+                                                    width: 60px;
+                                                    height: 60px;
+                                                    animation: spin 1s linear infinite;
+                                                    margin-bottom: 20px;
+                                                }
+                                                
+                                                @keyframes spin {
+                                                    0% { transform: rotate(0deg); }
+                                                    100% { transform: rotate(360deg); }
+                                                }
+                                                
+                                                .spinner-text {
+                                                    font-size: 18px;
+                                                    color: #618f8f;
+                                                    font-weight: 500;
+                                                }
                                                 </style>
                                                 """, unsafe_allow_html=True)
-        st.markdown("### 🔄 Generating Your Professional Proposal")
         
-        # Progress bar and status
-        progress_bar = st.progress(0)
-        status_text = st.empty()
+        # Show spinner while generating
+        spinner_placeholder = st.empty()
         
-        # Progress stages with actual timing
-        stages = [
-            ("🔍 Validating project details...", 0.2),
-            (f"🎨 Applying professional template...", 0.4),
-            ("📝 Generating proposal content...", 0.6),
-            ("⚖️ Adding terms and conditions...", 0.8),
-            ("✨ Final review and formatting...", 1.0)
-        ]
+        with spinner_placeholder.container():
+            st.markdown("""
+                <div class="spinner-container">
+                    <div class="spinner"></div>
+                    <div class="spinner-text">Getting your proposal ready...</div>
+                </div>
+            """, unsafe_allow_html=True)
         
         output_file = None
         
         try:
-            # Show progress stages with realistic timing
-            for i, (stage_text, progress) in enumerate(stages):
-                status_text.text(stage_text)
-                progress_bar.progress(progress)
+            # Generate the proposal
+            result = get_presentation(
+                client=client_data,
+                seller=seller_data,
+                project_specs=project_specs
+            )
 
-                # Add realistic delay for user experience
-                time.sleep(0.6)
+            if len(result) == 2:
+                html_content, file_path = result
+                pdf_path = None
+            elif len(result) == 3:
+                html_content, file_path, pdf_path = result
+            else:
+                raise ValueError("Unexpected return format from get_presentation")
+            
+            # Inline editing happens on the raw HTML string
+            edited_html = inline_editable_html_component(html_content)
 
-                # Only generate once at the last stage
-                if i == len(stages) - 1:
-                    # Get HTML + file paths (html_file, pdf_file)
-                    result = get_presentation(
-                    client=client_data,
-                    seller=seller_data,
-                    project_specs=project_specs
+            # Overwrite the saved HTML with the edited content
+            with open(file_path, "w", encoding="utf-8") as f:
+                f.write(edited_html)
+
+            # If edited content exists, regenerate the PDF from it
+            if edited_html.strip():
+                pdf_path = generate_pdf_from_html(
+                    edited_html,
+                    output_dir=OUTPUT_DIR,
+                    base_filename="salesproposal"
                 )
-
-                    if len(result) == 2:
-                        html_content, file_path = result
-                        pdf_path = None
-                    elif len(result) == 3:
-                        html_content, file_path, pdf_path = result
-                    else:
-                        raise ValueError("Unexpected return format from get_presentation")
-                    # Inline editing happens on the raw HTML string
-                    edited_html = inline_editable_html_component(html_content)
-
-                    # Overwrite the saved HTML with the edited content
-                    with open(file_path, "w", encoding="utf-8") as f:
-                        f.write(edited_html)
-
-                    # If edited content exists, regenerate the PDF from it
-                    if edited_html.strip():
-                        pdf_path = generate_pdf_from_html(
-                            edited_html,
-                            output_dir=OUTPUT_DIR,
-                            base_filename="salesproposal"
-                        )
-
-            # Complete the progress UI
-            progress_bar.progress(1.0)
-            status_text.text("✅ Proposal generation completed!")
-            time.sleep(0.5)
-
-            # Clear progress indicators
-            progress_bar.empty()
-            status_text.empty()
 
             # Store paths in session state for later download
             if os.path.exists(file_path) and os.path.exists(pdf_path):
@@ -224,18 +235,22 @@ def render_preview_tab(client_data, seller_data, project_specs):
                 st.session_state.proposal_pdf_path = pdf_path
                 st.session_state.proposal_generation_success = True
             else:
+                spinner_placeholder.empty()
                 st.error("❌ Error generating proposal files. Please try again.")
                 return
 
         except Exception as e:
-            progress_bar.empty()
-            status_text.empty()
+            spinner_placeholder.empty()
             st.error(f"❌ Error during proposal generation: {str(e)}")
             return
 
+        # Clear spinner once generation is complete
+        spinner_placeholder.empty()
 
         # --- Display success/download section ---
         if st.session_state.get("proposal_generation_success", False):
+            st.success("✅ Proposal generated successfully!")
+            
             pdf_path = st.session_state.get("proposal_pdf_path")
             if pdf_path and os.path.exists(pdf_path):
                 with open(pdf_path, "rb") as f:
@@ -253,36 +268,10 @@ def render_preview_tab(client_data, seller_data, project_specs):
                         mime="application/pdf",
                         use_container_width=True,
                         type="primary",
-                    
+                        key="proposal_pdf_download_button"
                     )
             else:
                 st.error("❌ PDF file not found. Please regenerate the proposal.")
-
-
-    # Display success section if generation was successful
-    if st.session_state.get('proposal_generation_success', False):
-        # Only show download button
-        if st.session_state.get('proposal_pdf_path') and os.path.exists(st.session_state.proposal_pdf_path):
-            with open(st.session_state.proposal_pdf_path, "rb") as file:
-                file_data = file.read()
-                
-            # Extract just the filename from the full path for the download
-            pdf_filename = os.path.basename(st.session_state.proposal_pdf_path)
-            
-            # Center the download button with limited width
-            col1, col2, col3 = st.columns([1, 1, 1])
-            with col2:
-                st.download_button(
-                    label="📥 Download PDF",
-                    data=file_data,
-                    file_name=pdf_filename,  # Use just the filename, not the full path
-                    mime="application/pdf",
-                    use_container_width=True,
-                    type="primary",
-                    key="proposal_pdf_download_button"
-                )
-        else:
-            st.error("❌ PDF file not found. Please regenerate the proposal.")
 
 
 def generate_tab(client_data, seller_data, additional_specs):

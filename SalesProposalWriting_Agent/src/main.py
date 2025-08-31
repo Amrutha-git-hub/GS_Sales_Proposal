@@ -79,13 +79,17 @@ def get_presentation(client, seller, project_specs, output_format='html'):
 
     #print("API caling---------------------------")
     state = graph.invoke(state)
+    #txt_file_path = "SalesProposalsGenerated_txt_and_html/client_seller_20250827_190946.txt"
+
     print(state)
     
     print(f"Starting HTML generation from: {txt_file_path}")
     
+
     try:
         html_content, html_file_path,pdf_file_path = generate_modern_presentation(
             filename=txt_file_path,
+
             client_name=state['client'].enterprise_name,
             client_logo_url=client_logo,
             seller_logo_url=seller_logo,

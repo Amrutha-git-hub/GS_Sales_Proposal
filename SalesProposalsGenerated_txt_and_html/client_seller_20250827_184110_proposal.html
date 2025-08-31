@@ -1,135 +1,156 @@
 <!DOCTYPE html>
 <html><head>
 <meta charset="utf-8">
-<title>title of the sales proposal</title>
+<title>Strategic Growth Solutions for Growth Sutra</title>
 <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700&display=swap');
-        :root {
-            --primary: #1a365d;
-            --secondary: #2d3748;
-            --accent: #3182ce;
-            --success: #38a169;
-            --background: #ffffff;
-            --surface: #f7fafc;
-            --text: #2d3748;
-            --text-light: #718096;
-            --border: #e2e8f0;
-        }
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700&display=swap');
 
-        body {
-            font-family: 'Inter', sans-serif;
-            line-height: 1.6;
-            color: var(--text);
-            background: var(--background);
-            font-size: 16px;
-        }
+:root {
+    --primary: #2d1b69;
+    --secondary: #553c9a;
+    --accent: #667eea;
+    --success: #48bb78;
+    --background: #ffffff;
+    --surface: #f8fafc;
+    --text: #1a202c;
+    --text-light: #718096;
+    --border: #e2e8f0;
+}
 
-        @page {
-            size: A4;
-            margin: 20mm 15mm 20mm 15mm;
-            @bottom-right {
-                content: "Page " counter(page);
-                font-family: 'Inter', sans-serif;
-                font-size: 12px;
-                color: var(--text-light);
-            }
-        }
+body {
+    font-family: 'Inter', sans-serif;
+    line-height: 1.6;
+    color: var(--text);
+    background: var(--background);
+    font-size: 16px;
+}
 
-        /* Cover Page */
-        .cover-page {
-            height: 100vh;
-            background: linear-gradient(135deg, #1a365df2 0%, #2d3748f2 50%, #3182cef2 100%);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            text-align: center;
-            page-break-after: always;
-        }
-        .cover-main-title {
-            font-family: 'Playfair Display', serif;
-            font-size: 4rem;
-            color: white;
-            margin: 0;
-        }
-        .cover-for {
-            font-size: 1.2rem;
-            color: rgba(255,255,255,0.8);
-            margin: 0.5rem 0;
-        }
-        .cover-client-name {
-            font-family: 'Playfair Display', serif;
-            font-size: 3rem;
-            color: white;
-        }
+@page {
+    size: A4;
+    margin: 20mm 15mm 20mm 15mm;
+    @bottom-right {
+        content: "Page " counter(page);
+        font-family: 'Inter', sans-serif;
+        font-size: 12px;
+        color: var(--text-light);
+    }
+}
 
-        /* Content Pages */
-        .content-page {
-            page-break-before: always;
-        }
-        .header-container {
-            margin-bottom: 1rem;
-        }
-        .page-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 0.5rem;
-        }
-        .header-logo {
-            max-height: 45px;
-            max-width: 150px;
-            object-fit: contain;
-        }
-        .header-line {
-            width: 100%;
-            height: 3px;
-            background: linear-gradient(90deg, var(--primary), var(--accent), var(--primary));
-            border: none;
-            margin: 0;
-        }
+/* Cover Page */
+.cover-page {
+    height: 100vh;
+    min-height: 297mm; /* A4 height for PDF */
+    background: linear-gradient(135deg, #2d1b69f2 0%, #553c9af2 50%, #667eeaf2 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    text-align: center;
+    page-break-after: always;
+    padding: 2rem;
+    box-sizing: border-box;
+}
 
-        .section {
-            margin: 2rem 0;
-            padding: 1rem;
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-        }
-        .section-title {
-            font-size: 1.5rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-            color: var(--primary);
-        }
-        .section-content p { margin-bottom: 1rem; }
-        </style>
+.cover-main-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 4.5rem;
+    font-weight: 700;
+    color: white;
+    margin: 2rem 0;
+    line-height: 1.1;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    max-width: 90%;
+}
+
+.cover-for {
+    font-size: 1.8rem;
+    font-weight: 300;
+    color: rgba(255,255,255,0.9);
+    margin: 1.5rem 0;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+}
+
+.cover-client-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 3.8rem;
+    font-weight: 600;
+    color: white;
+    margin: 2rem 0;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    max-width: 90%;
+}
+
+/* Content Pages */
+.content-page {
+    page-break-before: always;
+}
+
+.header-container {
+    margin-bottom: 1.5rem;
+    background: linear-gradient(135deg, rgba(45, 55, 72, 0.95) 0%, rgba(74, 85, 104, 0.95) 100%);
+    padding: 1rem 1.5rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.8rem;
+}
+
+.header-logo {
+    max-height: 50px;
+    max-width: 180px;
+    object-fit: contain;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 8px 12px;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.header-line {
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, rgba(255,255,255,0.8), rgba(66, 153, 225, 0.9), rgba(255,255,255,0.8));
+    border: none;
+    margin: 0;
+    border-radius: 2px;
+}
+
+.section {
+    margin: 2rem 0;
+    padding: 1rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+}
+
+.section-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--primary);
+}
+
+.section-content p { margin-bottom: 1rem; }
+</style>
 </head><body>
 <div class="cover-page">
-    <h1 class="cover-main-title">Sales Proposal</h1>
+    <h1 class="cover-main-title">Strategic Growth Solutions for Growth Sutra</h1>
     <h5 class="cover-for">for</h5>
-    <h1 class="cover-client-name">Growth sutra</h1>
+    <h1 class="cover-client-name">Innovate Inc.</h1>
 </div>
 
 <div class="content-page">
     <div class="header-container">
         <header class="page-header">
-            <img src="" alt="Client Logo" class="header-logo">
-            <img src="https://images.crunchbase.com/image/upload/v1613675726/clientapp/logo_crunchbase_primary.svg" alt="Seller Logo" class="header-logo">
-        </header>
-        <hr class="header-line">
-    </div>
-    <div class="section">
-        <h3 class="section-title">title of the sales proposal</h3>
-        <div class="section-content"><p>Strategic Growth Solutions for Growth Sutra</p></div>
-    </div>
-</div>
-
-<div class="content-page">
-    <div class="header-container">
-        <header class="page-header">
-            <img src="" alt="Client Logo" class="header-logo">
-            <img src="https://images.crunchbase.com/image/upload/v1613675726/clientapp/logo_crunchbase_primary.svg" alt="Seller Logo" class="header-logo">
+            <img src="https://logo.clearbit.com/google.com" alt="Client Logo" class="header-logo">
+            <img src="https://logo.clearbit.com/microsoft.com" alt="Seller Logo" class="header-logo">
         </header>
         <hr class="header-line">
     </div>
@@ -144,8 +165,8 @@
 <div class="content-page">
     <div class="header-container">
         <header class="page-header">
-            <img src="" alt="Client Logo" class="header-logo">
-            <img src="https://images.crunchbase.com/image/upload/v1613675726/clientapp/logo_crunchbase_primary.svg" alt="Seller Logo" class="header-logo">
+            <img src="https://logo.clearbit.com/google.com" alt="Client Logo" class="header-logo">
+            <img src="https://logo.clearbit.com/microsoft.com" alt="Seller Logo" class="header-logo">
         </header>
         <hr class="header-line">
     </div>
@@ -160,8 +181,8 @@
 <div class="content-page">
     <div class="header-container">
         <header class="page-header">
-            <img src="" alt="Client Logo" class="header-logo">
-            <img src="https://images.crunchbase.com/image/upload/v1613675726/clientapp/logo_crunchbase_primary.svg" alt="Seller Logo" class="header-logo">
+            <img src="https://logo.clearbit.com/google.com" alt="Client Logo" class="header-logo">
+            <img src="https://logo.clearbit.com/microsoft.com" alt="Seller Logo" class="header-logo">
         </header>
         <hr class="header-line">
     </div>
@@ -176,8 +197,8 @@
 <div class="content-page">
     <div class="header-container">
         <header class="page-header">
-            <img src="" alt="Client Logo" class="header-logo">
-            <img src="https://images.crunchbase.com/image/upload/v1613675726/clientapp/logo_crunchbase_primary.svg" alt="Seller Logo" class="header-logo">
+            <img src="https://logo.clearbit.com/google.com" alt="Client Logo" class="header-logo">
+            <img src="https://logo.clearbit.com/microsoft.com" alt="Seller Logo" class="header-logo">
         </header>
         <hr class="header-line">
     </div>
@@ -225,8 +246,8 @@
 <div class="content-page">
     <div class="header-container">
         <header class="page-header">
-            <img src="" alt="Client Logo" class="header-logo">
-            <img src="https://images.crunchbase.com/image/upload/v1613675726/clientapp/logo_crunchbase_primary.svg" alt="Seller Logo" class="header-logo">
+            <img src="https://logo.clearbit.com/google.com" alt="Client Logo" class="header-logo">
+            <img src="https://logo.clearbit.com/microsoft.com" alt="Seller Logo" class="header-logo">
         </header>
         <hr class="header-line">
     </div>
@@ -241,8 +262,8 @@
 <div class="content-page">
     <div class="header-container">
         <header class="page-header">
-            <img src="" alt="Client Logo" class="header-logo">
-            <img src="https://images.crunchbase.com/image/upload/v1613675726/clientapp/logo_crunchbase_primary.svg" alt="Seller Logo" class="header-logo">
+            <img src="https://logo.clearbit.com/google.com" alt="Client Logo" class="header-logo">
+            <img src="https://logo.clearbit.com/microsoft.com" alt="Seller Logo" class="header-logo">
         </header>
         <hr class="header-line">
     </div>
@@ -257,8 +278,8 @@
 <div class="content-page">
     <div class="header-container">
         <header class="page-header">
-            <img src="" alt="Client Logo" class="header-logo">
-            <img src="https://images.crunchbase.com/image/upload/v1613675726/clientapp/logo_crunchbase_primary.svg" alt="Seller Logo" class="header-logo">
+            <img src="https://logo.clearbit.com/google.com" alt="Client Logo" class="header-logo">
+            <img src="https://logo.clearbit.com/microsoft.com" alt="Seller Logo" class="header-logo">
         </header>
         <hr class="header-line">
     </div>
@@ -273,8 +294,8 @@
 <div class="content-page">
     <div class="header-container">
         <header class="page-header">
-            <img src="" alt="Client Logo" class="header-logo">
-            <img src="https://images.crunchbase.com/image/upload/v1613675726/clientapp/logo_crunchbase_primary.svg" alt="Seller Logo" class="header-logo">
+            <img src="https://logo.clearbit.com/google.com" alt="Client Logo" class="header-logo">
+            <img src="https://logo.clearbit.com/microsoft.com" alt="Seller Logo" class="header-logo">
         </header>
         <hr class="header-line">
     </div>
@@ -289,8 +310,8 @@
 <div class="content-page">
     <div class="header-container">
         <header class="page-header">
-            <img src="" alt="Client Logo" class="header-logo">
-            <img src="https://images.crunchbase.com/image/upload/v1613675726/clientapp/logo_crunchbase_primary.svg" alt="Seller Logo" class="header-logo">
+            <img src="https://logo.clearbit.com/google.com" alt="Client Logo" class="header-logo">
+            <img src="https://logo.clearbit.com/microsoft.com" alt="Seller Logo" class="header-logo">
         </header>
         <hr class="header-line">
     </div>
@@ -305,8 +326,8 @@
 <div class="content-page">
     <div class="header-container">
         <header class="page-header">
-            <img src="" alt="Client Logo" class="header-logo">
-            <img src="https://images.crunchbase.com/image/upload/v1613675726/clientapp/logo_crunchbase_primary.svg" alt="Seller Logo" class="header-logo">
+            <img src="https://logo.clearbit.com/google.com" alt="Client Logo" class="header-logo">
+            <img src="https://logo.clearbit.com/microsoft.com" alt="Seller Logo" class="header-logo">
         </header>
         <hr class="header-line">
     </div>
@@ -321,8 +342,8 @@
 <div class="content-page">
     <div class="header-container">
         <header class="page-header">
-            <img src="" alt="Client Logo" class="header-logo">
-            <img src="https://images.crunchbase.com/image/upload/v1613675726/clientapp/logo_crunchbase_primary.svg" alt="Seller Logo" class="header-logo">
+            <img src="https://logo.clearbit.com/google.com" alt="Client Logo" class="header-logo">
+            <img src="https://logo.clearbit.com/microsoft.com" alt="Seller Logo" class="header-logo">
         </header>
         <hr class="header-line">
     </div>

@@ -413,7 +413,7 @@ def _render_website_url_section(seller_state: SellerTabState, is_locked: bool, s
                         logger.info(f"Starting website scraping for: {seller_website_url}")
                         
                         # Get website details from the URL
-                        scrape_result = get_scraped_data(seller_website_url,"crawl4ai")
+                        scrape_result = get_scraped_data(seller_website_url,)
                         
                         # Extract data from the User object
                         website_name = scrape_result.name

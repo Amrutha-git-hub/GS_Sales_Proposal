@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset="utf-8">
+<title>title of the sales proposal</title>
+<style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700&display=swap');
+        :root {
+            --primary: #1a365d;
+            --secondary: #2d3748;
+            --accent: #3182ce;
+            --success: #38a169;
+            --background: #ffffff;
+            --surface: #f7fafc;
+            --text: #2d3748;
+            --text-light: #718096;
+            --border: #e2e8f0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            color: var(--text);
+            background: var(--background);
+            font-size: 16px;
+        }
+
+        @page {
+            size: A4;
+            margin: 20mm 15mm 20mm 15mm;
+            @bottom-right {
+                content: "Page " counter(page);
+                font-family: 'Inter', sans-serif;
+                font-size: 12px;
+                color: var(--text-light);
+            }
+        }
+
+        /* Cover Page */
+        .cover-page {
+            height: 100vh;
+            background: linear-gradient(135deg, #1a365df2 0%, #2d3748f2 50%, #3182cef2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            text-align: center;
+            page-break-after: always;
+        }
+        .cover-main-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 4rem;
+            color: white;
+            margin: 0;
+        }
+        .cover-for {
+            font-size: 1.2rem;
+            color: rgba(255,255,255,0.8);
+            margin: 0.5rem 0;
+        }
+        .cover-client-name {
+            font-family: 'Playfair Display', serif;
+            font-size: 3rem;
+            color: white;
+        }
+
+        /* Content Pages */
+        .content-page {
+            page-break-before: always;
+        }
+        .header-container {
+            margin-bottom: 1rem;
+        }
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        .header-logo {
+            max-height: 45px;
+            max-width: 150px;
+            object-fit: contain;
+        }
+        .header-line {
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--accent), var(--primary));
+            border: none;
+            margin: 0;
+        }
+
+        .section {
+            margin: 2rem 0;
+            padding: 1rem;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+        }
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+        .section-content p { margin-bottom: 1rem; }
+        </style>
+</head><body>
+<div class="cover-page">
+    <h1 class="cover-main-title">Sales Proposal</h1>
+    <h5 class="cover-for">for</h5>
+    <h1 class="cover-client-name">Benori</h1>
+</div>
+
+<div class="content-page">
+    <div class="header-container">
+        <header class="page-header">
+            <img src="https://benori.com/assets/web/images/Benori_Logo.svg" alt="Client Logo" class="header-logo">
+            <img src="https://static.wixstatic.com/media/cb6b3d_5c8f2b020ebe48b69bc8c163cc480156~mv2.png/v1/fill/w_60,h_60,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/GrowthSutra%20Logo.png" alt="Seller Logo" class="header-logo">
+        </header>
+        <hr class="header-line">
+    </div>
+    <div class="section">
+        <h3 class="section-title">title of the sales proposal</h3>
+        <div class="section-content"><p>GrowthSutra's Revenue Acceleration and Cost Optimization Plan for Benori</p></div>
+    </div>
+</div>
+
+<div class="content-page">
+    <div class="header-container">
+        <header class="page-header">
+            <img src="https://benori.com/assets/web/images/Benori_Logo.svg" alt="Client Logo" class="header-logo">
+            <img src="https://static.wixstatic.com/media/cb6b3d_5c8f2b020ebe48b69bc8c163cc480156~mv2.png/v1/fill/w_60,h_60,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/GrowthSutra%20Logo.png" alt="Seller Logo" class="header-logo">
+        </header>
+        <hr class="header-line">
+    </div>
+    <div class="section">
+        <h3 class="section-title">Executive Summary</h3>
+        <div class="section-content"><p>Benori faces significant revenue challenges and cost pressures, impacting profitability and growth. GrowthSutra proposes a comprehensive approach to address these issues, focusing on revenue acceleration and cost optimization. Our strategy encompasses a thorough requirements analysis, a well-defined project plan, and the application of our expertise in GTM strategy, revenue architecture, and on-demand CMO services. We aim to deliver measurable results, including increased revenue, improved margins, and enhanced operational efficiency. This proposal outlines our understanding of Benori's challenges, our proposed solution, and the value GrowthSutra brings to this partnership.</p>
+<p>GrowthSutra's approach is tailored to Benori's unique business needs, focusing on delivering sustainable and scalable solutions. We leverage a collaborative approach, working closely with your team to ensure alignment and maximize impact. Our experienced team, proven methodologies, and commitment to excellence make us the ideal partner to help Benori achieve its revenue and profitability goals. We are confident that our proposed solution will deliver a significant return on investment and contribute to Benori's long-term success.</p>
+<p>This proposal details the scope of our engagement, our proposed timeline, and the investment required to achieve these objectives. We are excited about the opportunity to partner with Benori and look forward to discussing this proposal further. Our goal is to provide a clear roadmap to navigate the current business landscape and secure a path towards sustainable growth and profitability.</p></div>
+    </div>
+</div>
+
+<div class="content-page">
+    <div class="header-container">
+        <header class="page-header">
+            <img src="https://benori.com/assets/web/images/Benori_Logo.svg" alt="Client Logo" class="header-logo">
+            <img src="https://static.wixstatic.com/media/cb6b3d_5c8f2b020ebe48b69bc8c163cc480156~mv2.png/v1/fill/w_60,h_60,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/GrowthSutra%20Logo.png" alt="Seller Logo" class="header-logo">
+        </header>
+        <hr class="header-line">
+    </div>
+    <div class="section">
+        <h3 class="section-title">Understanding Your Challenges</h3>
+        <div class="section-content"><p>GrowthSutra recognizes that Benori is currently facing significant headwinds in terms of revenue generation and cost management. The declining sales figures, missed quarterly targets, and shrinking deal sizes indicate a need for a strategic overhaul of your sales and marketing efforts. The increased customer churn and declining revenue per customer further underscore the urgency of addressing these revenue-related challenges. Additionally, the revenue fluctuations highlight the need for a more predictable and stable revenue stream.</p>
+<p>On the cost side, the rising cost of goods sold, labor, raw materials, and technology infrastructure are putting significant pressure on Benori's margins. Outdated processes and regulatory compliance expenses are further exacerbating the cost burden. These challenges, combined with stagnant revenue, create a difficult environment for sustainable growth. GrowthSutra understands these complexities and is prepared to develop a tailored solution that addresses both revenue and cost issues.</p>
+<p>Our proposed solution is designed to directly address these pain points by implementing strategies to boost sales, improve customer retention, optimize pricing, and streamline operations. We will work closely with your team to identify areas for improvement and implement targeted solutions that deliver measurable results. We aim to provide a clear path towards regaining market share, enhancing profitability, and achieving sustainable growth.</p></div>
+    </div>
+</div>
+
+<div class="content-page">
+    <div class="header-container">
+        <header class="page-header">
+            <img src="https://benori.com/assets/web/images/Benori_Logo.svg" alt="Client Logo" class="header-logo">
+            <img src="https://static.wixstatic.com/media/cb6b3d_5c8f2b020ebe48b69bc8c163cc480156~mv2.png/v1/fill/w_60,h_60,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/GrowthSutra%20Logo.png" alt="Seller Logo" class="header-logo">
+        </header>
+        <hr class="header-line">
+    </div>
+    <div class="section">
+        <h3 class="section-title">Proposed Solution</h3>
+        <div class="section-content"><p>GrowthSutra proposes a multi-faceted solution designed to address Benori's revenue challenges and cost pressures. Our approach will focus on three key areas: revenue acceleration, cost optimization, and operational efficiency. We will leverage our expertise in GTM strategy, revenue architecture, and on-demand CMO services to drive measurable improvements in these areas. This includes a comprehensive review of your current sales and marketing processes, identification of new market opportunities, and implementation of strategies to improve customer retention and increase average deal size.</p>
+<p>For cost optimization, we will conduct a thorough analysis of your cost structure to identify areas for savings. This will include a review of your supply chain, labor costs, and technology infrastructure. We will then develop and implement strategies to reduce costs without compromising quality or service. This may include negotiating better rates with suppliers, streamlining operations, and implementing automation technologies. Our goal is to improve your bottom line and free up resources for strategic investments.</p>
+<p>Finally, we will focus on improving operational efficiency by streamlining processes, implementing best practices, and leveraging technology. This will include a review of your current workflows, identification of bottlenecks, and implementation of solutions to improve productivity and reduce errors. We will also work with your team to develop a culture of continuous improvement, ensuring that these gains are sustainable over the long term.</p></div>
+    </div>
+</div>
+
+<div class="content-page">
+    <div class="header-container">
+        <header class="page-header">
+            <img src="https://benori.com/assets/web/images/Benori_Logo.svg" alt="Client Logo" class="header-logo">
+            <img src="https://static.wixstatic.com/media/cb6b3d_5c8f2b020ebe48b69bc8c163cc480156~mv2.png/v1/fill/w_60,h_60,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/GrowthSutra%20Logo.png" alt="Seller Logo" class="header-logo">
+        </header>
+        <hr class="header-line">
+    </div>
+    <div class="section">
+        <h3 class="section-title">Scope of Work / Project Breakdown</h3>
+        <div class="section-content"><p><strong>Phase 1: Discovery & Planning (2-3 weeks)</strong></p>
+<p>- Conduct a kickoff meeting with the Benori team to establish project goals and expectations.</p>
+<p> - Define clear project objectives and success criteria, ensuring alignment with Benori's overall business strategy.</p>
+<p> - Identify key stakeholders and establish communication protocols to ensure seamless collaboration throughout the project.</p>
+<p> - Develop a detailed project plan outlining tasks, timelines, and responsibilities.</p>
+<p> - Perform a comprehensive analysis of Benori's current sales and marketing processes, identifying areas for improvement.</p>
+<p> - Conduct a thorough review of Benori's cost structure, identifying opportunities for optimization.</p>
+<p><strong>Phase 2: Requirements Analysis & Design (3-4 weeks)</strong></p>
+<p>- Conduct stakeholder interviews and workshops to gather detailed requirements for the proposed solution.</p>
+<p> - Develop user stories and acceptance criteria to ensure that the final solution meets Benori's specific needs.</p>
+<p> - Create process maps and workflow diagrams to visualize existing and proposed processes.</p>
+<p> - Design the system architecture and technical specifications for the solution.</p>
+<p> - Develop wireframes and mockups of the user interface, ensuring a user-friendly and intuitive experience.</p>
+<p> - Present design concepts to Benori's team for feedback and approval.</p>
+<p><strong>Phase 3: Development & Implementation (5-7 weeks)</strong></p>
+<p>- Develop the frontend and backend components of the solution.</p>
+<p> - Design and implement the database structure.</p>
+<p> - Develop APIs for integration with existing systems.</p>
+<p> - Conduct regular code reviews to ensure quality and adherence to coding standards.</p>
+<p> - Perform unit testing and integration testing to identify and resolve defects.</p>
+<p> - Deploy the solution to a test environment for user acceptance testing.</p>
+<p><strong>Phase 4: Testing & Launch (2-3 weeks)</strong></p>
+<p>- Conduct thorough user acceptance testing (UAT) with Benori's team.</p>
+<p> - Address any issues or defects identified during UAT.</p>
+<p> - Develop a comprehensive training program for Benori's users.</p>
+<p> - Prepare documentation for the solution.</p>
+<p> - Plan and execute the launch of the solution.</p>
+<p> - Provide post-launch support to ensure a smooth transition.</p>
+<p><strong>Phase 5: Optimization & Continuous Improvement (Ongoing)</strong></p>
+<p>- Monitor the performance of the solution and identify areas for improvement.</p>
+<p> - Gather feedback from users and stakeholders.</p>
+<p> - Implement enhancements and updates to the solution.</p>
+<p> - Conduct regular reviews of the solution to ensure it continues to meet Benori's needs.</p>
+<p> - Provide ongoing support and maintenance.</p>
+<p> - Continuously seek opportunities to optimize processes and improve efficiency.</p></div>
+    </div>
+</div>
+
+<div class="content-page">
+    <div class="header-container">
+        <header class="page-header">
+            <img src="https://benori.com/assets/web/images/Benori_Logo.svg" alt="Client Logo" class="header-logo">
+            <img src="https://static.wixstatic.com/media/cb6b3d_5c8f2b020ebe48b69bc8c163cc480156~mv2.png/v1/fill/w_60,h_60,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/GrowthSutra%20Logo.png" alt="Seller Logo" class="header-logo">
+        </header>
+        <hr class="header-line">
+    </div>
+    <div class="section">
+        <h3 class="section-title">Our Approach</h3>
+        <div class="section-content"><p>GrowthSutra's approach is centered around collaboration, data-driven decision-making, and a commitment to delivering measurable results. We believe in working closely with our clients to understand their unique challenges and develop tailored solutions that address their specific needs. Our team of experienced consultants will work as an extension of your team, providing guidance, support, and expertise throughout the project lifecycle. We prioritize open communication, transparency, and a focus on achieving your desired outcomes.</p>
+<p>Our methodology is based on industry best practices and a proven track record of success. We leverage a combination of strategic thinking, analytical rigor, and creative problem-solving to develop innovative solutions that drive sustainable growth. We are committed to staying ahead of the curve and continuously learning and adapting to the changing business landscape. This ensures that our clients benefit from the latest insights and technologies.</p>
+<p>We believe in a phased approach, starting with a thorough discovery and planning phase to ensure a clear understanding of your needs and objectives. We then move into the design and development phase, followed by testing, launch, and ongoing optimization. This iterative approach allows us to continuously refine the solution and ensure that it delivers maximum value. Our ultimate goal is to empower Benori to achieve its revenue and profitability goals and build a sustainable competitive advantage.</p></div>
+    </div>
+</div>
+
+<div class="content-page">
+    <div class="header-container">
+        <header class="page-header">
+            <img src="https://benori.com/assets/web/images/Benori_Logo.svg" alt="Client Logo" class="header-logo">
+            <img src="https://static.wixstatic.com/media/cb6b3d_5c8f2b020ebe48b69bc8c163cc480156~mv2.png/v1/fill/w_60,h_60,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/GrowthSutra%20Logo.png" alt="Seller Logo" class="header-logo">
+        </header>
+        <hr class="header-line">
+    </div>
+    <div class="section">
+        <h3 class="section-title">Team & Expertise</h3>
+        <div class="section-content"><p>GrowthSutra boasts a team of seasoned professionals with extensive experience in GTM strategy, revenue architecture, and on-demand CMO services. Our consultants possess deep industry knowledge and a proven track record of helping B2B companies achieve their revenue and profitability goals. We have a diverse team with expertise in various areas, including sales, marketing, operations, and technology. This allows us to provide a holistic approach to solving your business challenges.</p>
+<p>Our core team for this project will consist of a Project Manager and Scrum Master to ensure efficient project execution, a Senior Business Analyst to gather and document requirements, a Lead Developer and Frontend Developer for technical implementation, and a QA Engineer and DevOps Specialist to ensure quality and reliability. We will also leverage an extended team including a UI/UX Designer for user experience, a Database Administrator for data management, and a Security Specialist for compliance review.</p>
+<p>We are committed to providing you with the best possible team and expertise. Our consultants are not only highly skilled but also passionate about helping our clients succeed. We believe that our team's expertise, combined with our collaborative approach, will deliver exceptional value to Benori.</p></div>
+    </div>
+</div>
+
+<div class="content-page">
+    <div class="header-container">
+        <header class="page-header">
+            <img src="https://benori.com/assets/web/images/Benori_Logo.svg" alt="Client Logo" class="header-logo">
+            <img src="https://static.wixstatic.com/media/cb6b3d_5c8f2b020ebe48b69bc8c163cc480156~mv2.png/v1/fill/w_60,h_60,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/GrowthSutra%20Logo.png" alt="Seller Logo" class="header-logo">
+        </header>
+        <hr class="header-line">
+    </div>
+    <div class="section">
+        <h3 class="section-title">Case Studies / Success Stories</h3>
+        <div class="section-content"><p>While specific case studies require client confidentiality, GrowthSutra has a strong track record of helping companies in similar industries overcome revenue challenges and cost pressures. We have successfully implemented GTM strategies that have resulted in significant increases in sales and market share. Our revenue architecture expertise has helped clients optimize their pricing models and improve customer retention. And our on-demand CMO services have provided clients with the strategic leadership they need to drive growth and profitability.</p>
+<p>For example, we worked with a technology company that was experiencing declining sales due to increased competition. We conducted a thorough analysis of their sales and marketing processes and developed a tailored GTM strategy that focused on targeting new market segments and improving their sales effectiveness. As a result, the company saw a 20% increase in sales within six months.</p>
+<p>We are confident that our expertise and experience can deliver similar results for Benori. We are committed to providing you with the best possible service and helping you achieve your business goals. We can provide more detailed examples upon request, subject to confidentiality agreements.</p></div>
+    </div>
+</div>
+
+<div class="content-page">
+    <div class="header-container">
+        <header class="page-header">
+            <img src="https://benori.com/assets/web/images/Benori_Logo.svg" alt="Client Logo" class="header-logo">
+            <img src="https://static.wixstatic.com/media/cb6b3d_5c8f2b020ebe48b69bc8c163cc480156~mv2.png/v1/fill/w_60,h_60,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/GrowthSutra%20Logo.png" alt="Seller Logo" class="header-logo">
+        </header>
+        <hr class="header-line">
+    </div>
+    <div class="section">
+        <h3 class="section-title">Pricing & Investment</h3>
+        <div class="section-content"><p>GrowthSutra offers flexible pricing models to suit your specific needs and budget. We can work on a fixed price basis or a time & materials basis, depending on the scope of the project and your preferences. For this project, we propose two pricing options:</p>
+<p><strong>Fixed Price Model:</strong></p>
+<p>- Total project cost: ₹12,00,000 - ₹16,00,000</p>
+<p>- 30% upfront, 40% on key milestone delivery, 30% upon completion</p>
+<p>- Includes 3 months of post-launch support</p>
+<p><strong>Time & Materials Model:</strong></p>
+<p>- Senior resources: ₹4,000–₹5,000/hour</p>
+<p>- Mid-level resources: ₹2,500–₹3,500/hour</p>
+<p>- Junior resources: ₹1,200–₹2,000/hour</p>
+<p>The fixed price model provides you with a predictable cost and ensures that we are incentivized to deliver the project on time and within budget. The time & materials model provides you with more flexibility and allows you to adjust the scope of the project as needed. We are happy to discuss these options further and help you determine the best pricing model for your needs. The investment in GrowthSutra's services is designed to provide a significant return on investment by driving revenue growth, optimizing costs, and improving operational efficiency.</p></div>
+    </div>
+</div>
+
+<div class="content-page">
+    <div class="header-container">
+        <header class="page-header">
+            <img src="https://benori.com/assets/web/images/Benori_Logo.svg" alt="Client Logo" class="header-logo">
+            <img src="https://static.wixstatic.com/media/cb6b3d_5c8f2b020ebe48b69bc8c163cc480156~mv2.png/v1/fill/w_60,h_60,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/GrowthSutra%20Logo.png" alt="Seller Logo" class="header-logo">
+        </header>
+        <hr class="header-line">
+    </div>
+    <div class="section">
+        <h3 class="section-title">Timeline & Deliverables</h3>
+        <div class="section-content"><p>The project timeline is estimated to be 14-19 weeks, depending on the complexity of the solution and the chosen pricing model. The timeline is broken down into the following phases:</p>
+<p><strong>Phase 1: Discovery & Planning (2-3 weeks)</strong></p>
+<p>- Project kickoff meeting</p>
+<p>- Requirements gathering and analysis</p>
+<p>- Project plan development</p>
+<p><strong>Phase 2: Design (3-4 weeks)</strong></p>
+<p>- System architecture design</p>
+<p>- User interface design</p>
+<p>- Technical specifications</p>
+<p><strong>Phase 3: Development (5-7 weeks)</strong></p>
+<p>- Frontend and backend development</p>
+<p>- Database implementation</p>
+<p>- API integration</p>
+<p><strong>Phase 4: Testing & Launch (2-3 weeks)</strong></p>
+<p>- User acceptance testing</p>
+<p>- Training and documentation</p>
+<p>- Solution launch</p>
+<p>The key deliverables for this project include a detailed project plan, a comprehensive requirements document, a functional system design, a fully developed and tested solution, training materials, and ongoing support. We will provide regular progress updates and ensure that you are kept informed throughout the project lifecycle. We are committed to delivering the project on time and within budget, and to providing you with a solution that meets your specific needs and objectives.</p></div>
+    </div>
+</div>
+
+<div class="content-page">
+    <div class="header-container">
+        <header class="page-header">
+            <img src="https://benori.com/assets/web/images/Benori_Logo.svg" alt="Client Logo" class="header-logo">
+            <img src="https://static.wixstatic.com/media/cb6b3d_5c8f2b020ebe48b69bc8c163cc480156~mv2.png/v1/fill/w_60,h_60,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/GrowthSutra%20Logo.png" alt="Seller Logo" class="header-logo">
+        </header>
+        <hr class="header-line">
+    </div>
+    <div class="section">
+        <h3 class="section-title">Terms and Conditions</h3>
+        <div class="section-content"><p>This proposal is valid for 30 days from the date of submission. All services will be performed in accordance with GrowthSutra's standard terms and conditions, which are available upon request. Payment terms are as outlined in the pricing section of this proposal. GrowthSutra retains ownership of all intellectual property developed during the course of this project. However, Benori will have a perpetual license to use the solution for its internal business purposes.</p>
+<p>Confidentiality: Both parties agree to hold each other's confidential information in strict confidence. We are committed to protecting your sensitive data and ensuring that it is not disclosed to any third parties. </p>
+<p>Termination: Either party may terminate this agreement with 30 days written notice. In the event of termination, Benori will be responsible for paying for all services performed up to the date of termination. We are confident that our services will deliver significant value to Benori, and we are committed to providing you with the best possible experience.</p></div>
+    </div>
+</div>
+
+<div class="content-page">
+    <div class="header-container">
+        <header class="page-header">
+            <img src="https://benori.com/assets/web/images/Benori_Logo.svg" alt="Client Logo" class="header-logo">
+            <img src="https://static.wixstatic.com/media/cb6b3d_5c8f2b020ebe48b69bc8c163cc480156~mv2.png/v1/fill/w_60,h_60,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/GrowthSutra%20Logo.png" alt="Seller Logo" class="header-logo">
+        </header>
+        <hr class="header-line">
+    </div>
+    <div class="section">
+        <h3 class="section-title">Next Steps</h3>
+        <div class="section-content"><p>We are excited about the opportunity to partner with Benori and help you achieve your revenue and profitability goals. The next steps in the process are as follows:</p>
+<p>1. Review this proposal and provide us with your feedback.</p>
+<p>2. Schedule a follow-up meeting to discuss any questions or concerns.</p>
+<p>3. Finalize the scope of work and pricing.</p>
+<p>4. Sign the agreement and initiate the project.</p>
+<p>We are confident that our proposed solution will deliver significant value to Benori, and we are committed to providing you with the best possible service. We look forward to hearing from you soon and working together to achieve your business objectives. Please feel free to reach out to us with any questions or to schedule a meeting.</p></div>
+    </div>
+</div>
+
+<div class="content-page">
+    <div class="header-container">
+        <header class="page-header">
+            <img src="https://benori.com/assets/web/images/Benori_Logo.svg" alt="Client Logo" class="header-logo">
+            <img src="https://static.wixstatic.com/media/cb6b3d_5c8f2b020ebe48b69bc8c163cc480156~mv2.png/v1/fill/w_60,h_60,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/GrowthSutra%20Logo.png" alt="Seller Logo" class="header-logo">
+        </header>
+        <hr class="header-line">
+    </div>
+    <div class="section">
+        <h3 class="section-title">About GrowthSutra</h3>
+        <div class="section-content"><p>GrowthSutra is a leading provider of GTM strategy, revenue architecture, and on-demand CMO services. We help B2B companies accelerate their growth and achieve their revenue and profitability goals. Our team of experienced consultants has a proven track record of success in a variety of industries. We are passionate about helping our clients succeed and are committed to providing them with the best possible service.</p>
+<p>Our mission is to empower businesses to achieve sustainable growth through innovative strategies and expert execution. We believe in building long-term partnerships with our clients and working closely with them to understand their unique challenges and develop tailored solutions. We are committed to staying ahead of the curve and continuously learning and adapting to the changing business landscape.</p>
+<p>We are confident that our expertise and experience can deliver significant value to Benori. We are committed to providing you with the best possible service and helping you achieve your business goals. We are excited about the opportunity to partner with you and look forward to discussing this proposal further.</p></div>
+    </div>
+</div>
+</body></html>
