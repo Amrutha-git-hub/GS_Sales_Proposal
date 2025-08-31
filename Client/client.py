@@ -8,16 +8,14 @@ from .client_utils import *
 import threading
 import time
 from Search.Linkedin.linkedin_serp import *
-from Search.Linkedin.linkedin_agent_runner_unused import *
+from Search.Linkedin.linkedin_agent_runner import *
 from Recommendation.recommendation_utils import *
 from .client_css import client_css
 from .client_dataclass import *
 from datetime import datetime 
 # Configure logging
-from WebScraper.webscraper_without_ai import get_url_details_without_ai
 from Common_Utils.common_utils import *
 from Common_Utils.common_utils import set_global_message
-
 
 def normalize_url(url: str) -> str:
     url = url.strip()
@@ -30,7 +28,7 @@ def normalize_url(url: str) -> str:
     domain_part = re.sub(r'^https?://', '', url).split('/')[0]
 
     # If no known domain suffix present, append '.com'
-    if not re.search(r'\.(com|in|org|net|co|io|edu|gov)(/|$)', domain_part):
+    if not re.search(r'\.(com|in|org|net|co|io|edu|gov|pro)(/|$)', domain_part):
         url = url.rstrip('/') + '.com'
 
     return url
@@ -142,9 +140,8 @@ def render_client_name_section(logger, client_data, is_locked):
                     
                 except Exception as e:
                     logger.error(f"Error updating enterprise name: {str(e)}")
-                    # Don't call st.rerun() immediately after set_global_message
                     set_global_message("Unable to save enterprise name. Please try again.", 'error')
-                    return client_enterprise_name  # Early return to prevent further processing
+                    st.rerun()
         
         with button_col:
             try:
@@ -162,7 +159,7 @@ def render_client_name_section(logger, client_data, is_locked):
                 logger.error(f"Error in Find URLs button section: {str(e)}")
                 find_urls_clicked = False
                 set_global_message("Unable to initialize website search. Please refresh the page.", 'error')
-                return client_enterprise_name
+                
         
         # Add spinner container that spans both columns
         spinner_container = st.container()
@@ -187,17 +184,16 @@ def render_client_name_section(logger, client_data, is_locked):
                         logger.debug("Updated client data with URLs list")
                         
                         if urls_list:
-                            print("successfully found ")
                             set_global_message(f"Successfully found {len(urls_list)} website URLs for {client_enterprise_name.strip()}", 'success')
                         else:
                             set_global_message(f"No website URLs found for {client_enterprise_name.strip()}", "error")
-                        # Let the dialog handle its own lifecycle - don't force rerun
+                        
                         
                     except Exception as e:
                         logger.error(f"Error finding URLs for {client_enterprise_name.strip()}: {str(e)}")
                         client_state_manager.update_field('website_urls_list', [])
-                        set_global_message(f"Not able to fetch the websites for {client_enterprise_name}, please try after some time.", "warning")
-                        # Let the dialog handle its own lifecycle - don't force rerun
+                        set_global_message("The requested websites couldn't be found. Please try again later.", "error")
+                        
         
         # Clear URLs if company name is cleared
         try:
@@ -208,14 +204,12 @@ def render_client_name_section(logger, client_data, is_locked):
                     enterprise_name="",
                     last_company_name=""
                 )
-                # Use a less intrusive message type for this action
-                # set_global_message("Company name cleared, website URLs reset", 'info')
-                # Consider removing this message entirely as it might be too frequent
-                st.rerun()
+                set_global_message("Company name cleared, website URLs reset", 'info')
+                
         except Exception as e:
             logger.error(f"Error clearing URLs when company name cleared: {str(e)}")
             set_global_message("Unable to clear website data. Please refresh the page.", 'error')
-            return client_enterprise_name
+            
         
         # Show validation warning if triggered and field is empty
         try:
@@ -225,12 +219,12 @@ def render_client_name_section(logger, client_data, is_locked):
         except Exception as e:
             logger.error(f"Error showing validation warning: {str(e)}")
             set_global_message("Validation check failed. Please verify your input.", "error")
-            return client_enterprise_name
+            
     
     except Exception as e:
         logger.error(f"Error in client enterprise name column: {str(e)}")
         set_global_message("Something went wrong with the client name section. Please refresh the page.", 'error')
-        return client_enterprise_name
+        
     
     return client_enterprise_name
 @st.fragment
@@ -275,7 +269,6 @@ def render_client_website_section(logger, client_data, is_locked):
                     label="Client Website URL",
                     options=url_options,
                     index=default_index,
-                    key="client_website_url_selector",
                     label_visibility="collapsed",
                     disabled=not client_name_provided or is_locked,
                     accept_new_options=True,
@@ -294,12 +287,11 @@ def render_client_website_section(logger, client_data, is_locked):
                     except Exception as e:
                         logger.error(f"Error updating website URL: {str(e)}")
                         set_global_message("Unable to save website URL. Please try again.", 'error')
-                        st.rerun()
+                        
                         
             except Exception as e:
                 logger.error(f"Error in URL selection: {str(e)}")
                 set_global_message("Unable to load website options. Please refresh the page.", 'error')
-                st.rerun()
                 client_website_url = ""
         
         # Buttons for website actions
@@ -310,74 +302,27 @@ def render_client_website_section(logger, client_data, is_locked):
             except Exception as e:
                 logger.error(f"Error creating refresh button: {str(e)}")
                 set_global_message("Unable to initialize refresh button. Please reload the page.", 'error')
-                st.rerun()
                 refresh_clicked = False
         
         with btn2_col:
             try:
-                scrape_clicked = st.button("📑 Get Details", help="Get enterprise details", key="scrape_website_btn", 
+                scrape_clicked = st.button(" Get Details", help="Get enterprise details", key="scrape_website_btn", 
                                         use_container_width=True, disabled=not client_website_url)
-                
-                if scrape_clicked and client_website_url:
-                    logger.info(f"Scrape button clicked for URL: {client_website_url}")
-                    client_state_manager.update_multiple_fields(
-                        pending_scrape_url=client_website_url,
-                        scraping_in_progress=True
-                    )
-                    set_global_message(f"Starting website analysis for {client_website_url}", 'info')
-                    st.rerun()
             except Exception as e:
                 logger.error(f"Error creating scrape button: {str(e)}")
                 set_global_message("Error creating scrape button", 'error')
-                st.rerun()
                 scrape_clicked = False
 
-        # Show redirect link when website is selected
-        if client_website_url:
-            client_website_url = normalize_url(client_website_url)
-            st.markdown(
-    f'<div style="text-align: left; margin-top: -7px; padding-bottom: 15px;">'
-    f'🌐 <a href="{client_website_url}" target="_blank" style="color: #0066cc; text-decoration: none; font-size: 14px;">Visit Website</a>'
-    f'</div>',
-    unsafe_allow_html=True
-)
-
-
-
-
-
-        # Handle refresh action
-        if refresh_clicked and client_name_provided:
-            try:
-                logger.info(f"Refreshing URLs for: {client_enterprise_name}")
-                set_global_message("Refreshing website URLs...", 'info')
-                
-                urls_list = get_urls_list(client_enterprise_name)
-                client_state_manager.update_multiple_fields(
-                    website_urls_list=urls_list,
-                    last_company_name=client_enterprise_name
-                )
-                logger.info(f"Successfully refreshed URLs, found {len(urls_list)} URLs")
-                
-                if urls_list:
-                    set_global_message(f"Successfully refreshed! Found {len(urls_list)} website URLs", 'success')
-                else:
-                    set_global_message("No website URLs found during refresh", "error")
-                st.rerun()
-            except Exception as e:
-                logger.error(f"Error refreshing URLs: {str(e)}")
-                set_global_message(f"Failed to refresh URLs: {str(e)}", 'error')
-                st.rerun()
-
-        # Handle pending scraping operation
-        if client_data.scraping_in_progress and client_data.pending_scrape_url:
-            try:
-                logger.info(f"Starting website scraping for: {client_data.pending_scrape_url}")
-                set_global_message(f"Scraping website details from {client_data.pending_scrape_url}...", 'info')
-                
+        # Handle scrape button click with spinner
+        if scrape_clicked and client_website_url:
+            logger.info(f"Scrape button clicked for URL: {client_website_url}")
+            
+            with st.spinner("Fetching website details..."):
                 try:
+                    logger.info(f"Starting website scraping for: {client_website_url}")
+                    
                     # Get website details from the URL
-                    scrape_result = get_url_details_without_ai(client_data.pending_scrape_url)
+                    scrape_result = get_scraped_data(client_website_url)
                     
                     # Extract data from the User object
                     website_name = scrape_result.name
@@ -398,22 +343,16 @@ def render_client_website_section(logger, client_data, is_locked):
                     
                     # Check if scraping returned empty or no data
                     if not website_details or len(website_details.strip()) < 10:
-                        logger.warning(f"Website scraping returned empty data for: {client_data.pending_scrape_url}")
-                        client_state_manager.update_multiple_fields(
-                            scraping_in_progress=False,
-                            pending_scrape_url=None
-                        )
-                        set_global_message("Not able to fetch the information from the selected website, check the website link once", "error")
-                        st.rerun()
+                        logger.warning(f"Website scraping returned empty data for: {client_website_url}")
+                        set_global_message("Website scraping failed - No content could be extracted from the website. Please check if the URL is accessible and contains readable content.", "error")
+                        
                     else:
                         logger.info(f"Successfully scraped website details, length: {len(website_details)}")
                         
                         # Prepare update parameters
                         update_params = {
                             'enterprise_details_content': website_details,
-                            'last_analyzed_url': client_data.pending_scrape_url,
-                            'scraping_in_progress': False,
-                            'pending_scrape_url': None
+                            'last_analyzed_url': client_website_url,
                         }
                         
                         # Add logo to update parameters if available (storing in enterprise_logo)
@@ -424,42 +363,68 @@ def render_client_website_section(logger, client_data, is_locked):
                         
                         # Show success message with logo info
                         if logo_url:
-                            set_global_message("Website details and logo extracted successfully!", 'success')
+                            set_global_message("Website details extracted successfully!", 'success')
                         else:
                             set_global_message("Website details extracted successfully!", 'success')
                         
-                        st.rerun()
-                        
                 except Exception as scrape_error:
-                    logger.error(f"Error during website scraping for {client_data.pending_scrape_url}: {str(scrape_error)}", exc_info=True)
-                    client_state_manager.update_multiple_fields(
-                        scraping_in_progress=False,
-                        pending_scrape_url=None
-                    )
+                    logger.error(f"Error during website scraping for {client_website_url}: {str(scrape_error)}", exc_info=True)
                     set_global_message("Error scraping website", 'error')
                     logger.error(f"Error scraping: {str(scrape_error)}")
-                    st.rerun()
-                    
-            except Exception as e:
-                logger.error(f"Critical error in website scraping process: {str(e)}", exc_info=True)
-                # Ensure scraping state is cleared even on critical errors
-                try:
-                    client_state_manager.update_multiple_fields(
-                        scraping_in_progress=False,
-                        pending_scrape_url=None
-                    )
-                except Exception as cleanup_error:
-                    logger.error(f"Error during cleanup: {str(cleanup_error)}")
+
+        # Show redirect link when website is selected
+        if client_website_url:
+            client_website_url = normalize_url(client_website_url)
+            with st.container():
+                st.markdown(f'''
+            <style>
+                .plain-link {{
+                    margin-bottom: 30px; 
+                    margin-left: 10px;
+                    display: inline-block;
+                    font-size: 14px;
+                    font-family: Arial, sans-serif;
+                }}
                 
-                set_global_message("A critical error occurred during website scraping. Please try again.", 'error')
-                st.rerun()
+                .plain-link a {{
+                    color: #0c5460;
+                    text-decoration: none;
+                }}
+                
+                .plain-link a:hover {{
+                    text-decoration: underline;
+                }}
+            </style>
+            <div class="plain-link">
+                🌐 <a href="{client_website_url}" target="_blank">Visit Website</a>
+            </div>
+        ''', unsafe_allow_html=True)
+
+        # Handle refresh action
+        if refresh_clicked and client_name_provided:
+            try:
+                logger.info(f"Refreshing URLs for: {client_enterprise_name}")
+                set_global_message("Refreshing website URLs...", 'info')
+                
+                urls_list = get_urls_list(client_enterprise_name)
+                client_state_manager.update_multiple_fields(
+                    website_urls_list=urls_list,
+                    last_company_name=client_enterprise_name
+                )
+                logger.info(f"Successfully refreshed URLs, found {len(urls_list)} URLs")
+                
+                if urls_list:
+                    set_global_message(f"Successfully refreshed! Found {len(urls_list)} website URLs", 'success')
+                else:
+                    set_global_message("No website URLs found during refresh", "error")
+                
+            except Exception as e:
+                logger.error(f"Error refreshing URLs: {str(e)}")
+                set_global_message(f"Failed to refresh URLs: {str(e)}", 'error')
                                     
     except Exception as e:
         logger.error(f"Error in scraping operation: {str(e)}")
         set_global_message(f"Error in website scraping operation: {str(e)}", 'error')
-        st.rerun()
-
-
 @st.fragment
 def render_first_section(logger, client_data, is_locked):
     """Main function to render the first section with two columns"""
@@ -520,7 +485,6 @@ def enterprise_content(logger, client_data, is_locked):
         set_global_message("Enterprise details section temporarily unavailable - Please refresh the page to continue", 'error')
     
     return client_name_provided
-
 
 @st.fragment
 def doc_upload_section(logger, client_data, is_locked):
@@ -1185,23 +1149,34 @@ def render_spoc_name_section(logger, client_data, is_locked):
                         # Search for LinkedIn profiles
                         linkedin_profiles_raw = get_linkedin(spoc_name.strip())
                         
-                        # Process LinkedIn profiles - handle both list and dict formats
+                        # Process LinkedIn profiles - handle the list format correctly
                         processed_profiles = {}
                         if linkedin_profiles_raw:
+                            logger.debug(f"Raw LinkedIn response: {linkedin_profiles_raw}")
+                            
                             if isinstance(linkedin_profiles_raw, list):
                                 # Handle list format - merge all dictionaries
                                 for profile_dict in linkedin_profiles_raw:
                                     if isinstance(profile_dict, dict):
                                         processed_profiles.update(profile_dict)
+                                        logger.debug(f"Added profile dict: {profile_dict}")
                             elif isinstance(linkedin_profiles_raw, dict):
                                 # Handle direct dictionary format
                                 processed_profiles = linkedin_profiles_raw
                             
-                            logger.info(f"Found {len(processed_profiles)} LinkedIn profiles")
-                            set_global_message(f"Successfully found {len(processed_profiles)} LinkedIn profiles for {spoc_name.strip()}", "success")
+                            logger.info(f"Processed {len(processed_profiles)} LinkedIn profiles")
+                            
+                            # Debug log the processed profiles
+                            for url, profile_data in processed_profiles.items():
+                                logger.debug(f"Profile URL: {url}, Data: {profile_data}")
+                            
+                            if processed_profiles:
+                                set_global_message(f"Successfully found {len(processed_profiles)} LinkedIn profiles for {spoc_name.strip()}", "success")
+                            else:
+                                set_global_message(f"No valid LinkedIn profiles found for {spoc_name.strip()}", "warning")
                         else:
-                            set_global_message(f"Not able to fetch the Linkedin for {spoc_name} , please try after some time.", "warning")
-                            logger.info("No LinkedIn profiles found for SPOC")
+                            set_global_message(f"Unable to fetch LinkedIn profiles for {spoc_name.strip()}, please try again later.", "warning")
+                            logger.info("No LinkedIn profiles returned from search")
                         
                         try:
                             # Clear previous profile selection when new search is performed
@@ -1215,8 +1190,6 @@ def render_spoc_name_section(logger, client_data, is_locked):
                         except Exception as e:
                             logger.error(f"Error updating LinkedIn profiles: {str(e)}")
                             set_global_message("Failed to save LinkedIn profiles - Please try searching again", "error")
-                        
-                        # REMOVED: st.rerun() - Let Streamlit handle the natural refresh
                         
                     except Exception as e:
                         logger.error(f"Error searching LinkedIn profiles: {str(e)}")
@@ -1257,22 +1230,37 @@ def render_linkedin_profile_section(logger, client_data, is_locked, spoc_name):
         # Prepare LinkedIn profile options
         if spoc_name_provided and client_data.linkedin_profiles:
             try:
+                logger.debug(f"Processing LinkedIn profiles: {client_data.linkedin_profiles}")
+                
                 # Create options with profile titles for better selection
                 linkedin_options = ["Select a LinkedIn profile..."]
                 linkedin_url_mapping = {}  # To map display text to actual URL
                 
                 for url, profile_data in client_data.linkedin_profiles.items():
-                    # Handle both old and new profile data formats
+                    logger.debug(f"Processing profile - URL: {url}, Data: {profile_data}")
+                    
+                    # Handle profile data format
                     if isinstance(profile_data, dict):
                         name = profile_data.get('name', 'Unknown')
                         role = profile_data.get('role', 'Unknown Role')
-                        display_text = f"{name} - {role}"
+                        
+                        # Create a more readable display text
+                        if name != 'Unknown' and role != 'Unknown Role':
+                            display_text = f"{name} - {role}"
+                        elif name != 'Unknown':
+                            display_text = f"{name} - No role specified"
+                        else:
+                            display_text = f"Profile - {role}"
                     else:
                         # Fallback for unexpected format
-                        display_text = f"Profile: {str(profile_data)}"
+                        display_text = f"LinkedIn Profile: {str(profile_data)[:50]}..."
                     
                     linkedin_options.append(display_text)
                     linkedin_url_mapping[display_text] = url
+                    logger.debug(f"Added option: {display_text} -> {url}")
+                
+                logger.debug(f"LinkedIn options: {linkedin_options}")
+                logger.debug(f"URL mapping: {linkedin_url_mapping}")
                 
                 # Pre-select the current profile if it exists
                 current_index = 0
@@ -1280,6 +1268,7 @@ def render_linkedin_profile_section(logger, client_data, is_locked, spoc_name):
                     for i, (display_text, url) in enumerate(linkedin_url_mapping.items(), 1):
                         if url == client_data.current_selected_profile_url:
                             current_index = i
+                            logger.debug(f"Pre-selected profile at index {current_index}: {display_text}")
                             break
                 
                 selected_linkedin_display = st.selectbox(
@@ -1291,9 +1280,13 @@ def render_linkedin_profile_section(logger, client_data, is_locked, spoc_name):
                     disabled=not client_name_provided or is_locked,
                 )
 
+                logger.debug(f"Selected display text: {selected_linkedin_display}")
+
                 # Extract the actual URL from the selected option
                 if selected_linkedin_display != "Select a LinkedIn profile...":
                     spoc_linkedin_profile = linkedin_url_mapping.get(selected_linkedin_display)
+                    logger.debug(f"Selected LinkedIn URL: {spoc_linkedin_profile}")
+                    
                     if spoc_linkedin_profile:
                         try:
                             # Update both spoc_linkedin_profile and current_selected_profile_url
@@ -1303,16 +1296,22 @@ def render_linkedin_profile_section(logger, client_data, is_locked, spoc_name):
                             )
                             logger.debug(f"Updated SPOC LinkedIn profile: {spoc_linkedin_profile}")
                             
-                            # Immediately display the "Visit LinkedIn profile" link when profile is selected
+                            # Display the "Visit LinkedIn profile" link when profile is selected
                             selected_profile_data = client_data.linkedin_profiles.get(spoc_linkedin_profile)
                             if selected_profile_data and isinstance(selected_profile_data, dict):
                                 st.markdown(
-                                    f'<div style="text-align: left; margin-top: -5px;">'
+                                    f'<div style="text-align: left; margin-top: 10px;">'
                                     f'<a href="{spoc_linkedin_profile}" target="_blank" '
                                     f'style="color: #0066cc; text-decoration: none; font-size: 14px;">'
                                     f'🔗 Visit LinkedIn Profile</a></div>', 
                                     unsafe_allow_html=True
                                 )
+                                
+                                # Display profile summary
+                                name = selected_profile_data.get('name', 'Unknown')
+                                role = selected_profile_data.get('role', 'Unknown Role')
+                                priorities = selected_profile_data.get('top_3_priorities', [])
+                                
                                 
                         except Exception as e:
                             logger.error(f"Error updating SPOC LinkedIn profile: {str(e)}")
@@ -1332,32 +1331,42 @@ def render_linkedin_profile_section(logger, client_data, is_locked, spoc_name):
                     
             except Exception as e:
                 logger.error(f"Error processing LinkedIn profile options: {str(e)}")
-                set_global_message("LinkedIn profile options unavailable - Please refresh the page", "error")
+                st.error("Error processing LinkedIn profiles. Please try searching again.")
+                
+                # Fallback selectbox
+                st.selectbox(
+                    label="SPOC LinkedIn Profile",
+                    options=["Error loading profiles - Please search again"],
+                    key="spoc_linkedin_profile_selector_error",
+                    label_visibility="collapsed",
+                    disabled=True,
+                )
                 
         elif spoc_name_provided and not client_data.linkedin_profiles:
             # Show message when no profiles found
             st.selectbox(
                 label="SPOC LinkedIn Profile",
-                options=["No LinkedIn profiles found. Try a different name."],
+                options=["No LinkedIn profiles found. Click 'Get LinkedIn Profile' to search."],
                 key="spoc_linkedin_profile_selector",
                 label_visibility="collapsed",
-                disabled=is_locked,
+                disabled=True,
             )
             spoc_linkedin_profile = None
         else:
             # Default disabled state
             st.selectbox(
                 label="SPOC LinkedIn Profile",
-                options=["Enter SPOC name to get LinkedIn profiles"],
+                options=["Enter SPOC name and click 'Get LinkedIn Profile' to search"],
                 key="spoc_linkedin_profile_selector",
                 label_visibility="collapsed",
-                disabled=is_locked or not spoc_name_provided,
+                disabled=True,
             )
             spoc_linkedin_profile = None
             
     except Exception as e:
         logger.error(f"Error in LinkedIn profile section: {str(e)}")
-        set_global_message("LinkedIn profile section unavailable - Please refresh the page", "error")
+        st.error("LinkedIn profile section is currently unavailable. Please refresh the page.")
+        spoc_linkedin_profile = None
     
     return spoc_linkedin_profile
 
@@ -1370,7 +1379,7 @@ def render_selected_profile_info(logger, client_data, spoc_name_provided, spoc_l
         if spoc_name_provided and client_data.linkedin_profiles and client_data.current_selected_profile_url:
             profile_url = client_data.current_selected_profile_url
             selected_profile_data = client_data.linkedin_profiles.get(profile_url)
-            
+            print(selected_profile_data)
             if selected_profile_data and isinstance(selected_profile_data, dict):
                 try:
                     name = selected_profile_data.get('name', 'Unknown')
@@ -1425,13 +1434,12 @@ def render_selected_profile_info(logger, client_data, spoc_name_provided, spoc_l
                     
                     # Update client data with correct field names (plural)
                     client_state_manager.update_client_data(
-                        selected_target_roles=current_roles,  # Make sure this is plural
-                        selected_business_priorities=current_priorities,  # Make sure this is plural
-                        last_processed_profile=spoc_linkedin_profile  # Track last processed profile
+                        selected_target_roles=current_roles,
+                        selected_business_priorities=current_priorities,
+                        last_processed_profile=spoc_linkedin_profile
                     )
                     
                     logger.info("Updated target roles and business priorities based on LinkedIn profile")
-                    set_global_message("Profile information updated successfully", "success")
                     
                 except Exception as e:
                     logger.error(f"Error updating roles and priorities: {str(e)}")
@@ -1440,7 +1448,9 @@ def render_selected_profile_info(logger, client_data, spoc_name_provided, spoc_l
     except Exception as e:
         logger.error(f"Error in selected profile info section: {str(e)}")
         set_global_message("Profile information section unavailable - Please refresh the page", "error")
-        
+
+
+
 @st.fragment
 def render_fourth_section(logger, is_locked, client_data):
     """Main function to render both SPOC name and LinkedIn profile sections"""
@@ -2309,4 +2319,3 @@ def clear_client_tab_data():
         set_global_message("Error clearing client data", "error")
         return False
              
-

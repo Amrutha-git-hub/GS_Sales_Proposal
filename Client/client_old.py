@@ -8,13 +8,13 @@ from .client_utils import *
 import threading
 import time
 from Search.Linkedin.linkedin_serp import *
-from Search.Linkedin.linkedin_agent_runner_unused import *
+from Search.Linkedin.linkedin_agent_runner import *
 from Recommendation.recommendation_utils import *
 from .client_css import client_css
 from .client_dataclass import ClientData, ClientDataManager
 from datetime import datetime 
 # Configure logging
-from WebScraper.webscraper_without_ai import get_url_details_without_ai
+from WebScraper.webscraper_beautifulsoup import get_url_details_without_ai
 from Common_Utils.common_utils import set_global_message
 
 def normalize_url(url: str) -> str:

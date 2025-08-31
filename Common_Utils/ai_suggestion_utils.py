@@ -59,17 +59,17 @@ def render_three_column_selector_unified(
     # Default data if none provided
     if default_data is None:
         default_data = {
-            "Revenue Challenges": "**Revenue Challenges** • Sales declined by 15% year-over-year despite market growth\n• Missed quarterly revenue targets by $2.3M for three consecutive quarters\n• Average deal size decreased by 22% due to increased price competition\n\n",
+            "Revenue Challenges": "REVENUE CHALLENGES \n • Sales declined by 15% year-over-year despite market growth\n• Missed quarterly revenue targets by $2.3M for three consecutive quarters\n• Average deal size decreased by 22% due to increased price competition\n\n",
             
-            "Cost and Margin Pressure": "**Cost and Margin Pressure** • Cost of Goods Sold increased by 12% due to supply chain disruptions\n• Labor costs rose 18% while productivity remained flat\n• Raw material prices up 25% with limited ability to pass costs to customers\n\n",
+            "Cost and Margin Pressure": "COST AND MARGIN PRESSURE \n • Cost of Goods Sold increased by 12% due to supply chain disruptions\n• Labor costs rose 18% while productivity remained flat\n• Raw material prices up 25% with limited ability to pass costs to customers\n\n",
             
-            "Market Expansion": "**Market Expansion and Customer Acquisition**\n• Win rate on new business opportunities dropped from 42% to 28%\n• Customer acquisition cost increased 35% while customer lifetime value declined\n• Expansion into new geographic markets yielding only 40% of projected results\n\n",
+            "Market Expansion": "MARKET EXPANSION AND CUSTOMER ACQUISITION\n• Win rate on new business opportunities dropped from 42% to 28%\n• Customer acquisition cost increased 35% while customer lifetime value declined\n• Expansion into new geographic markets yielding only 40% of projected results\n\n",
             
-            "Technology Modernization": "**Technology Modernization**\n• Legacy systems causing 40% slower processing times\n• Integration challenges between disparate systems\n• Security vulnerabilities in outdated infrastructure\n\n",
+            "Technology Modernization": "TECHNOLOGY MODERNIZATION\n• Legacy systems causing 40% slower processing times\n• Integration challenges between disparate systems\n• Security vulnerabilities in outdated infrastructure\n\n",
             
-            "Workforce Development": "**Workforce Development**\n• Skills gap in emerging technologies affecting 60% of teams\n• Employee retention challenges with 25% annual turnover\n• Training programs yielding limited ROI\n\n",
+            "Workforce Development": "WORKFORCE DEVELOPMENT\n• Skills gap in emerging technologies affecting 60% of teams\n• Employee retention challenges with 25% annual turnover\n• Training programs yielding limited ROI\n\n",
             
-            "Compliance & Risk": "**Compliance & Risk Management**\n• Regulatory compliance gaps creating audit risks\n• Data privacy requirements increasing operational complexity\n• Risk assessment processes outdated and manual\n\n"
+            "Compliance & Risk": "COMPLIANCE & RISK MANAGEMENT\n• Regulatory compliance gaps creating audit risks\n• Data privacy requirements increasing operational complexity\n• Risk assessment processes outdated and manual\n\n"
         }
     
     # Split the data into two sets
@@ -108,7 +108,6 @@ def render_three_column_selector_unified(
         width: 100% !important;
         height: 50px !important;
         font-size: 24px !important;
-        font-weight: bold !important;
         margin: 2px 0 !important;
         border-radius: 12px !important;
         min-width: 60px !important;
@@ -161,7 +160,6 @@ def render_three_column_selector_unified(
     /* Normal section tooltip styling - same as left */
     .section-tooltip {{
         font-size: {title_font_size} !important;
-        font-weight: bold !important;
         margin-bottom: {title_margin_bottom} !important;
         display: flex;
         align-items: center;
@@ -173,7 +171,6 @@ def render_three_column_selector_unified(
     /* Unified title styling - normal size */
     .unified-title {{
         font-size: {title_font_size} !important;
-        font-weight: bold !important;
         color: {title_color} !important;
         margin-bottom: {title_margin_bottom} !important;
         text-align: center !important;
@@ -338,7 +335,7 @@ def render_three_column_selector_unified(
                 if is_selected:
                     background_color = selected_color
                     border_color = selected_border_color
-                    icon = "✅"
+                    icon = "📋"
                     box_shadow = f"0 3px 8px rgba({int(selected_border_color[1:3], 16)}, {int(selected_border_color[3:5], 16)}, {int(selected_border_color[5:7], 16)}, 0.3)"
                 else:
                     background_color = unselected_color
@@ -373,7 +370,7 @@ def render_three_column_selector_unified(
                     transform: translateY(-5px) !important;;
                 ">
                     <span style="font-size: 18px; margin-right: 10px; flex-shrink: 0;">{icon}</span>
-                    <span style="font-weight: bold; font-size: 16px; flex: 1;">{key}</span>
+                    <span style=" font-size: 16px; flex: 1;">{key}</span>
                 </div>
                 """, unsafe_allow_html=True)
     
@@ -456,7 +453,7 @@ def render_three_column_selector_unified(
                 if is_selected:
                     background_color = selected_color
                     border_color = selected_border_color
-                    icon = "✅"
+                    icon = "📋"
                     box_shadow = f"0 3px 8px rgba({int(selected_border_color[1:3], 16)}, {int(selected_border_color[3:5], 16)}, {int(selected_border_color[5:7], 16)}, 0.3)"
                 else:
                     background_color = unselected_color
@@ -492,7 +489,7 @@ def render_three_column_selector_unified(
                     transform: translateY(-5px) !important;
                 ">
                     <span style="font-size: 18px; margin-right: 10px; flex-shrink: 0;">{icon}</span>
-                    <span style="font-weight: bold; font-size: 16px; flex: 1;">{key}</span>
+                    <span style=" font-size: 16px; flex: 1;">{key}</span>
                 </div>
                 """, unsafe_allow_html=True)
     
@@ -589,7 +586,6 @@ def render_two_column_selector(
         width: 100% !important;
         height: 50px !important;
         font-size: 24px !important;
-        font-weight: bold !important;
         margin: 8px 0 !important;
         border-radius: 12px !important;
         min-width: 60px !important;
@@ -622,7 +618,6 @@ def render_two_column_selector(
     /* Section title with tooltip styling */
     .section-tooltip {{
         font-size: {title_font_size} !important;
-        font-weight: bold !important;
         margin-bottom: {title_margin_bottom} !important;
         display: flex;
         align-items: center;
@@ -776,7 +771,7 @@ def render_two_column_selector(
                 if is_selected:
                     background_color = selected_color
                     border_color = selected_border_color
-                    icon = "✅"
+                    icon = "📋"
                     box_shadow = f"0 3px 8px rgba({int(selected_border_color[1:3], 16)}, {int(selected_border_color[3:5], 16)}, {int(selected_border_color[5:7], 16)}, 0.3)"
                 else:
                     background_color = unselected_color
@@ -812,7 +807,7 @@ def render_two_column_selector(
                     transform: translateY(-10px) !important;
                 ">
                     <span style="font-size: 18px; margin-right: 10px; flex-shrink: 0;">{icon}</span>
-                    <span style="font-weight: bold; font-size: 16px; flex: 1;">{key}</span>
+                    <span style=" font-size: 16px; flex: 1;">{key}</span>
                 </div>
                 """, unsafe_allow_html=True)
     
