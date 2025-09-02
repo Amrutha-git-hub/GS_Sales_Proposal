@@ -643,36 +643,6 @@ def _handle_uploaded_documents(seller_state: SellerTabState, seller_documents_up
         logger.error(f"Error handling uploaded documents: {str(e)}", exc_info=True)
         set_global_message("Unable to process uploaded documents. Please try uploading again.", "error")
 
-@st.fragment
-def _display_uploaded_files(seller_state: SellerTabState, seller_documents_upload):
-    """Display information about uploaded files."""
-    try:
-        for idx, uploaded_file in enumerate(seller_documents_upload):
-            file_key = f"{uploaded_file.name}_{uploaded_file.size}"
-            
-            # Calculate file size display
-            file_size_kb = round(uploaded_file.size / 1024, 1)
-            file_size_display = f"{file_size_kb}KB" if file_size_kb < 1024 else f"{round(file_size_kb/1024, 1)}MB"
-            
-            # Check processing status
-            is_processed = seller_state.is_file_processed(file_key)
-            is_processing = seller_state.processing_all_seller_documents
-            
-            if is_processing:
-                st.markdown(f"""
-                <div class="processing-file">
-                    <span style='font-size:0.8em' class="analyzing-text">
-                        🔄 {uploaded_file.name[:25]}{'...' if len(uploaded_file.name) > 25 else ''} (Analyzing...)
-                    </span>
-                </div>
-                """, unsafe_allow_html=True)
-            else:
-                status_icon = "✅" if is_processed else "📄"
-                st.markdown(f"<span style='font-size:0.8em'>{status_icon} {uploaded_file.name[:30]}{'...' if len(uploaded_file.name) > 30 else ''} ({file_size_display})</span>", 
-                        unsafe_allow_html=True)
-                        
-    except Exception as e:
-        logger.error(f"Error displaying uploaded files: {str(e)}", exc_info=True)
 
 @st.fragment
 def _render_process_all_button(seller_state: SellerTabState, seller_documents_upload, is_locked: bool):

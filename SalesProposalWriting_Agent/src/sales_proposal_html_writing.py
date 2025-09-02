@@ -247,8 +247,6 @@ def generate_modern_presentation(
 </head><body>
 <div class="cover-page">
     <h1 class="cover-main-title">{doc_title}</h1>
-    <h5 class="cover-for">for</h5>
-    <h1 class="cover-client-name">{client_name}</h1>
 </div>
 """
 

@@ -637,127 +637,110 @@ def doc_upload_section(logger, client_data, is_locked):
             set_global_message("Upload service temporarily unavailable - Please refresh the page and try again", 'error')
             rfi_document_upload = None
         
-        # Show file info and analyze button
+        # Show analyze button below the upload section (only if file is uploaded)
         if rfi_document_upload is not None:
             try:
-                file_size_kb = round(rfi_document_upload.size / 1024, 1)
-                file_size_display = f"{file_size_kb}KB" if file_size_kb < 1024 else f"{round(file_size_kb/1024, 1)}MB"
-                logger.debug(f"File size: {file_size_display}")
-                
-                # Single compact row
-                col_info, col_btn = st.columns([2.5, 1])
-                
-                with col_info:
-                    st.markdown(f"<span style='font-size:0.8em; color:#ffffff'>📄 {rfi_document_upload.name[:25]}{'...' if len(rfi_document_upload.name) > 25 else ''} ({file_size_display})</span>", 
-                                unsafe_allow_html=True)
-                
-                with col_btn:
-                    try:
-                        st.markdown(f"""
-                        <style>
-                        div.stButton > button:first-child {{
-                            background-color: #4CAF50;
-                            color: #f0f5f5;
-                            border: none;
-                        }}
-                        </style>
-                        """, unsafe_allow_html=True)
+                # Button styling and display
+                st.markdown(f"""
+                <style>
+                div.stButton > button:first-child {{
+                    background-color: #4CAF50;
+                    color: #f0f5f5;
+                    border: none;
+                }}
+                </style>
+                """, unsafe_allow_html=True)
 
-                        analyze_clicked = st.button(
-                            "Get pain points",
-                            key="analyze_rfi_document_btn",
-                            help="Process RFI document",
-                            type="secondary",
-                            use_container_width=True
-                        )
-                        
-                    except Exception as e:
-                        logger.error(f"Error creating analyze button: {str(e)}")
-                        set_global_message("Button display issue - Please refresh the page to restore full functionality", 'error')
-                        analyze_clicked = False
+                analyze_clicked = st.button(
+                    "Get pain points",
+                    key="analyze_rfi_document_btn",
+                    help="Process RFI document",
+                    type="secondary",
+                    use_container_width=True
+                )
                 
-                # Handle analyze button click
-                if analyze_clicked:
-                    try:
-                        if not client_enterprise_name:
-                            logger.warning("Analyze clicked but no client enterprise name provided")
-                            set_global_message("Client name required - Please enter your client's enterprise name to continue", 'error')
-                        else:
-                            logger.info("Starting RFI analysis process")
-                            
-                            # Create a placeholder for the spinner
-                            spinner_placeholder = st.empty()
-                            
-                            # Show spinner while processing
-                            with spinner_placeholder:
-                                with st.spinner("🔍 Analyzing document and extracting pain points..."):
-                                    
-                                    # Perform the actual processing
-                                    try:
-                                        logger.info("Starting RFI document processing")
-                                        file_path = save_uploaded_file_and_get_path(rfi_document_upload, logger, client_enterprise_name)
-                                        
-                                        if file_path and client_enterprise_name:
-                                            logger.info(f"Processing RFI file: {file_path}")
-                                            pain_points_data = get_pain_points(file_path, client_enterprise_name)
-                                            
-                                            # Clear the spinner
-                                            spinner_placeholder.empty()
-                                            
-                                            # Check if we got pain points data
-                                            if pain_points_data and len(pain_points_data) > 0:
-                                                logger.info(f"Successfully extracted pain points, count: {len(pain_points_data)}")
-                                                
-                                                client_state_manager.update_client_data(
-                                                    uploaded_file_path=file_path,
-                                                    rfi_pain_points_items=pain_points_data,
-                                                    document_analyzed=True,
-                                                    processing_rfi=False
-                                                )
-                                                
-                                                # Success message with count
-                                                pain_points_count = len(pain_points_data)
-                                                set_global_message(f" AI has successfully suggested {pain_points_count} pain point categories from your document!", "success")
-                            
-
-                                            else:
-                                                logger.warning("No pain points extracted from document")
-                                                client_state_manager.update_client_data(
-                                                    uploaded_file_path=file_path,
-                                                    rfi_pain_points_items={},
-                                                    document_analyzed=False,
-                                                    processing_rfi=False
-                                                )
-                                                set_global_message("⚠️ No pain points could be extracted from this document. Please try a different file or use the default suggestions.", 'warning')
-                                        else:
-                                            # Clear the spinner
-                                            spinner_placeholder.empty()
-                                            logger.error("Error saving the uploaded file or missing client name")
-                                            set_global_message("Uploaded  document does not have pain points.  Please upload the correct document OR select from the default pain points displayed", 'error')
-                                            
-                                    except Exception as e:
-                                        # Clear the spinner
-                                        spinner_placeholder.empty()
-                                        logger.error(f"Error analyzing RFI document: {str(e)}")
-                                        set_global_message(" There was an issue analyzing your document. Please try uploading again or use the default suggestions.", 'error')
-                                        client_state_manager.update_client_data(
-                                            rfi_pain_points_items={},
-                                            document_analyzed=False,
-                                            processing_rfi=False
-                                        )
-                                        
-                    except Exception as e:
-                        logger.error(f"Error handling analyze button click: {str(e)}")
-                        set_global_message("Analysis initialization failed - Please try again", 'error')
+                # Create a placeholder for the spinner (positioned below the button)
+                spinner_placeholder = st.empty()
                         
             except Exception as e:
-                logger.error(f"Error in file info section: {str(e)}")
-                set_global_message("File information display issue - Please refresh the page to restore functionality", 'error')
-                
+                logger.error(f"Error creating analyze button: {str(e)}")
+                set_global_message("Button display issue - Please refresh the page to restore full functionality", 'error')
+                analyze_clicked = False
+            
+            # Handle analyze button click
+            if analyze_clicked:
+                try:
+                    if not client_enterprise_name:
+                        logger.warning("Analyze clicked but no client enterprise name provided")
+                        set_global_message("Client name required - Please enter your client's enterprise name to continue", 'error')
+                    else:
+                        logger.info("Starting RFI analysis process")
+                        
+                        # Show spinner while processing (below the button)
+                        with spinner_placeholder:
+                            with st.spinner("🔍 Analyzing document and extracting pain points..."):
+                                
+                                # Perform the actual processing
+                                try:
+                                    logger.info("Starting RFI document processing")
+                                    file_path = save_uploaded_file_and_get_path(rfi_document_upload, logger, client_enterprise_name)
+                                    
+                                    if file_path and client_enterprise_name:
+                                        logger.info(f"Processing RFI file: {file_path}")
+                                        pain_points_data = get_pain_points(file_path, client_enterprise_name)
+                                        
+                                        # Clear the spinner
+                                        spinner_placeholder.empty()
+                                        
+                                        # Check if we got pain points data
+                                        if pain_points_data and len(pain_points_data) > 0:
+                                            logger.info(f"Successfully extracted pain points, count: {len(pain_points_data)}")
+                                            
+                                            client_state_manager.update_client_data(
+                                                uploaded_file_path=file_path,
+                                                rfi_pain_points_items=pain_points_data,
+                                                document_analyzed=True,
+                                                processing_rfi=False
+                                            )
+                                            
+                                            # Success message with count
+                                            pain_points_count = len(pain_points_data)
+                                            set_global_message(f" AI has successfully suggested {pain_points_count} pain point categories from your document!", "success")
+        
+
+                                        else:
+                                            logger.warning("No pain points extracted from document")
+                                            client_state_manager.update_client_data(
+                                                uploaded_file_path=file_path,
+                                                rfi_pain_points_items={},
+                                                document_analyzed=False,
+                                                processing_rfi=False
+                                            )
+                                            set_global_message("⚠️ No pain points could be extracted from this document. Please try a different file or use the default suggestions.", 'warning')
+                                    else:
+                                        # Clear the spinner
+                                        spinner_placeholder.empty()
+                                        logger.error("Error saving the uploaded file or missing client name")
+                                        set_global_message("Uploaded  document does not have pain points.  Please upload the correct document OR select from the default pain points displayed", 'error')
+                                        
+                                except Exception as e:
+                                    # Clear the spinner
+                                    spinner_placeholder.empty()
+                                    logger.error(f"Error analyzing RFI document: {str(e)}")
+                                    set_global_message(" There was an issue analyzing your document. Please try uploading again or use the default suggestions.", 'error')
+                                    client_state_manager.update_client_data(
+                                        rfi_pain_points_items={},
+                                        document_analyzed=False,
+                                        processing_rfi=False
+                                    )
+                                    
+                except Exception as e:
+                    logger.error(f"Error handling analyze button click: {str(e)}")
+                    set_global_message("Analysis initialization failed - Please try again", 'error')
+                    
     except Exception as e:
         logger.error(f"Error in file upload section: {str(e)}")
         set_global_message("File upload section temporarily unavailable - Please refresh the page to continue", 'error')
-
 
 @st.fragment
 def render_second_section(logger, client_data, is_locked):
