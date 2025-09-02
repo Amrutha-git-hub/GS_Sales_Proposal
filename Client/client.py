@@ -485,7 +485,6 @@ def enterprise_content(logger, client_data, is_locked):
         set_global_message("Enterprise details section temporarily unavailable - Please refresh the page to continue", 'error')
     
     return client_name_provided
-
 @st.fragment
 def doc_upload_section(logger, client_data, is_locked):
     """Render the document upload section"""
@@ -696,11 +695,15 @@ def doc_upload_section(logger, client_data, is_locked):
                                         if pain_points_data and len(pain_points_data) > 0:
                                             logger.info(f"Successfully extracted pain points, count: {len(pain_points_data)}")
                                             
+                                            # Clear client requirements and reset selections when new pain points are loaded
                                             client_state_manager.update_client_data(
                                                 uploaded_file_path=file_path,
                                                 rfi_pain_points_items=pain_points_data,
                                                 document_analyzed=True,
-                                                processing_rfi=False
+                                                processing_rfi=False,
+                                                client_requirements_content="",  # Clear the client requirements
+                                                selected_pain_points=set(),  # Clear all selected pain points
+                                                pain_point_content_map={}  # Clear the content mapping
                                             )
                                             
                                             # Success message with count
@@ -714,14 +717,17 @@ def doc_upload_section(logger, client_data, is_locked):
                                                 uploaded_file_path=file_path,
                                                 rfi_pain_points_items={},
                                                 document_analyzed=False,
-                                                processing_rfi=False
+                                                processing_rfi=False,
+                                                client_requirements_content="",  # Clear the client requirements
+                                                selected_pain_points=set(),  # Clear all selected pain points
+                                                pain_point_content_map={}  # Clear the content mapping
                                             )
                                             set_global_message("⚠️ No pain points could be extracted from this document. Please try a different file or use the default suggestions.", 'warning')
                                     else:
                                         # Clear the spinner
                                         spinner_placeholder.empty()
                                         logger.error("Error saving the uploaded file or missing client name")
-                                        set_global_message("Uploaded  document does not have pain points.  Please upload the correct document OR select from the default pain points displayed", 'error')
+                                        set_global_message("Uploaded document does not have pain points. Please upload the correct document OR select from the default pain points displayed", 'error')
                                         
                                 except Exception as e:
                                     # Clear the spinner
@@ -731,7 +737,10 @@ def doc_upload_section(logger, client_data, is_locked):
                                     client_state_manager.update_client_data(
                                         rfi_pain_points_items={},
                                         document_analyzed=False,
-                                        processing_rfi=False
+                                        processing_rfi=False,
+                                        client_requirements_content="",  # Clear the client requirements
+                                        selected_pain_points=set(),  # Clear all selected pain points
+                                        pain_point_content_map={}  # Clear the content mapping
                                     )
                                     
                 except Exception as e:
@@ -742,6 +751,7 @@ def doc_upload_section(logger, client_data, is_locked):
         logger.error(f"Error in file upload section: {str(e)}")
         set_global_message("File upload section temporarily unavailable - Please refresh the page to continue", 'error')
 
+        
 @st.fragment
 def render_second_section(logger, client_data, is_locked):
     """Main function to render the second section with two columns"""
